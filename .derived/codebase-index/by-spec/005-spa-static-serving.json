@@ -1,0 +1,32 @@
+{
+  "mapping": {
+    "dependsOn": [
+      "001-encore-app-architecture"
+    ],
+    "implementingPaths": [
+      {
+        "path": "apps/api/web/",
+        "source": "spec-edge"
+      }
+    ],
+    "resolvedUnits": [
+      {
+        "locations": [
+          {
+            "file": "apps/api/web/"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": "apps/api/web/"
+        }
+      }
+    ],
+    "specId": "005-spa-static-serving",
+    "specStatus": "approved"
+  },
+  "schemaVersion": "1.1.0",
+  "shardHash": "94a0044e80d84e914e95903e169ffdbcd5f86bf8b4ad6814b8b5696bdae5f4c7"
+}

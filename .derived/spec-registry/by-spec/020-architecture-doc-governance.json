@@ -1,0 +1,62 @@
+{
+  "record": {
+    "codeAliases": [
+      "DOC_GOVERNANCE"
+    ],
+    "created": "2026-06-10",
+    "dependsOn": [
+      "001-encore-app-architecture",
+      "008-encore-generator-core"
+    ],
+    "domain": "docs",
+    "establishes": [
+      {
+        "kind": "file",
+        "path": "CODEMAP.md"
+      },
+      {
+        "kind": "file",
+        "path": "orchestration/"
+      },
+      {
+        "kind": "file",
+        "path": "scripts/codemaps/"
+      },
+      {
+        "kind": "file",
+        "path": "scripts/readmes/"
+      }
+    ],
+    "id": "020-architecture-doc-governance",
+    "implementation": "complete",
+    "kind": "governance",
+    "owner": "bart",
+    "references": [
+      {
+        "role": "governed editorially; mechanically exempt via the gate's bypass floor",
+        "unit": {
+          "kind": "file",
+          "path": "docs/"
+        }
+      }
+    ],
+    "risk": "low",
+    "sectionHeadings": [
+      "020 — Architecture documentation governance: human docs as derived views of the owning specs",
+      "1. Purpose",
+      "2. Territory",
+      "3. Behavior",
+      "3.1 Mechanically coupled surfaces",
+      "3.2 Editorially governed surfaces",
+      "3.3 Coupling gate geometry",
+      "4. Acceptance criteria",
+      "5. Out of scope"
+    ],
+    "specPath": "specs/020-architecture-doc-governance/spec.md",
+    "status": "approved",
+    "summary": "Human-facing architecture documentation is a derived view of the owning specs: CODEMAP.md, the orchestration/ guides, and the codemap/readme generators are mechanically coupled (an edit requires touching this spec); docs/ and README.md sit inside the coupling gate's built-in bypass floor, so their fidelity is enforced editorially — each doc names the spec(s) it derives from, and a doc change that contradicts an owning spec is a review-blocking defect.\n",
+    "title": "Architecture documentation governance: human docs as derived views of the owning specs"
+  },
+  "shardHash": "d1cc2149bfc1808c930eb4fbd9d97e2ac307d1f2b9b735862bd7ee4d627d1188",
+  "specVersion": "1.1.0"
+}

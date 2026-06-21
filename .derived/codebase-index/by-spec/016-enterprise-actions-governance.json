@@ -1,0 +1,32 @@
+{
+  "mapping": {
+    "dependsOn": [
+      "015-workflow-pins-lint"
+    ],
+    "implementingPaths": [
+      {
+        "path": ".github/workflows/",
+        "source": "spec-edge"
+      }
+    ],
+    "resolvedUnits": [
+      {
+        "locations": [
+          {
+            "file": ".github/workflows/"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "constrains",
+        "unit": {
+          "kind": "file",
+          "path": ".github/workflows/"
+        }
+      }
+    ],
+    "specId": "016-enterprise-actions-governance",
+    "specStatus": "approved"
+  },
+  "schemaVersion": "1.1.0",
+  "shardHash": "42950949c8785228cc87f635295daf635ebb74756a10d220cc9668a0c07c0e53"
+}

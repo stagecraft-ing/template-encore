@@ -1,0 +1,51 @@
+{
+  "mapping": {
+    "dependsOn": [
+      "005-spa-static-serving",
+      "008-encore-generator-core",
+      "009-user-management-module"
+    ],
+    "implementingPaths": [
+      {
+        "path": "scripts/setup-dual-app.test.ts",
+        "source": "spec-edge"
+      },
+      {
+        "path": "scripts/setup-dual-app.ts",
+        "source": "spec-edge"
+      }
+    ],
+    "resolvedUnits": [
+      {
+        "locations": [
+          {
+            "file": "scripts/setup-dual-app.test.ts"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": "scripts/setup-dual-app.test.ts"
+        }
+      },
+      {
+        "locations": [
+          {
+            "file": "scripts/setup-dual-app.ts"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": "scripts/setup-dual-app.ts"
+        }
+      }
+    ],
+    "specId": "010-dual-app-generator",
+    "specStatus": "approved"
+  },
+  "schemaVersion": "1.1.0",
+  "shardHash": "168239594fb0b899583e46fc7a4a2d8237fbbed72f21b36555c206e7012af3fe"
+}

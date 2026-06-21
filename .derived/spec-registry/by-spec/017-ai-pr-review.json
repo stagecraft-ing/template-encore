@@ -1,0 +1,44 @@
+{
+  "record": {
+    "codeAliases": [
+      "AI_PR_REVIEW"
+    ],
+    "created": "2026-06-10",
+    "dependsOn": [
+      "013-repo-ci-orchestrator",
+      "016-enterprise-actions-governance"
+    ],
+    "domain": "ci-cd",
+    "establishes": [
+      {
+        "kind": "file",
+        "path": ".github/workflows/ai-pr-review.yml"
+      }
+    ],
+    "id": "017-ai-pr-review",
+    "implementation": "complete",
+    "kind": "governance",
+    "owner": "bart",
+    "risk": "low",
+    "sectionHeadings": [
+      "017 — AI PR review folded into ci-gate",
+      "1. Purpose",
+      "2. Territory",
+      "3. Behavior",
+      "FR-01: Subscription-OAuth auth, never an API key",
+      "FR-02: Hardened, App-free review workflow",
+      "FR-03: ci-gate membership",
+      "FR-04: SHA-pinned action references",
+      "FR-05: No interactive mention bot",
+      "4. Acceptance criteria",
+      "5. Out of scope",
+      "6. Design notes"
+    ],
+    "specPath": "specs/017-ai-pr-review/spec.md",
+    "status": "approved",
+    "summary": "An App-free Claude review of every PR, dispatched from ci.yml and required by ci-gate: subscription OAuth token, pinned CLI version, diff over stdin, no ANTHROPIC_API_KEY, no exit-code swallowing, and a visible skip comment when the diff exceeds the size budget.\n",
+    "title": "AI PR review folded into ci-gate"
+  },
+  "shardHash": "512e5ac4ff2c6f317c07c3415a9eed3f8f2bb72b2430fe2bc808d1da934336f0",
+  "specVersion": "1.1.0"
+}

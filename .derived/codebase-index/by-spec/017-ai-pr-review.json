@@ -1,0 +1,33 @@
+{
+  "mapping": {
+    "dependsOn": [
+      "013-repo-ci-orchestrator",
+      "016-enterprise-actions-governance"
+    ],
+    "implementingPaths": [
+      {
+        "path": ".github/workflows/ai-pr-review.yml",
+        "source": "spec-edge"
+      }
+    ],
+    "resolvedUnits": [
+      {
+        "locations": [
+          {
+            "file": ".github/workflows/ai-pr-review.yml"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": ".github/workflows/ai-pr-review.yml"
+        }
+      }
+    ],
+    "specId": "017-ai-pr-review",
+    "specStatus": "approved"
+  },
+  "schemaVersion": "1.1.0",
+  "shardHash": "dd8e9307fdc4784e3ced0a1bb6f02e5b18aff592ae8b09dcff271b15cfdbf67c"
+}

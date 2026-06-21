@@ -1,0 +1,26 @@
+name: Deploy to UAT
+
+# Encore-as-zip deploy for the `uat` environment (spec 057). Thin caller of the
+# reusable workflow; secrets/vars resolve from the GitHub `uat` environment.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [uat]
+    paths-ignore:
+      - '*.md'
+      - '.gitignore'
+      - 'docs/**'
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+  security-events: write
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-azure-webapp-reusable.yml
+    with:
+      environment: uat
+    secrets: inherit

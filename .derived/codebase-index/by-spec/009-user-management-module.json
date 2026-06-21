@@ -1,0 +1,35 @@
+{
+  "mapping": {
+    "dependsOn": [
+      "002-security-data-invariants",
+      "003-multi-driver-auth-service",
+      "007-module-manifest-schema",
+      "008-encore-generator-core"
+    ],
+    "implementingPaths": [
+      {
+        "path": "modules/user-management/",
+        "source": "spec-edge"
+      }
+    ],
+    "resolvedUnits": [
+      {
+        "locations": [
+          {
+            "file": "modules/user-management/"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": "modules/user-management/"
+        }
+      }
+    ],
+    "specId": "009-user-management-module",
+    "specStatus": "approved"
+  },
+  "schemaVersion": "1.1.0",
+  "shardHash": "9880cc8a092801ad99f5664a7bd262666b34ca50a2c1d74614d016136b41f09a"
+}

@@ -1,0 +1,33 @@
+{
+  "name": "@template/web-internal",
+  "version": "1.0.0",
+  "description": "Internal/authenticated Vue 3 SPA with GoA work-side-menu layout",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@abgov/design-tokens": "^2.8.1",
+    "@abgov/web-components": "^2.2.2",
+    "@template/shared": "*",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "axios": "^1.18.0",
+    "pinia": "^2.3.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16",
+    "vue": "^3.5.38",
+    "vue-router": "^4.5.0",
+    "vue-tsc": "^3.3.5"
+  },
+  "devDependencies": {
+    "@vue/test-utils": "^2.4.11",
+    "happy-dom": "^20.10.6",
+    "vitest": "^4.0.18"
+  }
+}

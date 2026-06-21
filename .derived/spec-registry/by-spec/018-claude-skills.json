@@ -1,0 +1,54 @@
+{
+  "record": {
+    "codeAliases": [
+      "CLAUDE_SKILLS"
+    ],
+    "created": "2026-06-10",
+    "dependsOn": [
+      "000-bootstrap",
+      "019-claude-config-governance"
+    ],
+    "domain": "agentic",
+    "establishes": [
+      {
+        "kind": "file",
+        "path": ".claude/skills/"
+      },
+      {
+        "kind": "file",
+        "path": ".claude/agents/"
+      },
+      {
+        "kind": "file",
+        "path": "standards/schemas/frontmatter/agent-frontmatter.schema.json"
+      },
+      {
+        "kind": "file",
+        "path": "standards/schemas/frontmatter/skill-frontmatter.schema.json"
+      }
+    ],
+    "id": "018-claude-skills",
+    "implementation": "complete",
+    "kind": "governance",
+    "owner": "bart",
+    "risk": "low",
+    "sectionHeadings": [
+      "018 — Claude Code skills and agents: the agentic surface",
+      "1. Purpose",
+      "2. Territory",
+      "3. Behavior",
+      "3.1 Skill surface",
+      "3.2 Agent surface",
+      "3.3 Frontmatter schemas",
+      "3.4 Staleness gate",
+      "4. Acceptance criteria",
+      "5. Out of scope"
+    ],
+    "specPath": "specs/018-claude-skills/spec.md",
+    "status": "approved",
+    "summary": "The agentic surface: seven skills under .claude/skills/ (init, setup, commit, implement-plan, research, validate-and-fix, cleanup), four pipeline agents under .claude/agents/ (architect, explorer, implementer, reviewer), and the frontmatter schemas that govern their shape. Skills perform all governed reads through the spec-spine CLI; the whole surface is a hashed index input, so quiet edits trip the staleness gate.\n",
+    "title": "Claude Code skills and agents: the agentic surface"
+  },
+  "shardHash": "7ad022277bf4f4de203dead15263ce66629c88a79ab37a93ca7e94dc7da383ae",
+  "specVersion": "1.1.0"
+}

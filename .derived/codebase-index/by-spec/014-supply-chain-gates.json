@@ -1,0 +1,32 @@
+{
+  "mapping": {
+    "dependsOn": [
+      "015-workflow-pins-lint"
+    ],
+    "implementingPaths": [
+      {
+        "path": ".github/workflows/ci-supply-chain.yml",
+        "source": "spec-edge"
+      }
+    ],
+    "resolvedUnits": [
+      {
+        "locations": [
+          {
+            "file": ".github/workflows/ci-supply-chain.yml"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": ".github/workflows/ci-supply-chain.yml"
+        }
+      }
+    ],
+    "specId": "014-supply-chain-gates",
+    "specStatus": "approved"
+  },
+  "schemaVersion": "1.1.0",
+  "shardHash": "93dcf59ade95df393dbb4d114068f93d17990a87ab190f988cce1bbc14792698"
+}

@@ -1,0 +1,43 @@
+{
+  "name": "@template/api",
+  "version": "1.0.0",
+  "description": "Encore.ts API for the Vue + Encore Enterprise Template",
+  "private": true,
+  "type": "module",
+  "spec-spine": {
+    "spec": "001-encore-app-architecture"
+  },
+  "scripts": {
+    "dev": "encore run --port=4000",
+    "encore": "encore run --port=4000",
+    "test": "vitest --passWithNoTests",
+    "test:watch": "vitest",
+    "typecheck": "encore check",
+    "gen:client": "encore gen client --output=../web/src/lib/encore-client.ts --env=local",
+    "gen:openapi": "encore gen client --lang=openapi --output=./openapi.yaml --env=local",
+    "build:docker": "encore build docker --config ./infra.config.json --base template-api-base:local template-api:local",
+    "db:migrate": "node scripts/migrate.mjs",
+    "generate-keys": "tsx scripts/generate-keys.ts"
+  },
+  "dependencies": {
+    "@node-saml/passport-saml": "^5.1.0",
+    "encore.dev": "^1.57.8",
+    "jsonwebtoken": "^9.0.2",
+    "openid-client": "^6.8.4",
+    "pg": "^8.13.1",
+    "rate-limiter-flexible": "^11.2.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^25.9.3",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.62.0",
+    "ioredis": "^5.11.1"
+  }
+}

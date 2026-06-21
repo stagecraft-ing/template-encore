@@ -1,0 +1,35 @@
+# Hotfix image for the OPTIONAL cancel-then-scrape build (scripts/docker-build.sh).
+# NOT the supported path — use `npm run build:docker` (encore build docker --base)
+# for normal builds. See docs/encore-ts/encore-custom-dockerfile.md.
+
+FROM node:22-slim AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+FROM node:22-slim
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates tini \
+    && rm -rf /var/lib/apt/lists/*
+
+# Production node_modules only
+COPY --from=deps /app/node_modules ./node_modules
+
+# Compiled Encore application (scraped by docker-build.sh step 1)
+COPY .encore/build/combined/combined/main.mjs ./main.mjs
+
+# Native Encore runtime for linux/amd64 (scraped by docker-build.sh step 2)
+COPY encore-runtime.node /app/encore-runtime.node
+
+# Static SPA bundle served by the web service (api.static dir ./build).
+COPY web/build ./web/build
+
+ENV ENCORE_RUNTIME_LIB=/app/encore-runtime.node
+ENV NODE_ENV=production
+ENV PORT=4000
+
+EXPOSE 4000
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["node", "main.mjs"]

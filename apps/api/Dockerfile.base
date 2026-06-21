@@ -1,0 +1,26 @@
+# Enterprise template: Encore.ts runtime base image.
+#
+# Consumed by `encore build docker --base <this-image>` (see package.json
+# build:docker). Encore lays the compiled main.mjs, the native runtime
+# (encore-runtime.node), and the bundled source tree (bundle_source: true in
+# encore.app — which includes apps/api/web/build for the static SPA) on top.
+#
+# The base must carry the `node` binary — Encore's overlay ships main.mjs and
+# encore-runtime.node (a native addon, not a runtime); the CMD invokes `node`.
+# node:22-slim is the minimal Debian-based image that does.
+
+FROM node:22-slim
+
+# OS packages used at runtime:
+#   - ca-certificates: HTTPS to OIDC discovery (Entra), SAML IdP, the private
+#     backend, and the gateway OAuth token endpoint.
+#   - tini:            PID 1 reaper so forked workers are cleaned up.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates tini \
+    && rm -rf /var/lib/apt/lists/*
+
+# Optional helper binaries — uncomment when a service shells out to one.
+# COPY my-helper-bin /usr/local/bin/my-helper-bin
+# RUN  chmod +x /usr/local/bin/my-helper-bin
+
+ENTRYPOINT ["/usr/bin/tini", "--"]

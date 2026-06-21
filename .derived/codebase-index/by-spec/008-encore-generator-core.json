@@ -1,0 +1,103 @@
+{
+  "mapping": {
+    "dependsOn": [
+      "001-encore-app-architecture",
+      "003-multi-driver-auth-service",
+      "005-spa-static-serving",
+      "007-module-manifest-schema"
+    ],
+    "implementingPaths": [
+      {
+        "path": "scripts/add-module.ts",
+        "source": "spec-edge"
+      },
+      {
+        "path": "scripts/lib/encore-composer.ts",
+        "source": "spec-edge"
+      },
+      {
+        "path": "scripts/lib/env-merger.ts",
+        "source": "spec-edge"
+      },
+      {
+        "path": "scripts/remove-module.ts",
+        "source": "spec-edge"
+      },
+      {
+        "path": "scripts/setup-app.ts",
+        "source": "spec-edge"
+      }
+    ],
+    "resolvedUnits": [
+      {
+        "locations": [
+          {
+            "file": "scripts/add-module.ts"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": "scripts/add-module.ts"
+        }
+      },
+      {
+        "locations": [
+          {
+            "file": "scripts/lib/encore-composer.ts"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": "scripts/lib/encore-composer.ts"
+        }
+      },
+      {
+        "locations": [
+          {
+            "file": "scripts/lib/env-merger.ts"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": "scripts/lib/env-merger.ts"
+        }
+      },
+      {
+        "locations": [
+          {
+            "file": "scripts/remove-module.ts"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": "scripts/remove-module.ts"
+        }
+      },
+      {
+        "locations": [
+          {
+            "file": "scripts/setup-app.ts"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": "scripts/setup-app.ts"
+        }
+      }
+    ],
+    "specId": "008-encore-generator-core",
+    "specStatus": "approved"
+  },
+  "schemaVersion": "1.1.0",
+  "shardHash": "c1eacafa75f243e9b1ab1cd14ef08ba4267edcd34884d8bf81d8e620ee370865"
+}

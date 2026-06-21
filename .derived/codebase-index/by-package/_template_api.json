@@ -1,0 +1,11 @@
+{
+  "package": {
+    "kind": "npm-package",
+    "name": "@template/api",
+    "path": "apps/api",
+    "specRef": "001-encore-app-architecture",
+    "version": "1.0.0"
+  },
+  "schemaVersion": "1.1.0",
+  "shardHash": "7d2ff6f9170e70a3dffbf2faa4531dcffe6819fe2522161bbd57f48862f00226"
+}

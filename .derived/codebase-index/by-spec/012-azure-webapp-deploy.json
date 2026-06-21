@@ -1,0 +1,85 @@
+{
+  "mapping": {
+    "dependsOn": [
+      "011-encore-ci-cd",
+      "015-workflow-pins-lint",
+      "016-enterprise-actions-governance"
+    ],
+    "implementingPaths": [
+      {
+        "path": ".github/workflows/deploy-azure-webapp-dev.yml",
+        "source": "spec-edge"
+      },
+      {
+        "path": ".github/workflows/deploy-azure-webapp-prod.yml",
+        "source": "spec-edge"
+      },
+      {
+        "path": ".github/workflows/deploy-azure-webapp-reusable.yml",
+        "source": "spec-edge"
+      },
+      {
+        "path": ".github/workflows/deploy-azure-webapp-uat.yml",
+        "source": "spec-edge"
+      }
+    ],
+    "resolvedUnits": [
+      {
+        "locations": [
+          {
+            "file": ".github/workflows/deploy-azure-webapp-dev.yml"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": ".github/workflows/deploy-azure-webapp-dev.yml"
+        }
+      },
+      {
+        "locations": [
+          {
+            "file": ".github/workflows/deploy-azure-webapp-prod.yml"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": ".github/workflows/deploy-azure-webapp-prod.yml"
+        }
+      },
+      {
+        "locations": [
+          {
+            "file": ".github/workflows/deploy-azure-webapp-reusable.yml"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": ".github/workflows/deploy-azure-webapp-reusable.yml"
+        }
+      },
+      {
+        "locations": [
+          {
+            "file": ".github/workflows/deploy-azure-webapp-uat.yml"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": ".github/workflows/deploy-azure-webapp-uat.yml"
+        }
+      }
+    ],
+    "specId": "012-azure-webapp-deploy",
+    "specStatus": "approved"
+  },
+  "schemaVersion": "1.1.0",
+  "shardHash": "ed46030ef0d4a8c05b3054265faec295117025eefbeb7f927ab8d3e5a10997f6"
+}

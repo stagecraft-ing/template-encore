@@ -1,0 +1,11 @@
+{
+  "package": {
+    "kind": "npm-workspace",
+    "name": "vue-encore-enterprise-template",
+    "path": "",
+    "specRef": "000-bootstrap",
+    "version": "1.0.0"
+  },
+  "schemaVersion": "1.1.0",
+  "shardHash": "1124983bf3e55921ce5a8f62673f24663316223007170cdb125ea4bd19f4d8cd"
+}

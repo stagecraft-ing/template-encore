@@ -1,0 +1,60 @@
+{
+  "record": {
+    "codeAliases": [
+      "DEPLOY_AZURE_ZIP",
+      "DEPLOY_ENCORE_CONTAINER"
+    ],
+    "created": "2026-06-10",
+    "dependsOn": [
+      "011-encore-ci-cd",
+      "015-workflow-pins-lint",
+      "016-enterprise-actions-governance"
+    ],
+    "domain": "ci-cd",
+    "establishes": [
+      {
+        "kind": "file",
+        "path": ".github/workflows/deploy-azure-webapp-reusable.yml"
+      },
+      {
+        "kind": "file",
+        "path": ".github/workflows/deploy-azure-webapp-dev.yml"
+      },
+      {
+        "kind": "file",
+        "path": ".github/workflows/deploy-azure-webapp-uat.yml"
+      },
+      {
+        "kind": "file",
+        "path": ".github/workflows/deploy-azure-webapp-prod.yml"
+      }
+    ],
+    "id": "012-azure-webapp-deploy",
+    "implementation": "complete",
+    "kind": "governance",
+    "owner": "bart",
+    "risk": "medium",
+    "sectionHeadings": [
+      "012 — Azure Web App deploy: zip path for dev/uat/prod plus the container path example",
+      "1. Purpose",
+      "2. Territory",
+      "3. Behavior",
+      "FR-001 — Zip artifact composition",
+      "FR-002 — Build/deploy split",
+      "FR-003 — Schema application",
+      "FR-004 — Reusable workflow inputs",
+      "FR-005 — Environment-specific callers",
+      "FR-006 — SHA-pinning and the allow-list",
+      "FR-007 — Container path (inert)",
+      "FR-008 — Security gate",
+      "4. Acceptance criteria",
+      "5. Out of scope"
+    ],
+    "specPath": "specs/012-azure-webapp-deploy/spec.md",
+    "status": "approved",
+    "summary": "Two deployment paths for Azure App Service: (1) the zip path — the compiled Encore artifact (main.mjs + runtime) deployed per environment by the dev/uat/prod workflows over a shared reusable workflow, started with `node main.mjs`; (2) the container path, kept as the inert encore-cd.yml.example with an Azure Container Apps step. All third-party actions SHA-pinned and within the enterprise allow-list.\n",
+    "title": "Azure Web App deploy: zip path for dev/uat/prod plus the container path example"
+  },
+  "shardHash": "cc22e8a7853464789602b1dba86d2577a03559f2c94786de04492d87749bdc12",
+  "specVersion": "1.1.0"
+}

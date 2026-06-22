@@ -3,10 +3,10 @@
 > Architectural blueprint: execution flows, service graph, API surfaces, and component relationships.
 > For developer onboarding and AI agent context. Reduces codebase to ~5% of tokens, ~90% of understanding.
 >
-> **Backend = Encore.ts.** The Express 5 BFF was retired in the Encore migration (specs 048 to 054).
-> The authoritative backend specs are `specs/048-encore-app-architecture` (layout + service decomposition)
-> and `specs/049-preserved-migration-invariants` (the security/data invariant freeze). This document is a
-> governed view of those specs; spec 055 activates the doc/spec coupling that keeps it from drifting.
+> **Backend = Encore.ts.** The Express 5 BFF was retired in the Encore migration (specs 001 to 006).
+> The authoritative backend specs are `specs/001-encore-app-architecture` (layout + service decomposition)
+> and `specs/002-security-data-invariants` (the security/data invariant freeze). This document is a
+> governed view of those specs; spec 020 activates the doc/spec coupling that keeps it from drifting.
 
 ---
 
@@ -32,28 +32,28 @@ vue-encore-enterprise-template/
 │   │   └── src/
 │   │       ├── main.ts            ← ENTRY POINT (frontend)
 │   │       ├── router/            Routes + nav guards
-│   │       ├── stores/            Pinia auth state (Encore-adapted; spec 052)
+│   │       ├── stores/            Pinia auth state (Encore-adapted; spec 006)
 │   │       ├── views/             Page components
 │   │       ├── components/        Layout (header/footer or sidebar) built on PrimeVue
-│   │       └── lib/               encore-client.ts (committed typed client reference; spec 052/054)
+│   │       └── lib/               encore-client.ts (committed typed client reference; spec 006)
 │   │
 │   └── web-internal/              Vue 3 SPA: internal/staff (same shape as web)
 │
 ├── packages/                      Reusable libraries (NOT consumed by the Encore backend)
 │   └── shared/                    Types, Zod schemas, constants (declared by the SPAs)
 │
-├── orchestration/, scripts/, modules/   App generator + module system (Encore; reconciled in specs 058-064)
+├── orchestration/, scripts/, modules/   App generator + module system (Encore; reconciled in specs 007-010)
 ├── docker/                        Encore self-host docker-compose + container guide (README)
 ├── docs/                          Auth, deployment, development, testing, troubleshooting
-├── specs/                         Spec spine: authoritative design record (000 to 065)
+├── specs/                         Spec spine: authoritative design record (000 to 020)
 └── .env.example                   Root dev config template (legacy); see apps/api/.env.example
 ```
 
 > **Standalone backend.** `apps/api` has its own `package-lock.json` and `node_modules` and is
 > **excluded** from the root npm workspaces (`apps/web`, `apps/web-internal`, `packages/*`). It imports
 > no `@template/*` package; the security primitives it needs live in `apps/api/lib`. `packages/` now holds
-> only `shared` (config and auth packages were retired in spec 064). The `orchestration/`/`scripts/`/`modules/`
-> generator and module system were reconciled to Encore in specs 058-064 and are governed by spec 055.
+> only `shared` (config and auth packages were retired in spec 008). The `orchestration/`/`scripts/`/`modules/`
+> generator and module system were reconciled to Encore in specs 007-010 and are governed by spec 020.
 
 ---
 
@@ -105,7 +105,7 @@ Frontend (apps/web, apps/web-internal) ═════════════�
   Vue 3 SPA ──► axios (+ encore-client.ts typed reference) ──► /api/v1/* (Vite proxy → :4000)
 
 Packages (reusable libs; NOT imported by apps/api) ════════════════════════
-  shared   types, Zod schemas, constants (config + auth packages retired in spec 064)
+  shared   types, Zod schemas, constants (config + auth packages retired in spec 008)
 ```
 
 **Service discovery**: each directory exporting `Service(...)` via `encore.service.ts` is a service.
@@ -142,7 +142,7 @@ const db = new SQLDatabase("app", { migrations: "./migrations" })
 //   path-traversal sanitisation → S2S OAuth Bearer (token-cache) → fetch private backend
 //   → 5xx masked to 502, timeout to 504, per-access audit.
 
-// === apps/web*/src/stores/auth.store.ts (Pinia; spec 052) ===
+// === apps/web*/src/stores/auth.store.ts (Pinia; spec 006) ===
 state: { user: User | null, loading: boolean, error: string | null }
 getters: { isAuthenticated: boolean, hasRole(role): boolean }
 actions: { fetchUser(), login(driver: string), logout(), checkStatus() }
@@ -220,7 +220,7 @@ response proxied back        5xx masked to 502, timeout to 504, per-access audit
 
 ```
 Frontend / packages          npm run build → build:packages (shared) → build:apps (web, web-internal)
-                             build:web emits into apps/api/web/build (served by the web service; spec 053)
+                             build:web emits into apps/api/web/build (served by the web service; spec 005)
 
 Backend (Encore)             npm run build:api → apps/api: docker build -f Dockerfile.base
                              → encore build docker --config infra.config.json --base <base>
@@ -335,7 +335,7 @@ Logging:  PII redaction (CC-006 guard in lib/logger.ts); LOG_PII must be false i
 Audit:    lib/audit.ts → audit_log, best-effort, never blocks the user flow (INV-8)
 ```
 
-Security/data invariants are frozen by **spec 049** (`preserved-migration-invariants`); `lib/` holds the
+Security/data invariants are frozen by **spec 002** (`security-data-invariants`); `lib/` holds the
 primitives, the services enforce them. AUTH-007 role-scoped **data** endpoints (INV-1) are a downstream
 obligation: this template ships no domain data services to scope.
 
@@ -409,7 +409,7 @@ if (hasRole('admin')) { /* show admin UI */ }
 8. **`/api/v1` prefix retained**: external SAML ACS URLs and the gateway contract stay stable across the migration.
 9. **Single deployable**: the `web` service serves the built SPA via `api.static`; one Encore app, port 4000.
 
-The security/data invariant freeze is **spec 049**; the architectural blueprint is **spec 048**.
+The security/data invariant freeze is **spec 002**; the architectural blueprint is **spec 001**.
 
 ---
 
@@ -468,8 +468,8 @@ colocate `foo.test.ts` next to `foo.ts`; run `encore check` for the backend grap
 | Doc | When to read |
 |-----|-------------|
 | `CODEMAP.md` | Architectural overview, security model, and customization map (start here) |
-| `specs/048-encore-app-architecture/spec.md` | Authoritative backend layout + service decomposition |
-| `specs/049-preserved-migration-invariants/spec.md` | The security/data invariant freeze (INV-1 to INV-11) |
+| `specs/001-encore-app-architecture/spec.md` | Authoritative backend layout + service decomposition |
+| `specs/002-security-data-invariants/spec.md` | The security/data invariant freeze (INV-1 to INV-11) |
 | `README.md` | First-time project setup and quick start |
 | `docs/AUTH-SETUP.md` | Configuring auth drivers (SAML, Entra ID, Mock) on Encore |
 | `docs/DEPLOYMENT.md` | Building and deploying the Encore app |
@@ -480,4 +480,4 @@ colocate `foo.test.ts` next to `foo.ts`; run `encore check` for the backend grap
 
 > The app generator (`orchestration/`, `scripts/`), module system (`modules/`), and their docs
 > (`docs/TEMPLATE-USER-GUIDE.md`, `docs/MODULARIZATION-*.md`, `docs/MODULE-DEVELOPMENT-GUIDE.md`,
-> `docs/DUAL-APP-GUIDE.md`) were reconciled to Encore in specs 058-064 and are governed by spec 055.
+> `docs/DUAL-APP-GUIDE.md`) were reconciled to Encore in specs 007-010 and are governed by spec 020.

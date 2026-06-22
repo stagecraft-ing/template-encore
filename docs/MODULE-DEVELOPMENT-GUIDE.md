@@ -303,7 +303,7 @@ modules/<name>/
 **Rules:**
 - All endpoints: `{ expose: true, auth: true }` + `requireRole(...)` (INV-1)
 - Database: tagged-template queries only (`db.query\`...\``); never `pg.Pool` or raw SQL strings (INV-2)
-- Import `db` from `../db/db` (the single shared `SQLDatabase("app")`, spec 048)
+- Import `db` from `../db/db` (the single shared `SQLDatabase("app")`, spec 001)
 - Errors: `APIError` with `{ code, message, details }`; never `{ success, data }` envelopes
 - Audit: call `logAuditEvent(...)` from `../lib/audit` on every mutation (INV-8, best-effort)
 - No `express-session` or session references anywhere

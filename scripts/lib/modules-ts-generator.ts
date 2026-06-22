@@ -11,7 +11,7 @@ function loadModuleManifest(projectRoot: string, moduleName: string) {
 }
 
 export function generateApiModulesTs(_projectRoot: string, _state: TemplateJson): string {
-  throw new Error('The Express backend module loader has been retired (spec 059). Encore composes services at compile time; the Encore-native generator lands in spec 058 P2. See specs/058-generator-module-encore-reconciliation/.')
+  throw new Error('The Express backend module loader has been retired (spec 008). Encore composes services at compile time; the Encore-native generator lands in spec 008. See specs/008-generator-module-encore-reconciliation/.')
 }
 
 export function generateWebModulesTs(

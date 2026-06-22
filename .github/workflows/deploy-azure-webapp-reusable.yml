@@ -3,11 +3,11 @@ name: Reusable Azure Web App Deployment (Encore-as-zip)
 # =================================================================
 # REUSABLE WORKFLOW: AZURE APP SERVICE (NODE ZIP) DEPLOYMENT
 # =================================================================
-# Spec: 057-deploy-reconciliation. The "today's continuity" half of the dual
+# Spec: 012-azure-webapp-deploy. The "today's continuity" half of the dual
 # deploy strategy: package the compiled Encore app as a Node deployment zip and
 # deploy it to Azure App Service for Linux, started with `node main.mjs`. The
 # "tomorrow's alignment" half is the Encore container path
-# (.github/workflows/encore-cd.yml.example, spec 054).
+# (.github/workflows/encore-cd.yml.example, spec 011).
 #
 # The zip carries the SCRAPED Encore artifact (main.mjs + encore-runtime.node),
 # the built public SPA (apps/api/web/build), and production node_modules. The

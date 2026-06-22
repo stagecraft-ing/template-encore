@@ -6,7 +6,7 @@ import * as model from "./model";
 import type { AppRole } from "./types";
 
 /**
- * Admin role-catalog CRUD (spec 061). app_role rows seeded as is_system cannot
+ * Admin role-catalog CRUD (spec 009). app_role rows seeded as is_system cannot
  * be deleted. Every endpoint is auth:true + requireRole("admin","user-manager").
  */
 

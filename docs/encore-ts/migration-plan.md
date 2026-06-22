@@ -1,6 +1,6 @@
 # Express → Encore.ts migration plan
 
-> **Provenance caveat (constitution Principle V; spec 058 FR-009).** This is a
+> **Provenance caveat (constitution Principle V; spec 008 FR-009).** This is a
 > migration *decision record* distilled from the source substrate
 > (`<source-project>/public/server`, with services such as `ai`,
 > `notifications`, `resources`). Its paths (`template/public/server/`,
@@ -8,7 +8,7 @@
 > backend is the standalone Encore app at `apps/api` (services `lib`, `db`,
 > `health`, `auth`, `gateway`, `web`). Read it as evidence/provenance, not as a
 > description of this repository; the authoritative architecture is `CODEMAP.md`
-> and specs 048 / 058.
+> and specs 001 / 008.
 
 Scope: replace Express.js in `template/public/server/` with a fully-qualified
 Encore.ts implementation while preserving functional parity. The client

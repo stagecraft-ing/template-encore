@@ -1,5 +1,5 @@
 /**
- * Tests for the Encore dual-app generator (spec 062 P4).
+ * Tests for the Encore dual-app generator (spec 010).
  *
  * wireInternalSpa is tested against a minimal fixture (fast); the full
  * setupDualApp is exercised once against the real template base (the same

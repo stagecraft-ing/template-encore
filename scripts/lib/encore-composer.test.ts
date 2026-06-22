@@ -1,5 +1,5 @@
 /**
- * Unit + integration tests for the Encore module-composition engine (spec 058 P2).
+ * Unit + integration tests for the Encore module-composition engine (spec 008).
  *
  * The pure functions are tested directly; the I/O wrappers (composeModule /
  * decomposeModule) are exercised against a temp apps/api fixture seeded with
@@ -365,11 +365,11 @@ describe('decomposeModule — sibling modules with colliding migration tails', (
   })
 })
 
-// ─── JSONC: encore.app CORS merge preserves comments (spec 061 P3) ─────────
+// ─── JSONC: encore.app CORS merge preserves comments (spec 009) ────────────
 //
 // The real apps/api/encore.app is JSONC (carries `//` comments). The composer
 // must merge global_cors without stripping those comments or reformatting the
-// rest of the file (spec 060 left this fixture-only; spec 061 hardens it).
+// rest of the file (spec 008 left this fixture-only; spec 009 hardens it).
 
 describe('composeModule / decomposeModule — JSONC encore.app (comment-preserving)', () => {
   let tmp: string
@@ -446,7 +446,7 @@ describe('composeModule / decomposeModule — JSONC encore.app (comment-preservi
   })
 })
 
-// ─── security: path-traversal guards (spec 058 P2) ─────────────────────────
+// ─── security: path-traversal guards (spec 008) ─────────────────────────────
 
 describe('composeModule — path-traversal guards', () => {
   let tmp: string

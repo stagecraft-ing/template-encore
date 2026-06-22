@@ -102,10 +102,10 @@ export function readRealManifest(moduleName: string): Record<string, unknown> {
   ) as Record<string, unknown>
 }
 
-// The auth-* / service-auth modules were retired in spec 061 (auth-driver
+// The auth-* / service-auth modules were retired in spec 009 (auth-driver
 // selection is configuration over the in-app drivers, not file-copy modules).
 // These four are the surviving cross-cutting/infra modules; their own Encore
-// reconciliation is staged by the taxonomy (spec 058), not P3.
+// reconciliation is staged by the taxonomy (spec 008), not P3.
 export const ALL_MODULE_NAMES = [
   'api-gateway',
   'data-postgres',

@@ -3,8 +3,8 @@
 > Architectural blueprint: execution flows, service graphs, API surfaces, and component relationships.
 > For developer onboarding and AI agent context. Reduces codebase to ~5% of tokens, ~90% of understanding.
 >
-> **Backend = Encore.ts.** The Express 5 BFF was retired in the Encore migration (specs 048 to 054).
-> Dual-app = **two independent, standalone Encore apps** (spec 062 Option A). Each has its own
+> **Backend = Encore.ts.** The Express 5 BFF was retired in the Encore migration (specs 001 to 006).
+> Dual-app = **two independent, standalone Encore apps** (spec 010 Option A). Each has its own
 > Gateway, authHandler, secrets, and deploy boundary. There are no shared `api-public`/`api-internal`
 > Express servers, no `session-store` modules, and no runtime plugin-chain loader.
 

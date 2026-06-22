@@ -6,7 +6,7 @@ import * as model from "./model";
 import type { AppRole, UserSummary } from "./types";
 
 /**
- * Admin user surface (spec 061): list/get/update users + role assignment.
+ * Admin user surface (spec 009): list/get/update users + role assignment.
  * Every endpoint is auth:true and any-of requireRole("admin","user-manager")
  * (INV-1). Errors are APIError (the { code, message, details } shape).
  */

@@ -90,7 +90,7 @@ describe("auth store", () => {
 ```
 
 Use a fresh `createPinia()` per test and mock the HTTP layer. The store reads bare payloads and Encore
-`{ code, message, details }` errors (spec 052).
+`{ code, message, details }` errors (spec 006).
 
 ```bash
 npm test                                   # all workspaces
@@ -136,7 +136,7 @@ Encore API on port 4000 through the Vite proxy.
 
 > The `scripts/integration/` suites (`cli.test.ts`, `profiles.test.ts`) test the **module-management
 > generator** (`add-module.ts` / `remove-module.ts` / `validate-modules.ts`), which is Encore-native
-> (reconciled in specs 058-063). They spawn the scripts as subprocesses against a temporary sandbox and
+> (reconciled in specs 007-010). They spawn the scripts as subprocesses against a temporary sandbox and
 > exercise the generated Encore composition, not the running Encore app.
 
 ```bash
@@ -149,7 +149,7 @@ CI is provided by the spec spine and the Encore app workflows; there is no hand-
 
 - **`.github/workflows/ci.yml`** (spine orchestrator): Rust build/clippy/test, spec-lint, codebase-index
   staleness, spec/code coupling, supply-chain, AI PR review. Aggregated into the required `ci-gate`.
-- **`.github/workflows/encore-ci.yml`** (spec 054): `web` (type-check both SPAs + `build:web`), `api`
+- **`.github/workflows/encore-ci.yml`** (spec 011): `web` (type-check both SPAs + `build:web`), `api`
   (`encore check`), `client-staleness` (regenerate the typed client and fail on drift). Currently advisory;
   promotion to a required gate is tracked separately.
 

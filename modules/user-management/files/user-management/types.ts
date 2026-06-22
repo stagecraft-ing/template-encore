@@ -1,5 +1,5 @@
 /**
- * User-management API types (spec 061). Response shapes are bare payloads
+ * User-management API types (spec 009). Response shapes are bare payloads
  * (no { success, data } envelope) — the Express envelope is retired.
  */
 

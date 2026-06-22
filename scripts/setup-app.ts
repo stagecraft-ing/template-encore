@@ -93,7 +93,7 @@ const SKIP_OUTPUT_DIRS = new Set(['dist', 'build'])
 
 // Template-relative directory paths that must be kept even though their
 // basename ('build'/'dist') would otherwise be skipped. apps/api/web/build is a
-// committed SPA placeholder (spec 053): the `web` service serves it via
+// committed SPA placeholder (spec 005): the `web` service serves it via
 // api.static({ dir: "./build", notFound: "./build/index.html" }) so the
 // pre-build `encore run` flow has an index.html to fall back to.
 const KEEP_PATHS = new Set(['apps/api/web/build'])

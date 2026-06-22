@@ -237,7 +237,7 @@ type ModuleManifest = z.infer<typeof manifestSchema>
 {
   "name": "user-management",
   "version": "2.0.0",
-  "description": "App-managed user + role CRUD as an Encore service (spec 061)",
+  "description": "App-managed user + role CRUD as an Encore service (spec 009)",
   "status": "stable",
   "requires": [],
   "conflicts": [],
@@ -407,7 +407,7 @@ Algorithm:
 3. For each installed module with a `webSnippetFile`: read the snippet from `modules/<name>/<webSnippetFile>`, extract import lines (deduplicated), extract non-import body lines
 4. Returns `null` if no modules with snippets are installed (caller deletes the file)
 
-**There is no `generateApiModulesTs` function.** The Express backend loader that emitted `registerAllModules(app: Express)` was retired in spec 059. There is no `apps/api/src/modules.ts` and no equivalent generated file in the Encore backend.
+**There is no `generateApiModulesTs` function.** The Express backend loader that emitted `registerAllModules(app: Express)` was retired in spec 008. There is no `apps/api/src/modules.ts` and no equivalent generated file in the Encore backend.
 
 ### 6b. Env-var merger
 
@@ -521,11 +521,11 @@ The 13 original Express modules have been reduced to 5 remaining modules with cl
 |--------|-------------------|-----------------|
 | `user-management` | Self-contained Encore service directory | Owned by the module (app_role, user_role tables; admin endpoints) |
 | `security-core` | Thin declarative overlay | Already in `apps/api/lib` (security headers, rate-limit, csrf, logger) |
-| `api-gateway` | Thin declarative overlay | Already in `apps/api/gateway` (spec 051); module contributes secrets + ConnectivityTestView |
+| `api-gateway` | Thin declarative overlay | Already in `apps/api/gateway` (spec 004); module contributes secrets + ConnectivityTestView |
 | `data-postgres` | Thin declarative overlay | Already in `apps/api/db` (`SQLDatabase("app")`); module documents env knobs |
 | `data-redis` | Thin declarative overlay | Rate-limit backend only (`REDIS_URL` in `lib/rate-limit`); module declares the env var |
 
-**Retired** (spec 059/061):
+**Retired** (spec 008/009):
 
 | Module | Retirement reason |
 |--------|------------------|
@@ -536,7 +536,7 @@ The 13 original Express modules have been reduced to 5 remaining modules with cl
 | `auth-mock` | Driver ships in `apps/api/auth/mock.ts`; selected by `AUTH_DRIVER=mock` |
 | `auth-entra-id` | Driver ships in `apps/api/auth/entra-id.ts`; selected by `AUTH_DRIVER=entra-id` |
 | `auth-saml` | Driver ships in `apps/api/auth/saml.ts`; selected by `AUTH_DRIVER=saml` |
-| `service-auth` | S2S OAuth lives in `apps/api/gateway/token-cache.ts` (spec 051) |
+| `service-auth` | S2S OAuth lives in `apps/api/gateway/token-cache.ts` (spec 004) |
 
 ---
 

@@ -1,9 +1,9 @@
 /**
- * User-management data-access layer (spec 061).
+ * User-management data-access layer (spec 009).
  *
  * Tagged-template queries only (INV-2): interpolated ${…} values are
  * auto-parameterized, never string-concatenated. Queries run against the
- * single shared SQLDatabase("app") (spec 048), importing `db` from ../db/db.
+ * single shared SQLDatabase("app") (spec 001), importing `db` from ../db/db.
  */
 
 import { db } from "../db/db";

@@ -3,17 +3,17 @@
  *
  * The Express profile-composition tests (public/private/dual auth-module
  * installs, the @template/auth index, the AUTH-003 / dual-app-controller /
- * service-auth blocks) were removed in spec 061: those modules are retired and
+ * service-auth blocks) were removed in spec 009: those modules are retired and
  * Encore profile selection (AUTH_DRIVER + infra.config secrets) is covered by
  * scripts/setup-app.test.ts. The Express dual-BFF auth surfaces
  * (bff-auth.middleware.ts / requireBffOrSessionAuth / req.session /
  * x-forwarded-user) were retired with the orchestration-doc reconciliation
- * (spec 063): there is no BFF proxy passing forwarded identity headers under
+ * (spec 007): there is no BFF proxy passing forwarded identity headers under
  * Encore; the authHandler populates AuthData for every authenticated caller.
  * The AUTH-007 obligation survives in Encore form and the guards below assert
  * the reconciled docs teach it. The ESLint-rule and validate-modules guards are
  * runtime-agnostic and retained as-is. The migrate.ts and validate-env.ts
- * guards were dropped with those Express-era files in spec 064.
+ * guards were dropped with those Express-era files in spec 008.
  */
 import * as fs from 'node:fs'
 import * as path from 'node:path'
@@ -268,7 +268,7 @@ describe('validate-modules.ts structural checks', () => {
 // endpoints (consumed by both private-authenticated staff and public-authenticated
 // external pages) and require the Encore three-part fix: auth:true, requireRole with
 // all roles, and service-layer query scoping. The Express bff-auth.middleware
-// mechanism is retired (spec 063).
+// mechanism is retired (spec 007).
 
 describe('AUTH-007 (Encore) regression: template-orchestrator.md feature planning', () => {
   const orchSrc = path.join(PROJECT_ROOT, 'orchestration', 'template-orchestrator.md')

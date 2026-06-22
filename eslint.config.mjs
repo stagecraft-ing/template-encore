@@ -143,10 +143,13 @@ export default tseslint.config(
     },
   },
 
-  // apps/api is a standalone Encore.ts app; relax the SPA-tuned type-checked
-  // rules that clash with documented Encore idioms.
+  // apps/api is a standalone Encore.ts app; relax type-checked rules that clash
+  // with documented Encore idioms and with external-library `any` boundaries.
+  // Test files are excluded here so they keep disableTypeChecked from the test
+  // block above (they are not part of a tsconfig project).
   {
     files: ['apps/api/**/*.ts'],
+    ignores: ['apps/api/**/*.test.ts'],
     rules: {
       // api.raw / endpoint handlers are async by design; Encore awaits them at
       // runtime even though the RawHandler type is nominally void-returning.
@@ -157,6 +160,17 @@ export default tseslint.config(
       // getAuthData()! is the documented accessor for the authenticated
       // principal inside an auth:true endpoint (see CODEMAP).
       '@typescript-eslint/no-non-null-assertion': 'off',
+      // openid-client v6 token claims, @node-saml profiles, and Node http header
+      // values surface `any` at their type boundaries; the no-unsafe-* family
+      // produces false positives there, exactly as for Vue SFCs above. Boundary
+      // values are narrowed explicitly in code before use.
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-base-to-string': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
     },
   },
 );

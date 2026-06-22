@@ -1,136 +1,110 @@
-import jwt, { type SignOptions } from "jsonwebtoken";
-import crypto from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
+/**
+ * RS256 JWT issuance and verification (INV-7).
+ *
+ * Access tokens are short-lived (15 min). Refresh tokens are long-lived (7 day)
+ * but only meaningful when their SHA-256 hash is present and unrevoked in the
+ * refresh_token table; this module mints and verifies the signature, while
+ * rotation and revocation live in auth/refresh-token-model.ts.
+ */
+import { createHash, randomUUID } from "node:crypto";
+import jwt from "jsonwebtoken";
+import type { JwtPayload } from "jsonwebtoken";
 import {
-  jwtPrivateKey,
-  jwtPublicKey,
-  jwtRefreshPrivateKey,
-  jwtRefreshPublicKey,
-  csrfSecret,
+  accessPrivateKey,
+  accessPublicKey,
+  refreshPrivateKey,
+  refreshPublicKey,
 } from "./secrets";
 
-/**
- * RS256 JWT signing + verification for the auth flow.
- *
- * Key sources, in order:
- *   1. Encore secret() bindings (production — from the secrets manager).
- *   2. PEM files in apps/api/keys/ (dev — created by `npm run generate-keys`).
- *
- * If both are absent, signing throws at first use with a clear error.
- *
- * The access token carries the full role set (`roles: string[]`) so the auth
- * handler can populate AuthData without a DB round-trip on every request —
- * this preserves the Express app's multi-role model (AuthUser.roles).
- */
+const ISSUER = "vue-encore-enterprise-template";
+const AUDIENCE = "vue-encore-spa";
+const ACCESS_TTL_SECONDS = 15 * 60;
+const REFRESH_TTL_SECONDS = 7 * 24 * 60 * 60;
 
-const KEYS_DIR = path.resolve(process.cwd(), "keys");
-
-function loadKey(secretFn: () => string, filename: string): string {
-  // 1. Encore secret takes precedence — a non-empty PEM means production wiring.
-  try {
-    const fromSecret = secretFn();
-    if (fromSecret && fromSecret.startsWith("-----BEGIN")) return fromSecret;
-  } catch {
-    // Encore throws if the secret is unset; fall through to PEM file lookup.
-  }
-  // 2. PEM file in apps/api/keys/ (dev convenience).
-  const keyPath = path.join(KEYS_DIR, filename);
-  if (fs.existsSync(keyPath)) {
-    return fs.readFileSync(keyPath, "utf-8");
-  }
-  return "";
-}
-
-const ACCESS_PRIVATE = () => loadKey(jwtPrivateKey, "jwt-private.pem");
-const ACCESS_PUBLIC = () => loadKey(jwtPublicKey, "jwt-public.pem");
-const REFRESH_PRIVATE = () => loadKey(jwtRefreshPrivateKey, "jwt-refresh-private.pem");
-const REFRESH_PUBLIC = () => loadKey(jwtRefreshPublicKey, "jwt-refresh-public.pem");
-
-const JWT_ISSUER = "vue-encore-template";
-const JWT_AUDIENCE = "vue-encore-template-api";
-
-const JWT_ACCESS_EXPIRES_SECONDS = 15 * 60;
-const JWT_REFRESH_EXPIRES_SECONDS = 7 * 24 * 60 * 60;
-
-export interface JwtPayload {
-  sub: string;
+export interface AccessTokenClaims {
+  userID: string;
   email: string;
   name: string;
   roles: string[];
+  ssoProvider: string;
 }
 
-export function signAccessToken(payload: JwtPayload): string {
-  const options: SignOptions = {
-    expiresIn: JWT_ACCESS_EXPIRES_SECONDS,
-    algorithm: "RS256",
-    issuer: JWT_ISSUER,
-    audience: JWT_AUDIENCE,
-  };
+export interface RefreshTokenClaims {
+  userID: string;
+  jti: string;
+}
+
+export interface SignedRefreshToken {
+  token: string;
+  jti: string;
+  expiresAt: Date;
+}
+
+export async function signAccessToken(claims: AccessTokenClaims): Promise<string> {
   return jwt.sign(
     {
-      sub: payload.sub,
-      email: payload.email,
-      name: payload.name,
-      roles: payload.roles,
+      email: claims.email,
+      name: claims.name,
+      roles: claims.roles,
+      ssoProvider: claims.ssoProvider,
     },
-    ACCESS_PRIVATE(),
-    options
+    accessPrivateKey(),
+    {
+      algorithm: "RS256",
+      subject: claims.userID,
+      issuer: ISSUER,
+      audience: AUDIENCE,
+      expiresIn: ACCESS_TTL_SECONDS,
+    },
   );
 }
 
-export function signRefreshToken(userId: string): string {
-  const options: SignOptions = {
-    expiresIn: JWT_REFRESH_EXPIRES_SECONDS,
+export async function signRefreshToken(userID: string): Promise<SignedRefreshToken> {
+  const jti = randomUUID();
+  const token = jwt.sign({}, refreshPrivateKey(), {
     algorithm: "RS256",
-    issuer: JWT_ISSUER,
-    audience: JWT_AUDIENCE,
+    subject: userID,
+    jwtid: jti,
+    issuer: ISSUER,
+    audience: AUDIENCE,
+    expiresIn: REFRESH_TTL_SECONDS,
+  });
+  return { token, jti, expiresAt: new Date(Date.now() + REFRESH_TTL_SECONDS * 1000) };
+}
+
+export async function verifyAccessToken(token: string): Promise<AccessTokenClaims> {
+  const payload = jwt.verify(token, accessPublicKey(), {
+    algorithms: ["RS256"],
+    issuer: ISSUER,
+    audience: AUDIENCE,
+  }) as JwtPayload;
+  return {
+    userID: typeof payload.sub === "string" ? payload.sub : "",
+    email: typeof payload.email === "string" ? payload.email : "",
+    name: typeof payload.name === "string" ? payload.name : "",
+    roles: Array.isArray(payload.roles) ? (payload.roles as string[]) : [],
+    ssoProvider: typeof payload.ssoProvider === "string" ? payload.ssoProvider : "",
   };
-  return jwt.sign({ sub: userId, type: "refresh" }, REFRESH_PRIVATE(), options);
 }
 
-export function verifyAccessToken(token: string): JwtPayload {
-  const decoded = jwt.verify(token, ACCESS_PUBLIC(), {
+export async function verifyRefreshToken(token: string): Promise<RefreshTokenClaims> {
+  const payload = jwt.verify(token, refreshPublicKey(), {
     algorithms: ["RS256"],
-    issuer: JWT_ISSUER,
-    audience: JWT_AUDIENCE,
-  }) as JwtPayload & { roles?: string[] };
-  // Tolerate tokens minted without a roles claim — treat as no roles.
-  return { ...decoded, roles: decoded.roles ?? [] };
+    issuer: ISSUER,
+    audience: AUDIENCE,
+  }) as JwtPayload;
+  return {
+    userID: typeof payload.sub === "string" ? payload.sub : "",
+    jti: typeof payload.jti === "string" ? payload.jti : "",
+  };
 }
 
-export function verifyRefreshToken(token: string): { sub: string; type: string } {
-  return jwt.verify(token, REFRESH_PUBLIC(), {
-    algorithms: ["RS256"],
-    issuer: JWT_ISSUER,
-    audience: JWT_AUDIENCE,
-  }) as { sub: string; type: string };
+/** Distinguishes an expired access token so the handler can surface TOKEN_EXPIRED. */
+export function isTokenExpiredError(err: unknown): boolean {
+  return err instanceof jwt.TokenExpiredError;
 }
 
-/** sha256(token) — used to hash refresh tokens before storing in the DB. */
-export function hashToken(token: string): string {
-  return crypto.createHash("sha256").update(token).digest("hex");
+/** Only the SHA-256 hash of a refresh token is ever persisted (INV-7). */
+export function hashRefreshToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
 }
-
-/** Random 32-byte hex token — OAuth state, refresh-token IDs, etc. */
-export function generateRandomToken(): string {
-  return crypto.randomBytes(32).toString("hex");
-}
-
-/**
- * Generate a CSRF token: `<hmacSig>.<timestamp>`, signed with CSRF_SECRET.
- * The middleware compares the token verbatim to the cookie value via
- * crypto.timingSafeEqual.
- */
-export function generateCsrfToken(sessionId?: string): string {
-  const timestamp = Date.now().toString();
-  const id = sessionId || crypto.randomBytes(16).toString("hex");
-  const signature = crypto
-    .createHmac("sha256", csrfSecret())
-    .update(id + timestamp)
-    .digest("hex");
-  return `${signature}.${timestamp}`;
-}
-
-/** Re-export the keys dir so generate-keys.ts writes where the loader reads. */
-export const JWT_KEYS_DIR = KEYS_DIR;

@@ -1,61 +1,38 @@
-import { db } from "../db/db";
-import logger from "./logger";
-
 /**
- * Audit logging — writes immutable records into the `audit_log` table
- * (migration in db/migrations). New durable-audit capability enabled by the
- * SQLDatabase added in the migration; the Express app only had log-based
- * security events (still available via logSecurityEvent in lib/logger.ts).
- *
- * Failures are swallowed and logged but never propagate to the caller, so an
- * audit-table outage cannot break the user flow.
+ * Durable audit trail writer (INV-8). Writes are best-effort and must never
+ * block or fail the user flow: a write error is logged and swallowed. Unlike the
+ * log stream (lib/logger.ts), the audit table intentionally records actor
+ * identity, which is its purpose as a compliance artifact.
  */
+import { db } from "../db/db";
+import { logSecurityEvent } from "./logger";
 
-export type AuditAction =
-  | "LOGIN"
-  | "LOGOUT"
-  | "LOGIN_FAILED"
-  | "TOKEN_REFRESH"
-  | "INSERT"
-  | "UPDATE"
-  | "DELETE";
-
-export interface AuditEvent {
-  action: AuditAction;
-  tableName: string;
+export interface AuditEntry {
+  action: string;
+  tableName?: string;
   recordId?: string;
-  userId?: string;
-  ipAddress?: string | null;
-  userAgent?: string | null;
-  oldData?: Record<string, unknown> | null;
-  newData?: Record<string, unknown> | null;
-  metadata?: Record<string, unknown>;
+  oldData?: unknown;
+  newData?: unknown;
+  actorId?: string;
+  actorEmail?: string;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
-export async function logAuditEvent(event: AuditEvent): Promise<void> {
+export async function writeAudit(entry: AuditEntry): Promise<void> {
+  const oldJson = entry.oldData === undefined ? null : JSON.stringify(entry.oldData);
+  const newJson = entry.newData === undefined ? null : JSON.stringify(entry.newData);
   try {
-    const newJson =
-      event.newData || event.metadata
-        ? JSON.stringify({ ...(event.newData || {}), ...(event.metadata || {}) })
-        : null;
-    const oldJson = event.oldData ? JSON.stringify(event.oldData) : null;
-
     await db.exec`
-      INSERT INTO audit_log (
-        table_name, record_id, action, old_data, new_data,
-        user_id, ip_address, user_agent
-      ) VALUES (
-        ${event.tableName},
-        ${event.recordId ?? null},
-        ${event.action},
-        ${oldJson},
-        ${newJson},
-        ${event.userId ?? null},
-        ${event.ipAddress ?? null},
-        ${event.userAgent ?? null}
-      )
+      INSERT INTO audit_log
+        (action, table_name, record_id, old_data, new_data, actor_id, actor_email, ip_address, user_agent)
+      VALUES
+        (${entry.action}, ${entry.tableName ?? null}, ${entry.recordId ?? null},
+         ${oldJson}::jsonb, ${newJson}::jsonb,
+         ${entry.actorId ?? null}, ${entry.actorEmail ?? null},
+         ${entry.ipAddress ?? null}, ${entry.userAgent ?? null})
     `;
-  } catch (err) {
-    logger.error(err, "Audit logging failed", { action: event.action });
+  } catch {
+    logSecurityEvent("audit.write_failed", { action: entry.action });
   }
 }

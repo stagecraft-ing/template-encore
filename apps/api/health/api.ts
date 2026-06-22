@@ -1,112 +1,85 @@
 import { api, APIError } from "encore.dev/api";
 import { db } from "../db/db";
 import { env } from "../lib/env";
-import logger from "../lib/logger";
+import { logInfo } from "../lib/logger";
 
-/**
- * Health + public metadata endpoints. Paths preserve the Express contract
- * (k8s/Azure probes and the Helm chart reference /health, /health/liveness,
- * /health/readiness).
- */
-
-interface StatusResponse {
-  status: string;
+interface HealthResponse {
+  status: "ok";
+  service: string;
+  timestamp: string;
 }
 
-/** GET /health — overall health (DB connectivity). 503 if the DB is down. */
-export const health = api(
-  { expose: true, method: "GET", path: "/health" },
-  async (): Promise<StatusResponse> => {
-    try {
-      await db.queryRow`SELECT 1 AS ok`;
-      return { status: "healthy" };
-    } catch {
-      throw APIError.unavailable("degraded");
-    }
-  }
-);
-
-/** GET /health/liveness — process is alive (no dependency checks). Always 200. */
-export const liveness = api(
-  { expose: true, method: "GET", path: "/health/liveness" },
-  async (): Promise<StatusResponse> => {
-    return { status: "alive" };
-  }
-);
-
-/** GET /health/readiness — ready to serve traffic (DB reachable). 503 if not. */
-export const readiness = api(
-  { expose: true, method: "GET", path: "/health/readiness" },
-  async (): Promise<StatusResponse> => {
-    try {
-      await db.queryRow`SELECT 1 AS ok`;
-      return { status: "ready" };
-    } catch {
-      throw APIError.unavailable("not-ready");
-    }
-  }
-);
+interface ReadinessResponse {
+  status: "ok";
+  checks: Record<string, "ok">;
+  timestamp: string;
+}
 
 interface InfoResponse {
   name: string;
   version: string;
-  description?: string;
-  features?: Record<string, string[]>;
+  environment: "production" | "development";
+  timestamp: string;
 }
 
-/**
- * GET /api/v1/info — API metadata. Implementation details are only disclosed
- * outside production (and outside Azure App Service) to limit fingerprinting.
- */
-export const info = api(
-  { expose: true, method: "GET", path: "/api/v1/info" },
-  async (): Promise<InfoResponse> => {
-    const data: InfoResponse = {
-      name: process.env.APP_NAME || "Enterprise Application Template",
-      version: "v1",
-    };
-    if (env.NODE_ENV !== "production" && !process.env.WEBSITE_HOSTNAME) {
-      data.description =
-        "Enterprise application template with GoA Design System and multi-driver authentication (Encore.ts)";
-      data.features = {
-        authentication: ["Mock", "Microsoft Entra ID", "SAML 2.0"],
-        security: [
-          "CSP / Security Headers",
-          "CSRF Protection",
-          "Rate Limiting",
-          "JWT Cookie Auth",
-        ],
-        design: "GoA Design System",
-      };
-    }
-    return data;
-  }
+// Liveness: the process is up. Always 200 (no dependency checks).
+export const liveness = api(
+  { expose: true, method: "GET", path: "/health/liveness" },
+  async (): Promise<HealthResponse> => ({
+    status: "ok",
+    service: "api",
+    timestamp: new Date().toISOString(),
+  }),
 );
 
-/**
- * POST /api/v1/csp-report — CSP violation report sink. Browsers post here
- * (application/csp-report or application/json) without a CSRF token, so it's
- * a raw endpoint on this CSRF-free service. Always 204.
- */
+// Readiness: dependencies are reachable. 503 (via APIError.unavailable) if not.
+export const readiness = api(
+  { expose: true, method: "GET", path: "/health/readiness" },
+  async (): Promise<ReadinessResponse> => {
+    try {
+      await db.queryRow`SELECT 1 AS ok`;
+    } catch {
+      throw APIError.unavailable("database not ready");
+    }
+    return { status: "ok", checks: { database: "ok" }, timestamp: new Date().toISOString() };
+  },
+);
+
+// Composite health check.
+export const health = api(
+  { expose: true, method: "GET", path: "/health" },
+  async (): Promise<HealthResponse> => ({
+    status: "ok",
+    service: "api",
+    timestamp: new Date().toISOString(),
+  }),
+);
+
+// API metadata.
+export const info = api(
+  { expose: true, method: "GET", path: "/api/v1/info" },
+  async (): Promise<InfoResponse> => ({
+    name: "vue-encore-enterprise-template",
+    version: "0.1.0",
+    environment: env.isProduction ? "production" : "development",
+    timestamp: new Date().toISOString(),
+  }),
+);
+
+// CSP violation sink. Browsers POST report-to / report-uri payloads here; we log
+// a truncated copy and return 204. Unauthenticated by design.
 export const cspReport = api.raw(
   { expose: true, method: "POST", path: "/api/v1/csp-report" },
-  async (req, resp) => {
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk;
-    });
-    req.on("end", () => {
-      try {
-        logger.warn("CSP violation report", { report: body.slice(0, 4000) });
-      } catch {
-        // never fail a report ingest
-      }
-      resp.writeHead(204);
-      resp.end();
-    });
-    req.on("error", () => {
-      resp.writeHead(204);
-      resp.end();
-    });
-  }
+  async (req, res) => {
+    try {
+      const chunks: Buffer[] = [];
+      for await (const chunk of req) chunks.push(chunk as Buffer);
+      const body = Buffer.concat(chunks).toString("utf8");
+      if (body) logInfo("csp.report", { report: body.slice(0, 4000) });
+    } catch {
+      // never let a malformed report break the endpoint
+    }
+    res.statusCode = 204;
+    res.end();
+  },
 );

@@ -1,33 +1,18 @@
-import { api } from "encore.dev/api";
-import { generateCsrfToken } from "../lib/jwt";
-import { serializeCookie } from "../lib/cookies";
-import { COOKIE_NAMES, csrfCookieOptions } from "../lib/cookie-config";
-
 /**
- * GET /api/v1/auth/csrf-token
- *
- * Generates a fresh CSRF token, sets it on an httpOnly cookie, and returns the
- * same value in the response body. The client keeps the body value in memory
- * and echoes it in the X-CSRF-Token header on state-changing requests; the
- * CSRF middleware double-submit-checks header vs cookie via timingSafeEqual.
- *
- * api.raw because typed api() endpoints have no Set-Cookie response shape.
+ * GET /api/v1/auth/csrf-token: issue a CSRF token (spec 002 INV-4, spec 006 FR-002).
+ * Sets the httpOnly csrf cookie and returns the same token in the body so the SPA
+ * can replay it as the X-CSRF-Token header on state-changing requests.
  */
-interface CsrfTokenResponse {
-  token: string;
-}
+import { api } from "encore.dev/api";
+import { generateCsrfToken } from "../lib/csrf";
+import { setCsrfCookie } from "../lib/cookies";
+import { writeJson } from "./http";
 
-export const getCsrfToken = api.raw(
+export const csrfToken = api.raw(
   { expose: true, method: "GET", path: "/api/v1/auth/csrf-token" },
-  async (_req, resp) => {
+  async (_req, res) => {
     const token = generateCsrfToken();
-    const cookie = serializeCookie(COOKIE_NAMES.CSRF_TOKEN, token, csrfCookieOptions);
-
-    resp.setHeader("Content-Type", "application/json");
-    resp.setHeader("Set-Cookie", cookie);
-
-    const body: CsrfTokenResponse = { token };
-    resp.writeHead(200);
-    resp.end(JSON.stringify(body));
-  }
+    setCsrfCookie(res, token);
+    writeJson(res, 200, { token });
+  },
 );

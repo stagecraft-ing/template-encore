@@ -1,49 +1,52 @@
-import { db } from "../db/db";
-import type { RefreshTokenRecord } from "./types";
-
 /**
- * Refresh-token persistence — hashed tokens only (never the raw JWT).
- * Rotation: refreshAccessToken() in service.ts issues a new token and revokes
- * the old one in the same round-trip.
+ * Refresh-token persistence (INV-7). Only the SHA-256 hash of a token is stored;
+ * rotation marks the presented token revoked and links it to its replacement.
+ * Parameterized queries only (INV-2).
  */
+import { db } from "../db/db";
+import { hashRefreshToken } from "../lib/jwt";
 
-export async function create(
-  userId: string,
-  tokenHash: string,
-  expiresAt: Date
-): Promise<RefreshTokenRecord> {
-  const row = await db.queryRow<RefreshTokenRecord>`
-    INSERT INTO refresh_token (fk_user_account, token_hash, expires_at)
-    VALUES (${userId}, ${tokenHash}, ${expiresAt.toISOString()})
-    RETURNING *
-  `;
-  if (!row) throw new Error("refresh_token: INSERT … RETURNING produced no row");
-  return row;
+export interface StoredRefreshToken {
+  id: string;
+  user_id: string;
 }
 
-export async function findByHash(
-  tokenHash: string
-): Promise<RefreshTokenRecord | null> {
-  const row = await db.queryRow<RefreshTokenRecord>`
-    SELECT * FROM refresh_token
-    WHERE token_hash = ${tokenHash}
-      AND revoked_at IS NULL
-      AND expires_at > NOW()
+export async function storeRefreshToken(params: {
+  userID: string;
+  token: string;
+  expiresAt: Date;
+  userAgent?: string;
+  ipAddress?: string;
+}): Promise<string> {
+  const hash = hashRefreshToken(params.token);
+  const row = await db.queryRow<{ id: string }>`
+    INSERT INTO refresh_token (user_id, token_hash, expires_at, user_agent, ip_address)
+    VALUES (${params.userID}, ${hash}, ${params.expiresAt}, ${params.userAgent ?? null}, ${params.ipAddress ?? null})
+    RETURNING id
   `;
-  return row ?? null;
+  return (row as { id: string }).id;
 }
 
-export async function revoke(tokenHash: string): Promise<void> {
+export async function findActiveRefreshToken(token: string): Promise<StoredRefreshToken | null> {
+  const hash = hashRefreshToken(token);
+  return db.queryRow<StoredRefreshToken>`
+    SELECT id, user_id
+    FROM refresh_token
+    WHERE token_hash = ${hash} AND revoked_at IS NULL AND expires_at > now()
+  `;
+}
+
+export async function revokeRefreshToken(id: string, replacedBy?: string): Promise<void> {
   await db.exec`
-    UPDATE refresh_token SET revoked_at = NOW()
-     WHERE token_hash = ${tokenHash}
+    UPDATE refresh_token
+    SET revoked_at = now(), replaced_by = ${replacedBy ?? null}
+    WHERE id = ${id} AND revoked_at IS NULL
   `;
 }
 
-export async function revokeAllForUser(userId: string): Promise<void> {
+export async function revokeAllUserTokens(userID: string): Promise<void> {
   await db.exec`
-    UPDATE refresh_token SET revoked_at = NOW()
-     WHERE fk_user_account = ${userId}
-       AND revoked_at IS NULL
+    UPDATE refresh_token SET revoked_at = now()
+    WHERE user_id = ${userID} AND revoked_at IS NULL
   `;
 }

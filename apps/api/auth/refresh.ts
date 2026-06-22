@@ -1,66 +1,47 @@
-import { api, APIError, ErrCode } from "encore.dev/api";
-import { readCookie, serializeCookie } from "../lib/cookies";
-import {
-  COOKIE_NAMES,
-  accessTokenCookieOptions,
-  refreshTokenCookieOptions,
-} from "../lib/cookie-config";
-import { refreshAccessToken } from "./service";
-import { logAuditEvent } from "../lib/audit";
-
 /**
- * POST /api/v1/auth/refresh
- *
- * Validates the refresh_token cookie, rotates it (revoke old + issue new), and
- * sets fresh access_token + refresh_token cookies on the response.
- *
- * CSRF-exempt (CSRF_EXEMPT_PATHS): the only credential consumed is the httpOnly
- * refresh cookie. SameSite=Lax + single-use rotation defends against replay —
- * an attacker can neither read the cookie (httpOnly) nor win the rotation race.
- *
- * api.raw to read the Cookie header and write multiple Set-Cookie headers.
+ * POST /api/v1/auth/refresh: rotate the token pair (spec 003 FR-004, INV-7).
+ * CSRF-exempt (it cannot carry a prior-issued token). Issues a new pair, revokes
+ * the presented refresh token, and writes a best-effort audit record.
  */
+import { api } from "encore.dev/api";
+import { verifyRefreshToken } from "../lib/jwt";
+import { REFRESH_COOKIE } from "../lib/cookie-config";
+import { clearAuthCookies, parseCookies, setAuthCookies } from "../lib/cookies";
+import { writeAudit } from "../lib/audit";
+import { clientIp, userAgent, writeJson } from "./http";
+import { findActiveRefreshToken, revokeRefreshToken } from "./refresh-token-model";
+import { getUserById } from "./user-model";
+import { issueTokenPair } from "./service";
+
+function deny(res: Parameters<typeof clearAuthCookies>[0], message: string): void {
+  clearAuthCookies(res);
+  writeJson(res, 401, { code: "unauthenticated", message });
+}
+
 export const refresh = api.raw(
   { expose: true, method: "POST", path: "/api/v1/auth/refresh" },
-  async (req, resp) => {
-    const refreshToken = readCookie(
-      req.headers["cookie"],
-      COOKIE_NAMES.REFRESH_TOKEN
-    );
+  async (req, res) => {
+    const presented = parseCookies(req.headers.cookie)[REFRESH_COOKIE];
+    if (!presented) return deny(res, "no refresh token");
 
-    if (!refreshToken) {
-      resp.writeHead(401, { "Content-Type": "application/json" });
-      resp.end(
-        JSON.stringify({ code: "unauthenticated", message: "Refresh token required" })
-      );
-      return;
-    }
-
+    let userID: string;
     try {
-      const result = await refreshAccessToken(refreshToken);
-
-      resp.setHeader("Content-Type", "application/json");
-      resp.setHeader("Set-Cookie", [
-        serializeCookie(COOKIE_NAMES.ACCESS_TOKEN, result.accessToken, accessTokenCookieOptions),
-        serializeCookie(COOKIE_NAMES.REFRESH_TOKEN, result.newRefreshToken, refreshTokenCookieOptions),
-      ]);
-      resp.writeHead(200);
-      resp.end(JSON.stringify({ success: true }));
-
-      void logAuditEvent({
-        action: "TOKEN_REFRESH",
-        tableName: "refresh_token",
-        userId: result.user.pk_user_account,
-        ipAddress:
-          (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() ?? null,
-        userAgent: (req.headers["user-agent"]) ?? null,
-      });
-    } catch (err) {
-      const apiErr = err instanceof APIError ? err : APIError.unauthenticated("Refresh failed");
-      resp.writeHead(apiErr.code === ErrCode.Unauthenticated ? 401 : 500, {
-        "Content-Type": "application/json",
-      });
-      resp.end(JSON.stringify({ code: apiErr.code, message: apiErr.message }));
+      ({ userID } = await verifyRefreshToken(presented));
+    } catch {
+      return deny(res, "invalid refresh token");
     }
-  }
+
+    const active = await findActiveRefreshToken(presented);
+    if (!active) return deny(res, "refresh token revoked or expired");
+
+    const user = await getUserById(userID);
+    if (!user) return deny(res, "user not found");
+
+    const meta = { ipAddress: clientIp(req), userAgent: userAgent(req) };
+    const pair = await issueTokenPair(user, meta);
+    await revokeRefreshToken(active.id);
+    setAuthCookies(res, pair);
+    await writeAudit({ action: "auth.refresh", actorId: user.id, actorEmail: user.email, ...meta });
+    writeJson(res, 200, { status: "ok" });
+  },
 );

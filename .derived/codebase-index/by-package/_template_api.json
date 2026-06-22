@@ -3,9 +3,8 @@
     "kind": "npm-package",
     "name": "@template/api",
     "path": "apps/api",
-    "specRef": "001-encore-app-architecture",
-    "version": "1.0.0"
+    "version": "0.1.0"
   },
   "schemaVersion": "1.1.0",
-  "shardHash": "7d2ff6f9170e70a3dffbf2faa4531dcffe6819fe2522161bbd57f48862f00226"
+  "shardHash": "764db35d5df82587d0bb163b2c916127dbb50c503c9417e34777473cde2fa32f"
 }

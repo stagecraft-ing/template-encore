@@ -1,96 +1,67 @@
-import { gatewayOAuthClientId, gatewayOAuthClientSecret } from "../lib/secrets";
-import { env } from "../lib/env";
-import logger from "../lib/logger";
-
 /**
- * OAuth client-credentials token cache for the BFF→private-backend hop.
+ * Service-to-service OAuth client-credentials token cache (spec 004, INV-10).
  *
- * Ports the Express token-cache.service.ts: acquires, caches, and refreshes
- * S2S tokens, deduplicating concurrent fetches to avoid a thundering herd on
- * refresh. Client id/secret are Encore secrets; tenant/scope/token-URL are env.
+ * Returns a cached access token, refreshing it ahead of expiry (60s buffer) and
+ * deduplicating concurrent fetches so a burst of proxied requests triggers a
+ * single token request. The public caller's own token is never used here.
  */
+import { env } from "../lib/env";
+import { gatewayOAuthClientSecret } from "../lib/secrets";
 
 interface CachedToken {
-  accessToken: string;
-  expiresAt: number; // ms epoch
+  token: string;
+  expiresAt: number;
 }
 
 const EXPIRY_BUFFER_MS = 60_000;
 
-let cachedToken: CachedToken | null = null;
-let fetchPromise: Promise<string> | null = null;
+let cached: CachedToken | undefined;
+let inflight: Promise<string> | undefined;
 
-function tokenEndpoint(): string {
-  return (
-    env.GATEWAY_OAUTH_TOKEN_URL ||
-    `https://login.microsoftonline.com/${env.GATEWAY_OAUTH_TENANT_ID}/oauth2/v2.0/token`
-  );
-}
-
-/** True when every S2S OAuth input + the private backend URL is configured. */
 export function isGatewayConfigured(): boolean {
-  try {
-    return !!(
-      gatewayOAuthClientId() &&
-      gatewayOAuthClientSecret() &&
-      env.GATEWAY_OAUTH_SCOPE &&
-      env.PRIVATE_API_BASE_URL &&
-      (env.GATEWAY_OAUTH_TOKEN_URL || env.GATEWAY_OAUTH_TENANT_ID)
-    );
-  } catch {
-    return false;
-  }
-}
-
-export async function getAccessToken(): Promise<string> {
-  if (cachedToken && cachedToken.expiresAt - EXPIRY_BUFFER_MS > Date.now()) {
-    return cachedToken.accessToken;
-  }
-  if (fetchPromise) return fetchPromise;
-
-  fetchPromise = fetchToken().finally(() => {
-    fetchPromise = null;
-  });
-  return fetchPromise;
+  return Boolean(
+    env.privateApiBaseUrl &&
+      env.gatewayOAuthTokenUrl &&
+      env.gatewayOAuthClientId &&
+      gatewayOAuthClientSecret(),
+  );
 }
 
 async function fetchToken(): Promise<string> {
   const body = new URLSearchParams({
     grant_type: "client_credentials",
-    client_id: gatewayOAuthClientId(),
+    client_id: env.gatewayOAuthClientId!,
     client_secret: gatewayOAuthClientSecret(),
-    scope: env.GATEWAY_OAUTH_SCOPE ?? "",
   });
+  if (env.gatewayOAuthScope) body.set("scope", env.gatewayOAuthScope);
 
-  const response = await fetch(tokenEndpoint(), {
+  const resp = await fetch(env.gatewayOAuthTokenUrl!, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: body.toString(),
+    body,
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    logger.error("OAuth token request failed", {
-      status: response.status,
-      body: errorText.slice(0, 500),
-    });
-    throw new Error(`OAuth token request failed: ${response.status}`);
+  if (!resp.ok) {
+    throw new Error(`oauth token request failed: ${resp.status}`);
   }
-
-  const data = (await response.json()) as {
-    access_token: string;
-    expires_in: number;
-  };
-
-  cachedToken = {
-    accessToken: data.access_token,
-    expiresAt: Date.now() + data.expires_in * 1000,
-  };
-  logger.info("Gateway OAuth token acquired", { expiresIn: data.expires_in });
-  return data.access_token;
+  const json = (await resp.json()) as { access_token: string; expires_in?: number };
+  const ttlMs = (json.expires_in ?? 3600) * 1000;
+  cached = { token: json.access_token, expiresAt: Date.now() + ttlMs };
+  return json.access_token;
 }
 
-export function clearTokenCache(): void {
-  cachedToken = null;
-  fetchPromise = null;
+export async function getAccessToken(): Promise<string> {
+  if (cached && cached.expiresAt - EXPIRY_BUFFER_MS > Date.now()) {
+    return cached.token;
+  }
+  if (inflight) return inflight;
+  inflight = fetchToken().finally(() => {
+    inflight = undefined;
+  });
+  return inflight;
+}
+
+/** Test/diagnostic helper: drop the cached token. */
+export function resetTokenCache(): void {
+  cached = undefined;
+  inflight = undefined;
 }

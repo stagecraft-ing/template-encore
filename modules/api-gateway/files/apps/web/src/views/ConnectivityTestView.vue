@@ -187,21 +187,20 @@ async function runTest() {
   const start = performance.now()
 
   try {
-    const response = await axios.get<{ success: boolean; data?: Record<string, unknown>; error?: { message?: string } }>(`${API_BASE}/data/info`, {
+    const response = await axios.get<Record<string, unknown>>(`${API_BASE}/data/info`, {
       withCredentials: true,
     })
 
     responseTime.value = Math.round(performance.now() - start)
 
-    if (response.data.success) {
-      result.value = response.data.data ?? null
-    } else {
-      error.value = response.data.error?.message || 'Unknown error from gateway'
-    }
+    // The BFF gateway is a transparent passthrough: a 2xx means the private
+    // backend was reached. Encore returns the bare backend payload (no
+    // { success, data } envelope), so display the response body directly.
+    result.value = response.data ?? null
   } catch (err: unknown) {
     responseTime.value = Math.round(performance.now() - start)
 
-    const axiosErr = err as { response?: { status?: number; data?: { error?: { message?: string } } }; message?: string }
+    const axiosErr = err as { response?: { status?: number; data?: { message?: string } }; message?: string }
     if (axiosErr.response?.status === 401) {
       error.value = 'Your session has expired. Please sign in again to continue.'
     } else if (axiosErr.response?.status === 503) {
@@ -211,7 +210,7 @@ async function runTest() {
     } else if (axiosErr.response?.status === 504) {
       error.value = 'The backend took too long to respond. The service may be busy or unavailable.'
     } else {
-      error.value = axiosErr.response?.data?.error?.message || 'Something went wrong. Please try again.'
+      error.value = axiosErr.response?.data?.message || 'Something went wrong. Please try again.'
     }
   } finally {
     loading.value = false

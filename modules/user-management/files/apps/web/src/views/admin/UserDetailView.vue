@@ -2,169 +2,168 @@
   <div class="user-detail-view">
     <div class="page-topbar">
       <h1>User Detail</h1>
-      <goa-button
-        type="tertiary"
-        size="compact"
-        @_click="goBack"
-      >
-        Back to Users
-      </goa-button>
+      <Button
+        label="Back to Users"
+        severity="secondary"
+        text
+        size="small"
+        @click="goBack"
+      />
     </div>
 
     <div class="page-body">
       <!-- Loading -->
-      <template v-if="loading">
-        <goa-skeleton
-          type="text"
-          size="4"
-        />
-        <goa-spacer vspacing="s" />
-        <goa-skeleton
-          type="text"
-          size="4"
-        />
-      </template>
+      <div
+        v-if="loading"
+        class="loading-state"
+      >
+        <ProgressSpinner style="width: 2rem; height: 2rem" />
+      </div>
 
       <!-- Error -->
-      <goa-callout
+      <Message
         v-else-if="error"
-        type="emergency"
-        heading="Error"
+        severity="error"
+        :closable="false"
+        class="state-message"
       >
+        <strong>Error</strong>
         <p>{{ error }}</p>
-      </goa-callout>
+      </Message>
 
       <!-- Not found -->
-      <goa-callout
+      <Message
         v-else-if="!user"
-        type="important"
-        heading="User Not Found"
+        severity="warn"
+        :closable="false"
+        class="state-message"
       >
+        <strong>User Not Found</strong>
         <p>The requested user could not be found.</p>
-      </goa-callout>
+      </Message>
 
       <!-- User detail -->
       <template v-else>
         <!-- User info -->
-        <goa-container accent="thin">
-          <h2 class="section-title">
-            Profile Information
-          </h2>
-          <dl class="info-list">
-            <div class="info-row">
-              <dt>Name</dt>
-              <dd>{{ user.name }}</dd>
-            </div>
-            <div class="info-row">
-              <dt>Email</dt>
-              <dd>{{ user.email }}</dd>
-            </div>
-            <div class="info-row">
-              <dt>External ID</dt>
-              <dd class="mono">
-                {{ user.external_id }}
-              </dd>
-            </div>
-            <div class="info-row">
-              <dt>Created</dt>
-              <dd>{{ formatDate(user.created_at) }}</dd>
-            </div>
-            <div class="info-row">
-              <dt>Last Login</dt>
-              <dd>{{ formatDate(user.last_login_at) }}</dd>
-            </div>
-            <div class="info-row">
-              <dt>Status</dt>
-              <dd>
-                <goa-badge
-                  :type="user.is_active ? 'success' : 'emergency'"
-                  :content="user.is_active ? 'Active' : 'Inactive'"
-                />
-              </dd>
-            </div>
-          </dl>
+        <Card class="section-card">
+          <template #content>
+            <h2 class="section-title">
+              Profile Information
+            </h2>
+            <dl class="info-list">
+              <div class="info-row">
+                <dt>Name</dt>
+                <dd>{{ user.name }}</dd>
+              </div>
+              <div class="info-row">
+                <dt>Email</dt>
+                <dd>{{ user.email }}</dd>
+              </div>
+              <div class="info-row">
+                <dt>External ID</dt>
+                <dd class="mono">
+                  {{ user.external_id }}
+                </dd>
+              </div>
+              <div class="info-row">
+                <dt>Created</dt>
+                <dd>{{ formatDate(user.created_at) }}</dd>
+              </div>
+              <div class="info-row">
+                <dt>Last Login</dt>
+                <dd>{{ formatDate(user.last_login_at) }}</dd>
+              </div>
+              <div class="info-row">
+                <dt>Status</dt>
+                <dd>
+                  <Tag
+                    :severity="user.is_active ? 'success' : 'danger'"
+                    :value="user.is_active ? 'Active' : 'Inactive'"
+                  />
+                </dd>
+              </div>
+            </dl>
 
-          <goa-spacer vspacing="m" />
-
-          <goa-button
-            :type="user.is_active ? 'secondary' : 'primary'"
-            size="compact"
-            @_click="toggleActive"
-          >
-            {{ user.is_active ? 'Deactivate User' : 'Activate User' }}
-          </goa-button>
-        </goa-container>
-
-        <goa-spacer vspacing="l" />
+            <div class="section-actions">
+              <Button
+                :label="user.is_active ? 'Deactivate User' : 'Activate User'"
+                :severity="user.is_active ? 'secondary' : 'primary'"
+                size="small"
+                @click="toggleActive"
+              />
+            </div>
+          </template>
+        </Card>
 
         <!-- Role assignment -->
-        <goa-container accent="thin">
-          <h2 class="section-title">
-            Role Assignment
-          </h2>
-          <p class="section-description">
-            Select the roles to assign to this user. Changes take effect on their next login.
-          </p>
+        <Card class="section-card">
+          <template #content>
+            <h2 class="section-title">
+              Role Assignment
+            </h2>
+            <p class="section-description">
+              Select the roles to assign to this user. Changes take effect on their next login.
+            </p>
 
-          <goa-spacer vspacing="m" />
-
-          <div class="role-list">
-            <div
-              v-for="role in allRoles"
-              :key="role.id"
-              class="role-item"
-            >
-              <goa-checkbox
-                :name="'role-' + role.id"
-                :text="role.name"
-                :checked="selectedRoleIds.has(role.id) || undefined"
-                @_change="toggleRole(role.id, $event)"
-              />
-              <span
-                v-if="role.description"
-                class="role-description"
+            <div class="role-list">
+              <div
+                v-for="role in allRoles"
+                :key="role.id"
+                class="role-item"
               >
-                {{ role.description }}
-              </span>
-              <goa-badge
-                v-if="role.is_system"
-                type="midtone"
-                content="System"
+                <Checkbox
+                  :inputId="'role-' + role.id"
+                  :binary="true"
+                  :modelValue="selectedRoleIds.has(role.id)"
+                  @update:modelValue="(checked: boolean) => toggleRole(role.id, checked)"
+                />
+                <label
+                  :for="'role-' + role.id"
+                  class="role-label"
+                >{{ role.name }}</label>
+                <span
+                  v-if="role.description"
+                  class="role-description"
+                >
+                  {{ role.description }}
+                </span>
+                <Tag
+                  v-if="role.is_system"
+                  severity="secondary"
+                  value="System"
+                />
+              </div>
+            </div>
+
+            <div class="actions">
+              <Button
+                label="Save Roles"
+                :disabled="!rolesChanged || saving"
+                size="small"
+                @click="saveRoles"
+              />
+              <Button
+                v-if="rolesChanged"
+                label="Reset"
+                severity="secondary"
+                text
+                size="small"
+                @click="resetRoles"
               />
             </div>
-          </div>
-
-          <goa-spacer vspacing="l" />
-
-          <div class="actions">
-            <goa-button
-              type="primary"
-              size="compact"
-              :disabled="!rolesChanged || saving || undefined"
-              @_click="saveRoles"
-            >
-              {{ saving ? 'Saving...' : 'Save Roles' }}
-            </goa-button>
-            <goa-button
-              v-if="rolesChanged"
-              type="tertiary"
-              size="compact"
-              @_click="resetRoles"
-            >
-              Reset
-            </goa-button>
-          </div>
-        </goa-container>
+          </template>
+        </Card>
 
         <!-- Save confirmation -->
-        <goa-spacer vspacing="m" />
-        <goa-callout
+        <Message
           v-if="saveSuccess"
-          type="success"
-          heading="Roles Updated"
+          severity="success"
+          :closable="false"
+          class="state-message"
         >
+          <strong>Roles Updated</strong>
           <p>Role assignments have been saved. Changes take effect on the user's next login.</p>
-        </goa-callout>
+        </Message>
       </template>
     </div>
   </div>
@@ -174,6 +173,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import ProgressSpinner from 'primevue/progressspinner'
+import Message from 'primevue/message'
+import Card from 'primevue/card'
+import Tag from 'primevue/tag'
+import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox'
 
 interface Role {
   id: string
@@ -238,8 +243,7 @@ async function fetchData() {
   }
 }
 
-function toggleRole(roleId: string, event: Event) {
-  const checked = (event as CustomEvent<{ checked: boolean }>).detail.checked
+function toggleRole(roleId: string, checked: boolean) {
   const newSet = new Set(selectedRoleIds.value)
   if (checked) {
     newSet.add(roleId)
@@ -302,17 +306,34 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
+.page-body {
+  margin-top: 1.5rem;
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.state-message {
+  margin-top: 1rem;
+}
+
+.section-card {
+  margin-bottom: 1.5rem;
+}
+
 .section-title {
-  font-size: var(--goa-font-size-5);
+  font-size: 1.25rem;
   font-weight: 600;
-  color: var(--goa-color-greyscale-black);
-  margin: 0 0 var(--goa-space-s) 0;
+  margin: 0 0 0.5rem 0;
 }
 
 .section-description {
-  color: var(--goa-color-text-secondary, #666);
+  color: var(--app-text-muted);
   font-size: 0.9375rem;
-  margin: 0;
+  margin: 0 0 1.5rem;
 }
 
 .info-list {
@@ -323,8 +344,8 @@ onMounted(fetchData)
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--goa-space-m) 0;
-  border-bottom: 1px solid var(--goa-color-greyscale-200);
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--p-surface-200);
 }
 
 .info-row:last-child {
@@ -333,41 +354,50 @@ onMounted(fetchData)
 
 .info-row dt {
   font-weight: 600;
-  color: var(--goa-color-greyscale-700);
+  color: var(--app-text-muted);
 }
 
 .info-row dd {
   margin: 0;
-  color: var(--goa-color-greyscale-black);
 }
 
 .info-row dd.mono {
-  font-family: monospace;
-  font-size: var(--goa-font-size-3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.95rem;
   word-break: break-all;
   max-width: 60%;
   text-align: right;
 }
 
+.section-actions {
+  margin-top: 1.5rem;
+}
+
 .role-list {
   display: flex;
   flex-direction: column;
-  gap: var(--goa-space-m);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .role-item {
   display: flex;
   align-items: center;
-  gap: var(--goa-space-m);
+  gap: 1rem;
+}
+
+.role-label {
+  font-weight: 500;
+  cursor: pointer;
 }
 
 .role-description {
   font-size: 0.875rem;
-  color: var(--goa-color-text-secondary, #666);
+  color: var(--app-text-muted);
 }
 
 .actions {
   display: flex;
-  gap: var(--goa-space-m);
+  gap: 1rem;
 }
 </style>

@@ -4,17 +4,18 @@
       Connectivity Test
     </h1>
 
-    <goa-callout
+    <Message
       v-if="!user"
-      type="important"
-      heading="Not Authenticated"
+      severity="warn"
+      :closable="false"
     >
+      <strong>Not authenticated</strong>
       <p>
         You must be <router-link to="/login">
           signed in
         </router-link> to test backend connectivity.
       </p>
-    </goa-callout>
+    </Message>
 
     <template v-else>
       <p class="description">
@@ -33,138 +34,139 @@
         <span v-else-if="result">Successfully connected to the backend.</span>
       </div>
 
-      <goa-spacer vspacing="l" />
-
-      <goa-container
-        accent="thin"
+      <Card
+        class="section-card"
         :aria-busy="loading ? 'true' : 'false'"
       >
-        <div class="section-header">
+        <template #content>
+          <div class="section-header">
+            <h2 class="section-title">
+              Private Backend (/info)
+            </h2>
+            <Button
+              severity="secondary"
+              :disabled="loading"
+              :label="loading ? 'Testing...' : 'Test Again'"
+              @click="runTest"
+            />
+          </div>
+
+          <template v-if="loading">
+            <Message
+              severity="info"
+              :closable="false"
+            >
+              <strong>Testing...</strong>
+              <p>Checking the connection to the private backend. This may take a moment.</p>
+            </Message>
+          </template>
+
+          <template v-else-if="error">
+            <Message
+              severity="error"
+              :closable="false"
+            >
+              <strong>Connection failed</strong>
+              <p>{{ error }}</p>
+            </Message>
+
+            <div class="troubleshoot">
+              <h3 class="section-title">
+                What to check
+              </h3>
+              <ul class="troubleshoot-list">
+                <li>Make sure <code>PRIVATE_API_BASE_URL</code> is set in your <code>.env</code> file</li>
+                <li>Make sure <code>OAUTH_*</code> credentials are filled in</li>
+                <li>Confirm the private backend service is running and reachable</li>
+                <li>Check the API server logs for more details</li>
+              </ul>
+            </div>
+          </template>
+
+          <template v-else-if="result">
+            <Message
+              severity="success"
+              :closable="false"
+            >
+              <strong>Connected</strong>
+              <p>Successfully reached the private backend through the BFF gateway.</p>
+            </Message>
+
+            <dl class="info-list">
+              <div class="info-row">
+                <dt>Status</dt>
+                <dd>
+                  <Tag
+                    severity="success"
+                    value="Connected"
+                  />
+                </dd>
+              </div>
+
+              <div class="info-row">
+                <dt>Response Time</dt>
+                <dd class="mono">
+                  {{ responseTime }}ms
+                </dd>
+              </div>
+
+              <div
+                v-for="(value, key) in result"
+                :key="key"
+                class="info-row"
+              >
+                <dt>{{ key }}</dt>
+                <dd class="mono">
+                  {{ typeof value === 'object' ? JSON.stringify(value) : value }}
+                </dd>
+              </div>
+            </dl>
+          </template>
+
+          <template v-else>
+            <p>Click <strong>Test Again</strong> or wait for the automatic test to complete.</p>
+          </template>
+        </template>
+      </Card>
+
+      <Card class="section-card">
+        <template #content>
           <h2 class="section-title">
-            Private Backend — /info
+            Request Path
           </h2>
-          <GoabButton
-            type="secondary"
-            :disabled="loading"
-            @click="runTest"
-          >
-            {{ loading ? 'Testing...' : 'Test Again' }}
-          </GoabButton>
-        </div>
-
-        <template v-if="loading">
-          <goa-callout
-            type="information"
-            heading="Testing..."
-          >
-            <p>Checking the connection to the private backend. This may take a moment.</p>
-          </goa-callout>
-        </template>
-
-        <template v-else-if="error">
-          <goa-callout
-            type="emergency"
-            heading="Connection Failed"
-          >
-            <p>{{ error }}</p>
-          </goa-callout>
-
-          <goa-spacer vspacing="m" />
-
-          <goa-container>
-            <h3 class="section-title">
-              What to check
-            </h3>
-            <ul class="troubleshoot-list">
-              <li>Make sure <code>PRIVATE_API_BASE_URL</code> is set in your <code>.env</code> file</li>
-              <li>Make sure <code>OAUTH_*</code> credentials are filled in</li>
-              <li>Confirm the private backend service is running and reachable</li>
-              <li>Check the API server logs for more details</li>
-            </ul>
-          </goa-container>
-        </template>
-
-        <template v-else-if="result">
-          <goa-callout
-            type="success"
-            heading="Connected"
-          >
-            <p>Successfully reached the private backend through the BFF gateway.</p>
-          </goa-callout>
-
-          <goa-spacer vspacing="m" />
-
           <dl class="info-list">
             <div class="info-row">
-              <dt>Status</dt>
-              <dd>
-                <goa-badge
-                  type="success"
-                  content="Connected"
-                />
+              <dt>Frontend</dt>
+              <dd class="mono">
+                GET /api/v1/data/info
               </dd>
             </div>
-
             <div class="info-row">
-              <dt>Response Time</dt>
+              <dt>BFF Gateway</dt>
               <dd class="mono">
-                {{ responseTime }}ms
+                requireAuth + OAuth token injection
               </dd>
             </div>
-
-            <div
-              v-for="(value, key) in result"
-              :key="key"
-              class="info-row"
-            >
-              <dt>{{ key }}</dt>
+            <div class="info-row">
+              <dt>Private Backend</dt>
               <dd class="mono">
-                {{ typeof value === 'object' ? JSON.stringify(value) : value }}
+                GET {PRIVATE_API_BASE_URL}/info
               </dd>
             </div>
           </dl>
         </template>
-
-        <template v-else>
-          <p>Click <strong>Test Again</strong> or wait for the automatic test to complete.</p>
-        </template>
-      </goa-container>
-
-      <goa-spacer vspacing="l" />
-
-      <goa-container>
-        <h2 class="section-title">
-          Request Path
-        </h2>
-        <dl class="info-list">
-          <div class="info-row">
-            <dt>Frontend</dt>
-            <dd class="mono">
-              GET /api/v1/data/info
-            </dd>
-          </div>
-          <div class="info-row">
-            <dt>BFF Gateway</dt>
-            <dd class="mono">
-              requireAuth + OAuth token injection
-            </dd>
-          </div>
-          <div class="info-row">
-            <dt>Private Backend</dt>
-            <dd class="mono">
-              GET {PRIVATE_API_BASE_URL}/info
-            </dd>
-          </div>
-        </dl>
-      </goa-container>
+      </Card>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import Message from 'primevue/message'
+import Tag from 'primevue/tag'
 import { useAuthStore } from '../stores/auth.store'
-import { GoabButton } from '../components/goa'
 import axios from 'axios'
 
 const API_BASE = '/api/v1'
@@ -228,24 +230,27 @@ onMounted(async () => {
 
 <style scoped>
 .page-title {
-  font-size: var(--goa-font-size-7);
+  font-size: 1.75rem;
   font-weight: 700;
-  color: var(--goa-color-greyscale-black);
-  margin: 0 0 var(--goa-space-l) 0;
-  padding-bottom: var(--goa-space-s);
-  border-bottom: 2px solid var(--goa-color-interactive-default);
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--p-primary-color);
 }
 
 .description {
-  color: var(--goa-color-greyscale-700);
-  margin: 0;
+  color: var(--app-text-muted);
+  margin: 0 0 1.5rem;
+}
+
+.section-card {
+  margin-bottom: 1.5rem;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--goa-space-l);
+  margin-bottom: 1.5rem;
 }
 
 .section-header .section-title {
@@ -253,10 +258,13 @@ onMounted(async () => {
 }
 
 .section-title {
-  font-size: var(--goa-font-size-5);
+  font-size: 1.25rem;
   font-weight: 600;
-  color: var(--goa-color-greyscale-black);
-  margin: 0 0 var(--goa-space-l) 0;
+  margin: 0 0 1.5rem 0;
+}
+
+.troubleshoot {
+  margin-top: 1rem;
 }
 
 .info-list {
@@ -267,8 +275,8 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--goa-space-m) 0;
-  border-bottom: 1px solid var(--goa-color-greyscale-200);
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--p-surface-200);
 }
 
 .info-row:last-child {
@@ -277,35 +285,34 @@ onMounted(async () => {
 
 .info-row dt {
   font-weight: 600;
-  color: var(--goa-color-greyscale-700);
+  color: var(--app-text-muted);
 }
 
 .info-row dd {
   margin: 0;
-  color: var(--goa-color-greyscale-black);
 }
 
 .info-row dd.mono {
-  font-family: monospace;
-  font-size: var(--goa-font-size-3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.95rem;
   word-break: break-all;
   max-width: 60%;
   text-align: right;
 }
 
 .troubleshoot-list {
-  margin: var(--goa-space-s) 0 0 0;
-  padding-left: var(--goa-space-l);
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.5rem;
 }
 
 .troubleshoot-list li {
-  margin-bottom: var(--goa-space-xs);
+  margin-bottom: 0.25rem;
 }
 
 .troubleshoot-list code {
-  background: var(--goa-color-greyscale-100);
-  padding: var(--goa-space-3xs) var(--goa-space-xs);
-  border-radius: var(--goa-border-radius-s);
-  font-size: var(--goa-font-size-2);
+  background: var(--p-surface-100);
+  padding: 0.125rem 0.25rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
 }
 </style>

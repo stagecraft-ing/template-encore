@@ -124,7 +124,7 @@ test("redirects unauthenticated users to login", async ({ page }) => {
 
 test("completes the mock auth flow", async ({ page }) => {
   await page.goto("/login")
-  await page.click('goa-button[type="primary"]')
+  await page.getByRole("button", { name: "Casey User (user)" }).click()
   await expect(page).toHaveURL("/")
 })
 ```

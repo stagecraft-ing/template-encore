@@ -94,19 +94,22 @@ touch apps/web/src/components/UserCard.vue
 
 ```vue
 <!-- apps/web/src/components/UserCard.vue -->
-<template>
-  <goa-card>
-    <h3>{{ user.name }}</h3>
-    <p>{{ user.email }}</p>
-    <GoabButton type="primary" @click="$emit('edit', user.id)">Edit</GoabButton>
-  </goa-card>
-</template>
-
 <script setup lang="ts">
-import { GoabButton } from '@/components/goa'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
 defineProps<{ user: { id: string; name: string; email: string } }>()
 defineEmits<{ edit: [id: string] }>()
 </script>
+
+<template>
+  <Card>
+    <template #title>{{ user.name }}</template>
+    <template #content>
+      <p>{{ user.email }}</p>
+      <Button label="Edit" @click="$emit('edit', user.id)" />
+    </template>
+  </Card>
+</template>
 ```
 
 Add a route in `apps/web/src/router/index.ts` (lazy-loaded), and a nav link in `AppHeader.vue`.
@@ -243,7 +246,7 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md). Quick fixes:
 
 - [CODEMAP.md](../CODEMAP.md): architecture overview and service graph
 - [Authentication Setup](AUTH-SETUP.md): SAML, Entra ID, Mock
-- [Testing](TESTING.md) · [Deployment](DEPLOYMENT.md) · [GoA Components](GOA-COMPONENTS.md)
+- [Testing](TESTING.md) · [Deployment](DEPLOYMENT.md) · [PrimeVue docs](https://primevue.org/) (Aura theme)
 - [Encore.ts documentation](https://encore.dev/docs/ts)
 
 ---

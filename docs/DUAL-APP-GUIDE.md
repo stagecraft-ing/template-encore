@@ -100,7 +100,7 @@ The destination directory must not exist or must be empty.
       infra.config.json          SAML secret bindings ($env references)
       .env.example               AUTH_DRIVER=saml
       lib/ db/ health/ auth/ gateway/ web/
-    web/                         External-facing SPA (Vue 3 + GoA Design System)
+    web/                         External-facing SPA (Vue 3 + PrimeVue)
       vite.config.ts             build.outDir -> ../api/web/build
     web-internal/                (present; not served by the public variant)
   packages/
@@ -115,7 +115,7 @@ The destination directory must not exist or must be empty.
       .env.example               AUTH_DRIVER=entra-id
       lib/ db/ health/ auth/ gateway/ web/
     web/                         (present; not served by the internal variant)
-    web-internal/                Staff-facing SPA (Vue 3 + GoA Design System)
+    web-internal/                Staff-facing SPA (Vue 3 + PrimeVue)
       vite.config.ts             build.outDir -> ../api/web/build (patched by wireInternalSpa)
   packages/
     shared/ config/ auth/

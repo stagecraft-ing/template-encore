@@ -43,13 +43,6 @@ The project uses ESLint 9 flat config (`eslint.config.mjs`) with `typescript-esl
 |------|----------------|-----------------|
 | `no-non-null-assertion` | Using `!` to assert non-null (e.g., `user!.id`) | Use optional chaining (`user?.id`), nullish coalescing (`user?.id ?? 'anonymous'`), or a guard (`if (!user) throw ...`). Exception: `getAuthData()!` inside `auth: true` Encore endpoints: the `!` is correct there because the authHandler guarantees a value |
 
-**Vue-specific:**
-
-| Rule | What it catches | Correct pattern |
-|------|----------------|-----------------|
-| `vue/v-on-event-hyphenation` | Hyphenated event names on native elements | Use hyphenated event names. Exception: `@_selectFile` (GoA file upload custom event: must stay camelCase) |
-| `vue/no-deprecated-slot-attribute` | Disabled: `slot` attribute is required for GoA web components (custom elements) | Use `slot="name"` freely on GoA components |
-
 **Relaxed in test files** (`*.test.ts`, `*.spec.ts`, `__tests__/`): `no-explicit-any`, `no-non-null-assertion`, `no-unused-vars`, and all type-checked rules are OFF. Test files can use `any` and `!` freely.
 
 > **Base JS rules are NOT relaxed in test files**: this includes `no-useless-escape`, `no-irregular-whitespace`, and `no-misleading-character-class`. They all come from `js.configs.recommended`, which the test-file TypeScript override does not touch. These rules fire in `*.test.ts` exactly as in source files.

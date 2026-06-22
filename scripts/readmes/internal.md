@@ -107,7 +107,7 @@ npm run gen:client       # regenerate typed client → apps/web-internal/src/lib
 | [AUTH-SETUP.md](docs/AUTH-SETUP.md) | Entra ID app registration and driver configuration |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Building and deploying the Encore app (`encore build docker`) |
 | [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Local dev workflow, `encore run`, hot reload |
-| [GOA-COMPONENTS.md](docs/GOA-COMPONENTS.md) | GoA Design System component usage |
+| [PrimeVue documentation](https://primevue.org/) | UI component library (Aura theme) used by the SPA |
 | [TESTING.md](docs/TESTING.md) | Testing strategy (unit / E2E; `encore check`) |
 | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common issues and solutions |
 

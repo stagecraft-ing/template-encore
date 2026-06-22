@@ -8,131 +8,123 @@
     <div class="page-body">
       <!-- Search -->
       <div class="search-bar">
-        <goa-input
-          name="search"
-          type="search"
-          :value="search"
+        <InputText
+          v-model="search"
           placeholder="Search by name or email..."
-          width="320px"
-          @_change="onSearch"
+          type="search"
+          style="width: 320px"
+          @input="onSearch"
         />
       </div>
 
-      <goa-spacer vspacing="l" />
-
       <!-- Loading -->
-      <template v-if="loading">
-        <goa-skeleton
-          type="text"
-          size="4"
-        />
-        <goa-spacer vspacing="s" />
-        <goa-skeleton
-          type="text"
-          size="4"
-        />
-        <goa-spacer vspacing="s" />
-        <goa-skeleton
-          type="text"
-          size="4"
-        />
-      </template>
+      <div
+        v-if="loading"
+        class="loading-state"
+      >
+        <ProgressSpinner style="width: 2rem; height: 2rem" />
+      </div>
 
       <!-- Error -->
-      <goa-callout
+      <Message
         v-else-if="error"
-        type="emergency"
-        heading="Error"
+        severity="error"
+        :closable="false"
+        class="state-message"
       >
+        <strong>Error</strong>
         <p>{{ error }}</p>
-      </goa-callout>
+      </Message>
 
       <!-- Empty state -->
-      <goa-callout
+      <Message
         v-else-if="users.length === 0"
-        type="information"
-        heading="No Users Found"
+        severity="info"
+        :closable="false"
+        class="state-message"
       >
+        <strong>No Users Found</strong>
         <p>{{ search ? 'No users match your search criteria.' : 'No users have been provisioned yet. Users are created automatically on first login.' }}</p>
-      </goa-callout>
+      </Message>
 
       <!-- User table -->
       <template v-else>
-        <goa-table width="100%">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Roles</th>
-              <th>Status</th>
-              <th>Last Login</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="user in users"
-              :key="user.id"
-            >
-              <td>{{ user.name }}</td>
-              <td>{{ user.email }}</td>
-              <td>
-                <div class="roles">
-                  <goa-badge
-                    v-for="role in user.roles"
-                    :key="role.id"
-                    type="information"
-                    :content="role.name"
-                  />
-                  <span
-                    v-if="!user.roles?.length"
-                    class="no-roles"
-                  >No roles</span>
-                </div>
-              </td>
-              <td>
-                <goa-badge
-                  :type="user.is_active ? 'success' : 'emergency'"
-                  :content="user.is_active ? 'Active' : 'Inactive'"
+        <DataTable
+          :value="users"
+          class="user-table"
+        >
+          <Column
+            field="name"
+            header="Name"
+          />
+          <Column
+            field="email"
+            header="Email"
+          />
+          <Column header="Roles">
+            <template #body="{ data }">
+              <div class="roles">
+                <Tag
+                  v-for="role in data.roles"
+                  :key="role.id"
+                  severity="info"
+                  :value="role.name"
                 />
-              </td>
-              <td>{{ formatDate(user.last_login_at) }}</td>
-              <td>
-                <goa-button
-                  type="tertiary"
-                  size="compact"
-                  @_click="viewUser(user.id)"
-                >
-                  Manage
-                </goa-button>
-              </td>
-            </tr>
-          </tbody>
-        </goa-table>
+                <span
+                  v-if="!data.roles?.length"
+                  class="no-roles"
+                >No roles</span>
+              </div>
+            </template>
+          </Column>
+          <Column header="Status">
+            <template #body="{ data }">
+              <Tag
+                :severity="data.is_active ? 'success' : 'danger'"
+                :value="data.is_active ? 'Active' : 'Inactive'"
+              />
+            </template>
+          </Column>
+          <Column header="Last Login">
+            <template #body="{ data }">
+              {{ formatDate(data.last_login_at) }}
+            </template>
+          </Column>
+          <Column header="">
+            <template #body="{ data }">
+              <Button
+                label="Manage"
+                severity="secondary"
+                text
+                size="small"
+                @click="viewUser(data.id)"
+              />
+            </template>
+          </Column>
+        </DataTable>
 
         <!-- Pagination -->
-        <goa-spacer vspacing="l" />
         <div
           v-if="totalPages > 1"
           class="pagination"
         >
-          <goa-button
-            type="tertiary"
-            size="compact"
-            :disabled="page <= 1 || undefined"
-            @_click="goToPage(page - 1)"
-          >
-            Previous
-          </goa-button>
+          <Button
+            label="Previous"
+            severity="secondary"
+            text
+            size="small"
+            :disabled="page <= 1"
+            @click="goToPage(page - 1)"
+          />
           <span class="page-info">Page {{ page }} of {{ totalPages }}</span>
-          <goa-button
-            type="tertiary"
-            size="compact"
-            :disabled="page >= totalPages || undefined"
-            @_click="goToPage(page + 1)"
-          >
-            Next
-          </goa-button>
+          <Button
+            label="Next"
+            severity="secondary"
+            text
+            size="small"
+            :disabled="page >= totalPages"
+            @click="goToPage(page + 1)"
+          />
         </div>
       </template>
     </div>
@@ -143,6 +135,13 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import InputText from 'primevue/inputtext'
+import ProgressSpinner from 'primevue/progressspinner'
+import Message from 'primevue/message'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Tag from 'primevue/tag'
+import Button from 'primevue/button'
 
 interface UserRole {
   id: string
@@ -185,8 +184,7 @@ async function fetchUsers() {
   }
 }
 
-function onSearch(e: CustomEvent) {
-  search.value = (e as CustomEvent<{ value: string }>).detail.value ?? ''
+function onSearch() {
   page.value = 1
   void fetchUsers()
 }
@@ -215,20 +213,39 @@ onMounted(fetchUsers)
 </script>
 
 <style scoped>
+.page-body {
+  margin-top: 1.5rem;
+}
+
 .search-bar {
   display: flex;
   align-items: center;
-  gap: var(--goa-space-m);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.state-message {
+  margin-top: 1rem;
+}
+
+.user-table {
+  width: 100%;
 }
 
 .roles {
   display: flex;
-  gap: var(--goa-space-xs);
+  gap: 0.25rem;
   flex-wrap: wrap;
 }
 
 .no-roles {
-  color: var(--goa-color-text-secondary, #666);
+  color: var(--app-text-muted);
   font-size: 0.875rem;
   font-style: italic;
 }
@@ -237,11 +254,12 @@ onMounted(fetchUsers)
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--goa-space-m);
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
 .page-info {
   font-size: 0.875rem;
-  color: var(--goa-color-text-secondary, #666);
+  color: var(--app-text-muted);
 }
 </style>

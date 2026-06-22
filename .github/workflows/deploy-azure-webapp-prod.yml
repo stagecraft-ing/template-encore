@@ -1,6 +1,6 @@
 name: Deploy to Production
 
-# Encore-as-zip deploy for the `production` environment (spec 057). Thin caller
+# Encore-as-zip deploy for the `production` environment (spec 012). Thin caller
 # of the reusable workflow; secrets/vars resolve from the GitHub `production`
 # environment.
 

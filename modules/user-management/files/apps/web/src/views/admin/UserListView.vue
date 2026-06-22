@@ -65,13 +65,13 @@
             <template #body="{ data }">
               <div class="roles">
                 <Tag
-                  v-for="role in data.roles"
-                  :key="role.id"
+                  v-for="role in data.appRoles"
+                  :key="role"
                   severity="info"
-                  :value="role.name"
+                  :value="role"
                 />
                 <span
-                  v-if="!data.roles?.length"
+                  v-if="!data.appRoles?.length"
                   class="no-roles"
                 >No roles</span>
               </div>
@@ -80,14 +80,14 @@
           <Column header="Status">
             <template #body="{ data }">
               <Tag
-                :severity="data.is_active ? 'success' : 'danger'"
-                :value="data.is_active ? 'Active' : 'Inactive'"
+                :severity="data.isActive ? 'success' : 'danger'"
+                :value="data.isActive ? 'Active' : 'Inactive'"
               />
             </template>
           </Column>
           <Column header="Last Login">
             <template #body="{ data }">
-              {{ formatDate(data.last_login_at) }}
+              {{ formatDate(data.lastLoginAt) }}
             </template>
           </Column>
           <Column header="">
@@ -143,18 +143,17 @@ import Column from 'primevue/column'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 
-interface UserRole {
-  id: string
-  name: string
-}
-
+// Mirrors the backend UserSummary (user-management/types.ts): bare, camelCase
+// payload. appRoles/idpRoles are role-name lists, not nested objects.
 interface UserItem {
   id: string
   name: string
   email: string
-  is_active: boolean
-  last_login_at: string | null
-  roles: UserRole[]
+  isActive: boolean
+  lastLoginAt: string | null
+  createdAt: string
+  appRoles: string[]
+  idpRoles: string[]
 }
 
 const router = useRouter()
@@ -174,9 +173,14 @@ async function fetchUsers() {
     const params: Record<string, string | number> = { page: page.value, limit }
     if (search.value) params.search = search.value
 
-    const res = await axios.get('/api/v1/admin/users', { params })
-    users.value = res.data.data.items
-    totalPages.value = res.data.data.pagination.totalPages
+    const res = await axios.get<{ users: UserItem[]; total: number; page: number; limit: number }>(
+      '/api/v1/admin/users',
+      { params },
+    )
+    // Encore returns a bare, flat list response ({ users, total, page, limit });
+    // there is no { data: { items, pagination } } envelope. Derive page count.
+    users.value = res.data.users
+    totalPages.value = Math.max(1, Math.ceil(res.data.total / limit))
   } catch {
     error.value = 'Failed to load users. Please try again.'
   } finally {

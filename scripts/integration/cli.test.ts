@@ -7,7 +7,7 @@
  * step sequencing, file operations, and exit codes — not just the underlying
  * library functions.
  *
- * The auth-* / service-auth modules were retired in spec 061, so these tests
+ * The auth-* / service-auth modules were retired in spec 009, so these tests
  * drive the surviving modules (security-core, api-gateway, data-redis). Those
  * cross-cutting modules were converted to thin declarative overlays in spec
  * 063 (no apps/api/src/** payloads): security-core / data-redis own no files

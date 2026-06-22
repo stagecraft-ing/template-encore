@@ -205,7 +205,7 @@ To add a config variable: add it to `apps/api/.env.example`, read it where neede
 ## Module Management
 
 > The module system (`scripts/add-module.ts`, `scripts/remove-module.ts`, `modules/`) is Encore-native
-> (reconciled in specs 058-063). Modules copy complete Encore service directories and merge declarative
+> (reconciled in specs 007-010). Modules copy complete Encore service directories and merge declarative
 > config (env vars, secret bindings, CORS) into `apps/api`; there is no Express loader or runtime registry.
 > The commands below operate on the generator surface, not the running Encore app.
 

@@ -1,5 +1,5 @@
 /**
- * Tests for the Encore single-app generator (spec 058 P2).
+ * Tests for the Encore single-app generator (spec 008).
  *
  * The setup-app CLI is split into pure, exported functions (copyTemplateBase,
  * setAuthDriver, composeWithModules) so the copy + driver-selection machinery
@@ -77,7 +77,7 @@ describe('copyTemplateBase — real template copy', () => {
     expect(fs.existsSync(path.join(dest, 'apps', 'api', 'src'))).toBe(false)
   })
 
-  it('keeps the tracked SPA placeholder apps/api/web/build/index.html (spec 053)', () => {
+  it('keeps the tracked SPA placeholder apps/api/web/build/index.html (spec 005)', () => {
     // build/ is normally skipped by basename, but this committed placeholder is
     // required by the web service's api.static({ notFound: "./build/index.html" }).
     expect(fs.existsSync(path.join(dest, 'apps', 'api', 'web', 'build', 'index.html'))).toBe(true)
@@ -90,7 +90,7 @@ describe('copyTemplateBase — real template copy', () => {
     expect('express-session' in deps).toBe(false)
   })
 
-  // The generator copies the base verbatim. Spec 064 retired the Express-era
+  // The generator copies the base verbatim. Spec 008 retired the Express-era
   // packages/auth (the last package.json that declared express), so a generated
   // app must contain zero express / express-session offenders anywhere.
   it('produces an app with no express dependency anywhere', () => {

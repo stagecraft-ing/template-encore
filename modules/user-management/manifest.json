@@ -1,7 +1,7 @@
 {
   "name": "user-management",
   "version": "2.0.0",
-  "description": "Application-side user + role management as an Encore service: an app-managed role catalog (app_role/user_role) keyed to the existing user_account identity, with admin CRUD endpoints behind auth + requireRole. The reference shape for feature modules (spec 061).",
+  "description": "Application-side user + role management as an Encore service: an app-managed role catalog (app_role/user_role) keyed to the existing user_account identity, with admin CRUD endpoints behind auth + requireRole. The reference shape for feature modules (spec 009).",
   "status": "stable",
   "requires": [],
   "requiresOneOf": [],
@@ -28,7 +28,7 @@
     "USER_MGMT_DEFAULT_ROLE": {
       "value": "user",
       "required": false,
-      "description": "Default app-managed role for new users (used by the opt-in provisioning seam; see spec 061)"
+      "description": "Default app-managed role for new users (used by the opt-in provisioning seam; see spec 009)"
     }
   }
 }

@@ -180,7 +180,7 @@ if (expectedWebModules === null) {
 
 // The @template/auth driver barrel (packages/auth/src/index.ts) was a
 // runtime-registry artifact with no Encore analog; its generator was retired
-// in spec 061 (auth-driver selection is configuration over the in-app drivers).
+// in spec 009 (auth-driver selection is configuration over the in-app drivers).
 
 // --- Dependency graph (optional) ---
 if (showGraph) {

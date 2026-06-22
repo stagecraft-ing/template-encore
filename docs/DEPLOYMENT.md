@@ -7,14 +7,14 @@ Encore CLI. It is stateless (RS256 JWT, no server session store) and uses Postgr
 `SQLDatabase("app")`. The two Vue SPAs build into `apps/api/web/build` and are served by the Encore app's
 `web` service (`api.static`), so the default deployable is a **single container** on **port 4000**.
 
-## Deploy paths (spec 057)
+## Deploy paths (spec 012)
 
 The template ships two spec-governed deploy paths. Pick the one that matches your platform:
 
 | Path | Workflow | Unit | When to use |
 |------|----------|------|-------------|
 | **Azure App Service zip** (Node continuity) | `deploy-azure-webapp-{dev,uat,prod}.yml` calling `deploy-azure-webapp-reusable.yml` | A Node zip carrying the scraped Encore artifact (`main.mjs` + `encore-runtime.node`), the built SPA, and production `node_modules`, started with `node main.mjs` | You deploy to Azure App Service for Linux and want to keep the familiar zip/Node idiom. |
-| **Encore container** (alignment) | `encore-cd.yml.example` (inert; spec 054) | An OCI image from `encore build docker` | You deploy to a container runtime (Azure Container Apps, App Service for Containers, OpenShift, Encore Cloud). This is the Encore-supported, robust unit. |
+| **Encore container** (alignment) | `encore-cd.yml.example` (inert; spec 011) | An OCI image from `encore build docker` | You deploy to a container runtime (Azure Container Apps, App Service for Containers, OpenShift, Encore Cloud). This is the Encore-supported, robust unit. |
 
 > **Zip path caveat.** The zip is assembled by the OPTIONAL cancel-then-scrape build (the
 > `apps/api/scripts/docker-build.sh` model), which reaches into Encore internals and is sensitive to
@@ -95,17 +95,17 @@ Provision a managed Postgres (e.g. Azure PostgreSQL Flexible Server) with TLS en
 
 ## CD (Encore container path)
 
-An inert CD template ships at `.github/workflows/encore-cd.yml.example` (spec 054, dual-path context
-added by spec 057). It installs the Encore CLI, runs `npm ci` and `encore gen client`, builds the SPA, and
+An inert CD template ships at `.github/workflows/encore-cd.yml.example` (spec 011, dual-path context
+added by spec 012). It installs the Encore CLI, runs `npm ci` and `encore gen client`, builds the SPA, and
 runs the `encore-build` composite action to push the image to a registry. It now also carries a documented
 (commented) Azure Container Apps deploy step as a starting point. It is shipped as `.example` so it stays
 inactive until a project:
 
 1. configures a container registry plus credentials,
 2. renames it to `encore-cd.yml`, and
-3. SHA-pins its third-party `uses:` (spec 021 workflow-pins policy).
+3. SHA-pins its third-party `uses:` (spec 015 workflow-pins policy).
 
-Encore CI (`.github/workflows/encore-ci.yml`, spec 054) validates every PR: SPA type-check plus `build:web`,
+Encore CI (`.github/workflows/encore-ci.yml`, spec 011) validates every PR: SPA type-check plus `build:web`,
 `encore check`, and a typed-client staleness check.
 
 ## BFF gateway (private backend connectivity)
@@ -149,8 +149,8 @@ curl -I https://your-app.example.com/api/v1/auth/login   # 302 to the IdP (saml/
 
 - [Encore.ts: build a Docker image](https://encore.dev/docs/ts/deploy/docker)
 - [Encore.ts: self-hosting](https://encore.dev/docs/ts/self-host/build)
-- `specs/057-deploy-reconciliation/spec.md`: the dual deploy strategy (zip + container)
-- `specs/054-encore-ci-cd/spec.md`: Encore CI/CD actions and the CD example
+- `specs/012-deploy-reconciliation/spec.md`: the dual deploy strategy (zip + container)
+- `specs/011-encore-ci-cd/spec.md`: Encore CI/CD actions and the CD example
 - [CODEMAP.md](../CODEMAP.md): service graph and security model
 
 ---

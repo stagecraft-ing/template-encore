@@ -60,25 +60,34 @@
                 <dd>{{ user.email }}</dd>
               </div>
               <div class="info-row">
-                <dt>External ID</dt>
-                <dd class="mono">
-                  {{ user.external_id }}
-                </dd>
-              </div>
-              <div class="info-row">
                 <dt>Created</dt>
-                <dd>{{ formatDate(user.created_at) }}</dd>
+                <dd>{{ formatDate(user.createdAt) }}</dd>
               </div>
               <div class="info-row">
                 <dt>Last Login</dt>
-                <dd>{{ formatDate(user.last_login_at) }}</dd>
+                <dd>{{ formatDate(user.lastLoginAt) }}</dd>
+              </div>
+              <div class="info-row">
+                <dt>IdP Roles</dt>
+                <dd>
+                  <span
+                    v-if="!user.idpRoles.length"
+                    class="no-roles"
+                  >None</span>
+                  <Tag
+                    v-for="role in user.idpRoles"
+                    :key="role"
+                    severity="secondary"
+                    :value="role"
+                  />
+                </dd>
               </div>
               <div class="info-row">
                 <dt>Status</dt>
                 <dd>
                   <Tag
-                    :severity="user.is_active ? 'success' : 'danger'"
-                    :value="user.is_active ? 'Active' : 'Inactive'"
+                    :severity="user.isActive ? 'success' : 'danger'"
+                    :value="user.isActive ? 'Active' : 'Inactive'"
                   />
                 </dd>
               </div>
@@ -86,8 +95,8 @@
 
             <div class="section-actions">
               <Button
-                :label="user.is_active ? 'Deactivate User' : 'Activate User'"
-                :severity="user.is_active ? 'secondary' : 'primary'"
+                :label="user.isActive ? 'Deactivate User' : 'Activate User'"
+                :severity="user.isActive ? 'secondary' : 'primary'"
                 size="small"
                 @click="toggleActive"
               />
@@ -128,7 +137,7 @@
                   {{ role.description }}
                 </span>
                 <Tag
-                  v-if="role.is_system"
+                  v-if="role.isSystem"
                   severity="secondary"
                   value="System"
                 />
@@ -180,23 +189,26 @@ import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 
+// Mirrors the backend AppRole (user-management/types.ts).
 interface Role {
   id: string
   name: string
   description: string | null
-  is_system: boolean
+  isSystem: boolean
+  createdAt: string
 }
 
+// Mirrors the backend UserSummary: bare, camelCase payload. appRoles/idpRoles
+// are role-name lists (app-assigned vs IdP-sourced), not nested objects.
 interface User {
   id: string
-  external_id: string
   email: string
   name: string
-  is_active: boolean
-  last_login_at: string | null
-  created_at: string
-  updated_at: string
-  roles: Role[]
+  isActive: boolean
+  lastLoginAt: string | null
+  createdAt: string
+  appRoles: string[]
+  idpRoles: string[]
 }
 
 const route = useRoute()
@@ -226,16 +238,19 @@ async function fetchData() {
   error.value = null
   try {
     const [userRes, rolesRes] = await Promise.all([
-      axios.get(`/api/v1/admin/users/${String(route.params.id)}`),
-      axios.get('/api/v1/admin/roles'),
+      axios.get<{ user: User }>(`/api/v1/admin/users/${String(route.params.id)}`),
+      axios.get<{ roles: Role[] }>('/api/v1/admin/roles'),
     ])
-    user.value = userRes.data.data.user
-    allRoles.value = rolesRes.data.data.roles
+    // Encore returns bare payloads ({ user } / { roles }); no { data } envelope.
+    user.value = userRes.data.user
+    allRoles.value = rolesRes.data.roles
 
-    // Initialize selected roles
-    const userRoleIds = new Set(user.value!.roles.map((r: Role) => r.id))
-    selectedRoleIds.value = new Set(userRoleIds)
-    originalRoleIds.value = new Set(userRoleIds)
+    // The user's app roles arrive as role names; map them to ids through the
+    // catalog so the checklist (keyed by role id) reflects the current grant.
+    const assignedNames = new Set(user.value.appRoles)
+    const assignedIds = allRoles.value.filter((r) => assignedNames.has(r.name)).map((r) => r.id)
+    selectedRoleIds.value = new Set(assignedIds)
+    originalRoleIds.value = new Set(assignedIds)
   } catch {
     error.value = 'Failed to load user data.'
   } finally {
@@ -278,10 +293,10 @@ async function saveRoles() {
 async function toggleActive() {
   if (!user.value) return
   try {
-    const res = await axios.put(`/api/v1/admin/users/${user.value.id}`, {
-      is_active: !user.value.is_active,
+    const res = await axios.patch<{ user: User }>(`/api/v1/admin/users/${user.value.id}`, {
+      isActive: !user.value.isActive,
     })
-    user.value = { ...user.value, ...res.data.data.user }
+    user.value = { ...user.value, ...res.data.user }
   } catch {
     error.value = 'Failed to update user status.'
   }
@@ -394,6 +409,12 @@ onMounted(fetchData)
 .role-description {
   font-size: 0.875rem;
   color: var(--app-text-muted);
+}
+
+.no-roles {
+  color: var(--app-text-muted);
+  font-size: 0.875rem;
+  font-style: italic;
 }
 
 .actions {

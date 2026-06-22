@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://vue-encore-enterprise-template.dev/schemas/agent-frontmatter.schema.json",
-  "title": "Unified Agent and Skill Frontmatter (spec 054)",
+  "title": "Unified Agent and Skill Frontmatter (spec 018)",
   "description": "YAML frontmatter for agent and skill definition markdown files. Subsumes Claude Code agents, skill commands, and factory pipeline agents.",
   "type": "object",
   "additionalProperties": true,
@@ -148,12 +148,12 @@
     },
     "standards_category": {
       "type": "string",
-      "description": "Standards category filter (spec 055)."
+      "description": "Standards category filter (spec 018)."
     },
     "standards_tags": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
-      "description": "Standards tag filter (spec 055)."
+      "description": "Standards tag filter (spec 018)."
     }
   }
 }

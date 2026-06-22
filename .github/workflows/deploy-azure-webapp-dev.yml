@@ -1,6 +1,6 @@
 name: Deploy to Dev
 
-# Encore-as-zip deploy for the `dev` environment (spec 057). Thin caller of the
+# Encore-as-zip deploy for the `dev` environment (spec 012). Thin caller of the
 # reusable workflow; secrets/vars resolve from the GitHub `dev` environment.
 
 on:

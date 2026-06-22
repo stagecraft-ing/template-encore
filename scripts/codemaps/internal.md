@@ -3,7 +3,7 @@
 > Architectural blueprint: execution flows, service graph, API surfaces, and component relationships.
 > For developer onboarding and AI agent context. Reduces codebase to ~5% of tokens, ~90% of understanding.
 >
-> **Backend = Encore.ts.** The Express 5 BFF was retired in the Encore migration (specs 048 to 054).
+> **Backend = Encore.ts.** The Express 5 BFF was retired in the Encore migration (specs 001 to 006).
 > Auth driver for this profile: **Microsoft Entra ID** (`AUTH_DRIVER=entra-id`).
 
 ---

@@ -1,4 +1,4 @@
--- User-management: app-managed role catalog + per-user assignments (spec 061, P3).
+-- User-management: app-managed role catalog + per-user assignments (spec 009).
 --
 -- Distinct from the IdP-sourced user_account.user_roles[] (owned by the auth
 -- service, read into the JWT). app_role is the application's OWN role registry

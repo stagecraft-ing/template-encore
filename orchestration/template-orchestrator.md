@@ -570,7 +570,7 @@ Auth is stateless RS256 JWT in all three variants. There is no session store. Re
 │           ├── stores/
 │           │   └── auth.store.ts    Pinia auth state + CSRF interceptor
 │           ├── lib/
-│           │   └── encore-client.ts Typed client reference (committed, spec 052/054)
+│           │   └── encore-client.ts Typed client reference (committed, spec 006/011)
 │           ├── views/
 │           │   ├── HomeView.vue
 │           │   ├── AboutView.vue
@@ -826,7 +826,7 @@ These are non-negotiable engineering decisions. Do not change them without expli
 
 ## 5. Module System
 
-The template uses an additive module system governed by the manifest v2 contract (spec 059). Modules are self-contained feature bundles with a manifest and optional files.
+The template uses an additive module system governed by the manifest v2 contract (spec 008). Modules are self-contained feature bundles with a manifest and optional files.
 
 **Two module shapes exist:**
 
@@ -1529,7 +1529,7 @@ Every project defines its own roles in the business requirements. The mock users
 ### Frontend Auth Store
 
 ```typescript
-// apps/web/src/stores/auth.store.ts (Pinia: spec 052)
+// apps/web/src/stores/auth.store.ts (Pinia: spec 006)
 state: { user: User | null, loading: boolean, error: string | null }
 getters: { isAuthenticated: boolean, hasRole(role): boolean }
 actions: { fetchUser(), login(driver: string), logout(), checkStatus() }
@@ -1558,7 +1558,7 @@ Two bounded latencies exist and are acceptable by design:
 1. **Access-token revocation latency**: up to one access-token TTL (~15 min) after DB revocation
 2. **Stale roles**: role changes take effect at next token refresh
 
-Neither is solved by re-introducing `express-session` (forbidden by INV-3/INV-7 in spec 049).
+Neither is solved by re-introducing `express-session` (forbidden by INV-3/INV-7 in spec 002).
 
 ---
 

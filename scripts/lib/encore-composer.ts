@@ -1,5 +1,5 @@
 /**
- * Encore module-composition engine (spec 058 P2).
+ * Encore module-composition engine (spec 008).
  *
  * Encore discovers services from the filesystem and has no runtime registry,
  * so module composition is a set of filesystem + declarative-config edits:
@@ -32,7 +32,7 @@ const MIGRATION_PREFIX_RE = /^(\d+)_/
 const UP_MIGRATION_RE = /\.up\.sql$/
 
 // ---------------------------------------------------------------------------
-// Path-traversal guards (spec 058 P2 — supply-chain hardening)
+// Path-traversal guards (spec 008 - supply-chain hardening)
 //
 // A manifest is external input once `--with <module>` accepts third-party
 // modules, so `service` names and `migration.source` paths must be validated

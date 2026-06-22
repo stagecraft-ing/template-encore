@@ -38,7 +38,7 @@
  *
  * Note: the Encore app applies migrations on `encore run` (and via
  * apps/api/scripts/migrate.mjs for self-host); the Express-era root migration
- * toolchain and the @template/config env validator were retired in spec 064.
+ * toolchain and the @template/config env validator were retired in spec 008.
  */
 
 import * as fs from 'node:fs'

@@ -1,7 +1,7 @@
 # Encore.ts CI: validates the API + Vue apps. Dispatched from ci.yml's
 # `encore` route as a reusable workflow (workflow_call), so it runs only on
 # PRs that touch the app surface (apps/**, packages/**, the encore-* actions,
-# or this file) and folds into the required `ci-gate` aggregator. Spec 054
+# or this file) and folds into the required `ci-gate` aggregator. Spec 011
 # takes co_authority on ci.yml's jobs.changes + jobs.ci-gate to wire this in,
 # which also retires the prior pull_request + non-main push double-trigger.
 #

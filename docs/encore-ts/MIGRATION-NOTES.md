@@ -1,13 +1,13 @@
 # Express → Encore.ts migration — what changed
 
-> **Provenance caveat (constitution Principle V; spec 058 FR-009).** The
+> **Provenance caveat (constitution Principle V; spec 008 FR-009).** The
 > reference implementation this note distills lives in the source substrate
 > (`<source-project>/public/server`), and some paths here (e.g.
 > `apps/api-express/`) describe that substrate's migration, not this
 > repository's. This template migrated its `apps/api` to Encore in place (specs
 > 048 to 054); there is no `apps/api-express` in this tree. Read it as a
 > decision record / provenance, not a description of the current layout; the
-> authoritative architecture is `CODEMAP.md` and specs 048 / 058.
+> authoritative architecture is `CODEMAP.md` and specs 001 / 008.
 
 This template's API was converted from Express 5 to **Encore.ts**. The Vue
 frontends (`apps/web`, `apps/web-internal`) and the GoA Design System are

@@ -5,10 +5,10 @@
  * and exercise the lib functions that power the CLI scripts.
  *
  * The auth-* / service-auth modules and the @template/auth barrel generator
- * were retired in spec 061 (auth-driver selection is configuration over the
+ * were retired in spec 009 (auth-driver selection is configuration over the
  * in-app drivers, not file-copy modules). The four surviving cross-cutting
  * modules (security-core, api-gateway, data-postgres, data-redis) were
- * converted to thin declarative overlays in spec 063 (no apps/api/src/**
+ * converted to thin declarative overlays in spec 007 (no apps/api/src/**
  * payloads; their backend function is in the base app's lib/db/gateway), so
  * security-core/data-* own no files and api-gateway contributes only its
  * frontend connectivity view. Service composition is exercised via the
@@ -241,7 +241,7 @@ describe('add-module workflow', () => {
     const state = simulateAddModule(tmpDir, 'security-core')
     expect(isModuleInstalled(state, 'security-core')).toBe(true)
 
-    // Converted to a declarative overlay (spec 063): no apps/api/src/** payload.
+    // Converted to a declarative overlay (spec 007): no apps/api/src/** payload.
     const manifest = manifestSchema.parse(
       JSON.parse(fs.readFileSync(path.join(tmpDir, 'modules/security-core/manifest.json'), 'utf-8')),
     )
@@ -320,7 +320,7 @@ describe('Encore service-module composition (fixture)', () => {
   })
 })
 
-// ─── Real user-management Encore service module (spec 061 P3) ───────────────
+// ─── Real user-management Encore service module (spec 009) ──────────────────
 //
 // The reference feature module: composing it copies a real Encore service
 // directory and merges its migration onto the next free prefix. (Its SQL/graph

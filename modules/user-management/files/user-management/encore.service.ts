@@ -4,7 +4,7 @@ import { csrfMiddleware } from "../lib/csrf";
 import { apiRateLimit } from "../lib/rate-limit";
 
 /**
- * User-management service (spec 061) — the reference Encore feature module.
+ * User-management service (spec 009): the reference Encore feature module.
  *
  * Owns the app-managed role catalog (app_role) and per-user assignments
  * (user_role), and the admin CRUD surface over them at /api/v1/admin/*.

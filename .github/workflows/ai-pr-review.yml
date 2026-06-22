@@ -1,4 +1,4 @@
-# Spec: 046-ai-pr-review
+# Spec: 017-ai-pr-review
 #
 # AI-Powered PR Review. Uses the Claude Code CLI (subscription-OAuth,
 # App-free) to review the PR diff for bugs, security issues, and
@@ -20,7 +20,7 @@
 name: AI PR Review
 
 on:
-  # Spec 046 — dispatched as a reusable workflow from ci.yml so the AI
+  # Spec 017: dispatched as a reusable workflow from ci.yml so the AI
   # review is part of the orchestrated PR-gate suite and the terminal
   # `ci-gate` `needs:` it (a failed or absent review blocks merge; green
   # ci-gate ⇒ actually reviewed or visibly skipped). It does NOT trigger

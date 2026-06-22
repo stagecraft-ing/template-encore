@@ -21,16 +21,7 @@ export default defineConfig(({ mode }) => {
   const apiProtocol = hasTls ? 'https' : 'http'
 
   return {
-    plugins: [
-      vue({
-        template: {
-          compilerOptions: {
-            // Treat GoA web components as custom elements
-            isCustomElement: (tag) => tag.startsWith('goab-') || tag.startsWith('goa-'),
-          },
-        },
-      }),
-    ],
+    plugins: [vue()],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

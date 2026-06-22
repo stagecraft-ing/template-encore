@@ -1,180 +1,139 @@
 <template>
-  <div class="profile-view">
-    <div class="page-topbar">
-      <h1>User Profile</h1>
-    </div>
-
-    <div class="page-body">
-      <template v-if="loading">
-        <div
-          role="status"
-          aria-label="Loading profile information"
-          class="loading-state"
-        >
-          <goa-skeleton
-            type="text"
-            size="2"
+  <section class="profile">
+    <Card v-if="user">
+      <template #title>My profile</template>
+      <template #content>
+        <div class="profile__head">
+          <Avatar
+            :label="initials"
+            size="xlarge"
+            shape="circle"
           />
-          <goa-spacer vspacing="s" />
-          <goa-skeleton
-            type="text"
-            size="2"
-          />
-          <goa-spacer vspacing="s" />
-          <goa-skeleton
-            type="text"
-            size="2"
-          />
+          <div>
+            <h2 class="profile__name">{{ user.name }}</h2>
+            <p class="profile__email">{{ user.email }}</p>
+          </div>
         </div>
+
+        <dl class="profile__grid">
+          <div class="profile__row">
+            <dt>User ID</dt>
+            <dd>{{ user.id }}</dd>
+          </div>
+          <div class="profile__row">
+            <dt>Roles</dt>
+            <dd class="profile__roles">
+              <Tag
+                v-for="role in user.roles"
+                :key="role"
+                :value="role"
+              />
+            </dd>
+          </div>
+        </dl>
+
+        <Button
+          label="Sign out"
+          icon="pi pi-sign-out"
+          severity="secondary"
+          @click="onLogout"
+        />
       </template>
+    </Card>
 
-      <goa-callout
-        v-else-if="!user"
-        type="important"
-        heading="Not Authenticated"
-      >
-        <p>You are not currently authenticated. You will be redirected to sign in.</p>
-      </goa-callout>
-
-      <template v-else>
-        <goa-callout
-          type="success"
-          heading="Authenticated"
-        >
-          <p>Your profile information is retrieved from the authentication provider.</p>
-        </goa-callout>
-
-        <goa-spacer vspacing="l" />
-
-        <goa-container accent="thin">
-          <h2 class="section-title">
-            Profile Information
-          </h2>
-
-          <dl class="info-list">
-            <div class="info-row">
-              <dt>User ID</dt>
-              <dd class="mono">
-                {{ user.id }}
-              </dd>
-            </div>
-
-            <div class="info-row">
-              <dt>Full Name</dt>
-              <dd>{{ user.name }}</dd>
-            </div>
-
-            <div class="info-row">
-              <dt>Email Address</dt>
-              <dd>{{ user.email || 'Not provided' }}</dd>
-            </div>
-
-            <div
-              v-if="user.roles && user.roles.length"
-              class="info-row"
-            >
-              <dt>Roles</dt>
-              <dd class="roles">
-                <goa-badge
-                  v-for="role in user.roles"
-                  :key="role"
-                  type="information"
-                  :content="role"
-                />
-              </dd>
-            </div>
-          </dl>
-        </goa-container>
-
-        <goa-spacer vspacing="l" />
-
-        <goa-container>
-          <h2 class="section-title">
-            Session Information
-          </h2>
-
-          <dl class="info-list">
-            <div class="info-row">
-              <dt>Session Status</dt>
-              <dd>
-                <goa-badge
-                  type="success"
-                  content="Active"
-                />
-              </dd>
-            </div>
-          </dl>
-        </goa-container>
-      </template>
+    <div
+      v-else
+      class="profile__loading"
+    >
+      <ProgressSpinner style="width: 2.5rem; height: 2.5rem" />
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useAuthStore } from '../stores/auth.store'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import Card from 'primevue/card'
+import Avatar from 'primevue/avatar'
+import Tag from 'primevue/tag'
+import Button from 'primevue/button'
+import ProgressSpinner from 'primevue/progressspinner'
+import { useAuthStore } from '@/stores/auth.store'
 
 const authStore = useAuthStore()
-
+const router = useRouter()
 const user = computed(() => authStore.user)
-const loading = computed(() => authStore.loading)
 
-onMounted(async () => {
-  if (!user.value) {
-    await authStore.fetchUser()
+const initials = computed(() =>
+  (user.value?.name ?? '?')
+    .split(' ')
+    .map((part) => part.charAt(0))
+    .slice(0, 2)
+    .join('')
+    .toUpperCase(),
+)
+
+async function onLogout() {
+  try {
+    await authStore.logout()
+  } finally {
+    void router.push('/login')
   }
-})
+}
 </script>
 
 <style scoped>
-.section-title {
-  font-size: var(--goa-font-size-5);
-  font-weight: 600;
-  color: var(--goa-color-greyscale-black);
-  margin: 0 0 var(--goa-space-l) 0;
-}
-
-.info-list {
-  margin: 0;
-}
-
-.info-row {
+.profile__head {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: var(--goa-space-m) 0;
-  border-bottom: 1px solid var(--goa-color-greyscale-200);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.info-row:last-child {
-  border-bottom: none;
-}
-
-.info-row dt {
-  font-weight: 600;
-  color: var(--goa-color-greyscale-700);
-}
-
-.info-row dd {
+.profile__name {
   margin: 0;
-  color: var(--goa-color-greyscale-black);
 }
 
-.info-row dd.mono {
-  font-family: monospace;
-  font-size: var(--goa-font-size-3);
-  word-break: break-all;
-  max-width: 60%;
-  text-align: right;
+.profile__email {
+  margin: 0.25rem 0 0;
+  color: var(--app-text-muted);
 }
 
-.roles {
+.profile__grid {
+  margin: 0 0 1.5rem;
   display: flex;
-  gap: var(--goa-space-xs);
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.loading-state {
-  padding: var(--goa-space-l) 0;
+.profile__row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.profile__row dt {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--app-text-muted);
+}
+
+.profile__row dd {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.profile__roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-family: inherit;
+}
+
+.profile__loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
 }
 </style>

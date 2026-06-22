@@ -1,413 +1,140 @@
 <template>
-  <div class="home-view">
-    <!-- Hero Banner -->
-    <goa-hero-banner heading="Vue + Encore Enterprise Application Template">
-      <p>Production-ready Vue.js + Encore.ts + TypeScript template for enterprise applications with official GoA Design System, multi-driver authentication (SAML 2.0, Entra ID, Mock), and BFF API gateway.</p>
-    </goa-hero-banner>
-
-    <goa-spacer vspacing="xl" />
-
-    <goa-callout
-      type="success"
-      heading="Production Ready"
-    >
-      <p><strong>All 8 phases complete.</strong> This template is fully documented and ready for production use in enterprise applications.</p>
-      <p>
-        Visit the <router-link to="/about">
-          About page
-        </router-link> to see detailed implementation progress and technical achievements.
+  <section class="home">
+    <div class="home__hero">
+      <Tag
+        value="Spec-governed template"
+        severity="secondary"
+        rounded
+      />
+      <h1 class="home__title">Vue + Encore enterprise template</h1>
+      <p class="home__lead">
+        A production-shaped starting point: an Encore.ts backend with multi-driver SSO,
+        stateless JWT auth, and a BFF gateway, paired with a Vue 3 + PrimeVue SPA.
       </p>
-    </goa-callout>
-
-    <goa-spacer vspacing="l" />
-
-    <!-- Stats Section -->
-    <section>
-      <h2 class="section-title">
-        Template Overview
-      </h2>
-      <div class="stats-grid">
-        <goa-container accent="thin">
-          <div class="stat-content">
-            <strong class="stat-number">5</strong>
-            <span class="stat-label">Packages</span>
-          </div>
-        </goa-container>
-
-        <goa-container accent="thin">
-          <div class="stat-content">
-            <strong class="stat-number">2</strong>
-            <span class="stat-label">Applications</span>
-          </div>
-        </goa-container>
-
-        <goa-container accent="thin">
-          <div class="stat-content">
-            <strong class="stat-number">100%</strong>
-            <span class="stat-label">TypeScript</span>
-          </div>
-        </goa-container>
-
-        <goa-container accent="thin">
-          <div class="stat-content">
-            <strong class="stat-number">2</strong>
-            <span class="stat-label">Auth Drivers</span>
-          </div>
-        </goa-container>
+      <div class="home__cta">
+        <Button
+          v-if="!isAuthenticated"
+          label="Sign in"
+          icon="pi pi-sign-in"
+          @click="go('/login')"
+        />
+        <Button
+          v-else
+          label="View profile"
+          icon="pi pi-user"
+          @click="go('/profile')"
+        />
+        <Button
+          label="Learn more"
+          icon="pi pi-arrow-right"
+          icon-pos="right"
+          severity="secondary"
+          outlined
+          @click="go('/about')"
+        />
       </div>
-    </section>
+    </div>
 
-    <goa-spacer vspacing="xl" />
-
-    <!-- Quick Links -->
-    <section>
-      <h2 class="section-title">
-        Quick Links
-      </h2>
-      <div class="card-grid">
-        <goa-card>
-          <h3>Architecture</h3>
-          <p>System design, BFF pattern, and driver architecture</p>
-          <goa-button
-            type="tertiary"
-            trailingicon="arrow-forward"
-          >
-            View Documentation
-          </goa-button>
-        </goa-card>
-
-        <goa-card>
-          <h3>Development</h3>
-          <p>Getting started, workflow, and best practices</p>
-          <goa-button
-            type="tertiary"
-            trailingicon="arrow-forward"
-          >
-            View Documentation
-          </goa-button>
-        </goa-card>
-
-        <goa-card>
-          <h3>Authentication</h3>
-          <p>SAML (your SAML IdP) setup guide</p>
-          <goa-button
-            type="tertiary"
-            trailingicon="arrow-forward"
-          >
-            View Documentation
-          </goa-button>
-        </goa-card>
-
-        <goa-card>
-          <h3>Deployment</h3>
-          <p>Azure, OpenShift, and Kubernetes guides</p>
-          <goa-button
-            type="tertiary"
-            trailingicon="arrow-forward"
-          >
-            View Documentation
-          </goa-button>
-        </goa-card>
-
-        <goa-card>
-          <h3>GoA Components</h3>
-          <p>Design System integration and usage</p>
-          <goa-button
-            type="tertiary"
-            trailingicon="arrow-forward"
-          >
-            View Documentation
-          </goa-button>
-        </goa-card>
-
-        <goa-card>
-          <h3>Template Guide</h3>
-          <p>Step-by-step customization instructions</p>
-          <goa-button
-            type="tertiary"
-            trailingicon="arrow-forward"
-          >
-            View Documentation
-          </goa-button>
-        </goa-card>
-      </div>
-    </section>
-
-    <goa-spacer vspacing="xl" />
-
-    <!-- Key Features -->
-    <section>
-      <h2 class="section-title">
-        Key Features
-      </h2>
-      <div class="card-grid">
-        <goa-card>
-          <div class="feature-content">
-            <goa-icon
-              type="lock-closed"
-              size="large"
-              aria-hidden="true"
-            />
-            <h3>SAML Authentication</h3>
-            <p>SAML 2.0 (your SAML IdP) + Mock (development)</p>
-          </div>
-        </goa-card>
-
-        <goa-card>
-          <div class="feature-content">
-            <goa-icon
-              type="color-palette"
-              size="large"
-              aria-hidden="true"
-            />
-            <h3>GoA Design System</h3>
-            <p>Official @abgov/web-components with Vue wrappers and TypeScript support</p>
-          </div>
-        </goa-card>
-
-        <goa-card>
-          <div class="feature-content">
-            <goa-icon
-              type="shield-checkmark"
-              size="large"
-              aria-hidden="true"
-            />
-            <h3>Security Hardened</h3>
-            <p>Helmet CSP, CORS, rate limiting, CSRF protection, input validation</p>
-          </div>
-        </goa-card>
-
-        <goa-card>
-          <div class="feature-content">
-            <goa-icon
-              type="cube"
-              size="large"
-              aria-hidden="true"
-            />
-            <h3>Platform Agnostic</h3>
-            <p>Docker containerized, deploys to Azure, OpenShift, or Kubernetes</p>
-          </div>
-        </goa-card>
-
-        <goa-card>
-          <div class="feature-content">
-            <goa-icon
-              type="document-text"
-              size="large"
-              aria-hidden="true"
-            />
-            <h3>Type-Safe Config</h3>
-            <p>Zod validation with 50+ environment variables and runtime checks</p>
-          </div>
-        </goa-card>
-
-        <goa-card>
-          <div class="feature-content">
-            <goa-icon
-              type="flask"
-              size="large"
-              aria-hidden="true"
-            />
-            <h3>Comprehensive Testing</h3>
-            <p>Vitest (unit), Supertest (integration), Playwright (E2E)</p>
-          </div>
-        </goa-card>
-      </div>
-    </section>
-
-    <goa-spacer vspacing="xl" />
-
-    <!-- Component Demo -->
-    <section>
-      <h2 class="section-title">
-        Component Demonstration
-      </h2>
-      <goa-container>
-        <div class="demo-grid">
-          <div class="demo-section">
-            <h3>Buttons</h3>
-            <goa-button-group gap="relaxed">
-              <GoabButton type="primary">
-                Primary
-              </GoabButton>
-              <GoabButton type="secondary">
-                Secondary
-              </GoabButton>
-              <GoabButton type="tertiary">
-                Tertiary
-              </GoabButton>
-            </goa-button-group>
-          </div>
-
-          <div class="demo-section">
-            <h3>Input Field</h3>
-            <goa-form-item
-              label="Email Address"
-              requirement="required"
-            >
-              <GoabInput
-                v-model="demoEmail"
-                type="email"
-                placeholder="Enter your email"
-              />
-            </goa-form-item>
-            <p
-              v-if="demoEmail"
-              class="demo-value"
-            >
-              Value: {{ demoEmail }}
-            </p>
-          </div>
-        </div>
-      </goa-container>
-    </section>
-
-    <goa-spacer vspacing="l" />
-
-    <!-- Action Buttons -->
-    <goa-button-group gap="relaxed">
-      <GoabButton
-        type="primary"
-        @click="openModal"
+    <div class="home__features">
+      <Card
+        v-for="feature in features"
+        :key="feature.title"
       >
-        Open Modal Demo
-      </GoabButton>
-      <a
-        href="/health"
-        target="_blank"
-        style="text-decoration: none;"
-      >
-        <GoabButton type="secondary">
-          Test API Health
-        </GoabButton>
-      </a>
-    </goa-button-group>
-
-    <!-- Modal Demo -->
-    <GoabModal
-      heading="Modal Demonstration"
-      :open="showModal"
-      :closable="true"
-      @close="showModal = false"
-    >
-      <p>This is a GoA modal component wrapped in Vue with proper TypeScript support and event handling.</p>
-      <goa-spacer vspacing="l" />
-      <GoabButton
-        type="primary"
-        @click="showModal = false"
-      >
-        Close Modal
-      </GoabButton>
-    </GoabModal>
-  </div>
+        <template #header>
+          <i
+            :class="feature.icon"
+            class="home__feature-icon"
+            aria-hidden="true"
+          />
+        </template>
+        <template #title>{{ feature.title }}</template>
+        <template #content>
+          <p>{{ feature.body }}</p>
+        </template>
+      </Card>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { GoabButton, GoabInput, GoabModal } from '../components/goa'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import Tag from 'primevue/tag'
+import { useAuthStore } from '@/stores/auth.store'
 
-const demoEmail = ref('')
-const showModal = ref(false)
+const router = useRouter()
+const authStore = useAuthStore()
+const isAuthenticated = computed(() => authStore.isAuthenticated)
 
-function openModal() {
-  showModal.value = true
+const features = [
+  {
+    icon: 'pi pi-shield',
+    title: 'Multi-driver auth',
+    body: 'Mock, Microsoft Entra ID, and SAML 2.0 SSO behind one uniform login surface, with RS256 JWT and refresh rotation.',
+  },
+  {
+    icon: 'pi pi-server',
+    title: 'BFF gateway',
+    body: 'The SPA never talks to the private backend directly; a server-to-server OAuth proxy injects credentials and masks errors.',
+  },
+  {
+    icon: 'pi pi-check-circle',
+    title: 'Spec-governed',
+    body: 'Every change is bound to a markdown spec and mechanically reconciled against the code that implements it.',
+  },
+]
+
+function go(path: string) {
+  void router.push(path)
 }
 </script>
 
 <style scoped>
-.home-view {
-  max-width: 100%;
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
 }
 
-.section-title {
-  font-size: var(--goa-font-size-6);
-  font-weight: 600;
-  color: var(--goa-color-greyscale-black);
-  margin-bottom: var(--goa-space-l);
+.home__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 2rem 0 1rem;
 }
 
-/* Stats */
-.stat-content {
-  text-align: center;
-  padding: var(--goa-space-m);
-}
-
-.stat-number {
-  display: block;
-  font-size: var(--goa-font-size-8);
-  font-weight: 700;
-  color: var(--goa-color-interactive-default);
-  line-height: 1;
-}
-
-.stat-label {
-  display: block;
-  font-size: var(--goa-font-size-3);
-  color: var(--goa-color-greyscale-700);
-  margin-top: var(--goa-space-xs);
-}
-
-/* Features */
-.feature-content {
-  text-align: center;
-  padding: var(--goa-space-m);
-}
-
-.feature-content goa-icon {
-  margin-bottom: var(--goa-space-m);
-  color: var(--goa-color-interactive-default);
-}
-
-.feature-content h3 {
-  margin: 0 0 var(--goa-space-xs) 0;
-  font-size: var(--goa-font-size-4);
-  color: var(--goa-color-greyscale-black);
-}
-
-.feature-content p {
+.home__title {
   margin: 0;
-  font-size: var(--goa-font-size-3);
-  color: var(--goa-color-greyscale-700);
-  line-height: var(--goa-line-height-3);
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
 }
 
-/* Demo */
-.demo-grid {
+.home__lead {
+  margin: 0;
+  max-width: 60ch;
+  font-size: 1.125rem;
+  color: var(--app-text-muted);
+}
+
+.home__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.home__features {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--goa-space-xl);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
 }
 
-@media (min-width: 640px) {
-  .demo-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.demo-section h3 {
-  margin: 0 0 var(--goa-space-m) 0;
-  font-size: var(--goa-font-size-4);
-  color: var(--goa-color-greyscale-black);
-}
-
-.demo-value {
-  margin-top: var(--goa-space-s);
-  font-size: var(--goa-font-size-3);
-  color: var(--goa-color-interactive-default);
-  font-weight: 600;
-}
-
-/* Cards */
-.card-grid goa-card h3 {
-  margin: 0 0 var(--goa-space-xs) 0;
-  font-size: var(--goa-font-size-4);
-  color: var(--goa-color-greyscale-black);
-}
-
-.card-grid goa-card p {
-  margin: 0 0 var(--goa-space-m) 0;
-  font-size: var(--goa-font-size-3);
-  color: var(--goa-color-greyscale-700);
-  line-height: var(--goa-line-height-3);
+.home__feature-icon {
+  display: block;
+  padding: 1.25rem 1.25rem 0;
+  font-size: 1.75rem;
+  color: var(--p-primary-600);
 }
 </style>

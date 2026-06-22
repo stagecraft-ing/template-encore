@@ -4,11 +4,11 @@
 [![Vue 3](https://img.shields.io/badge/Vue-3.5-green)](https://vuejs.org/)
 [![Encore.ts](https://img.shields.io/badge/Encore.ts-1.57-purple)](https://encore.dev/)
 [![Node 24](https://img.shields.io/badge/Node-24.x-green)](https://nodejs.org/)
-[![GoA Design System](https://img.shields.io/badge/GoA-Design%20System-blue)](https://design.alberta.ca/)
+[![PrimeVue](https://img.shields.io/badge/PrimeVue-4-blue)](https://primevue.org/)
 
 Monorepo template for enterprise applications: public-facing (external user) and internal (staff). An
-**Encore.ts** backend (BFF API gateway, stateless RS256 JWT auth, Postgres) plus two Vue 3 SPAs built on the
-GoA Design System, with pluggable authentication (SAML 2.0, Microsoft Entra ID, Mock) and TypeScript throughout.
+**Encore.ts** backend (BFF API gateway, stateless RS256 JWT auth, Postgres) plus two Vue 3 SPAs built on
+PrimeVue, with pluggable authentication (SAML 2.0, Microsoft Entra ID, Mock) and TypeScript throughout.
 
 > **Backend = Encore.ts.** The original Express 5 BFF was retired in the Encore migration (specs 048 to 054).
 > See [`CODEMAP.md`](CODEMAP.md) for the architectural blueprint and `specs/048-encore-app-architecture` /
@@ -107,7 +107,7 @@ npm run gen:client       # regenerate the typed client → apps/web/src/lib/enco
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Development workflow and conventions |
 | [docs/TESTING.md](docs/TESTING.md) | Testing strategy (unit / E2E) |
 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common issues and solutions |
-| [docs/GOA-COMPONENTS.md](docs/GOA-COMPONENTS.md) | GoA Design System component usage |
+| [PrimeVue documentation](https://primevue.org/) | UI component library (Aura theme) used by both SPAs |
 
 > The generator/module docs ([docs/TEMPLATE-USER-GUIDE.md](docs/TEMPLATE-USER-GUIDE.md),
 > [docs/DUAL-APP-GUIDE.md](docs/DUAL-APP-GUIDE.md), the `MODULARIZATION-*` and `MODULE-DEVELOPMENT-GUIDE`

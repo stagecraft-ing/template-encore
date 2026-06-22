@@ -5,41 +5,28 @@
       class="skip-link"
     >Skip to main content</a>
 
-    <goa-microsite-header
-      type="alpha"
-      version="live"
-    />
-
     <AppHeader
       :service-name="serviceName"
       :user="user"
       :navigation-items="navigationItems"
     />
 
-    <main id="main-content">
-      <div class="page-content">
+    <main
+      id="main-content"
+      class="app-main"
+    >
+      <div class="page">
         <slot />
       </div>
     </main>
 
-    <AppFooter />
+    <AppFooter :service-name="serviceName" />
   </div>
 </template>
 
 <script setup lang="ts">
 import AppHeader from './AppHeader.vue'
 import AppFooter from './AppFooter.vue'
-
-/**
- * AppLayout - Main application layout wrapper
- *
- * Provides consistent page structure with:
- * - GoA-compliant header (with navigation)
- * - Centered content area
- * - GoA-compliant footer (sticky at bottom)
- *
- * Navigation has been moved into the header per GoA design patterns.
- */
 
 interface NavigationItem {
   path: string
@@ -59,11 +46,9 @@ withDefaults(
   }>(),
   {
     serviceName: 'Application Template',
-    navigationItems: () => [
-      { path: '/', label: 'Home' },
-      { path: '/about', label: 'About' }
-    ]
-  }
+    user: null,
+    navigationItems: () => [],
+  },
 )
 </script>
 
@@ -74,20 +59,13 @@ withDefaults(
   flex-direction: column;
 }
 
-.skip-link {
-  position: absolute;
-  top: -100%;
-  left: var(--goa-space-m);
-  z-index: 9999;
-  padding: var(--goa-space-s) var(--goa-space-m);
-  background: var(--goa-color-interactive-default);
-  color: var(--goa-color-greyscale-white);
-  text-decoration: none;
-  border-radius: var(--goa-border-radius-m);
-  font-weight: 600;
+.app-main {
+  flex: 1 0 auto;
 }
 
-.skip-link:focus {
-  top: var(--goa-space-m);
+.page {
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
 }
 </style>

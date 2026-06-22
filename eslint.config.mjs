@@ -69,13 +69,6 @@ export default tseslint.config(
     rules: {
       'vue/multi-word-component-names': 'off',
       'vue/require-default-prop': 'off',
-      // Allow native slot attribute — required for GoA web components (custom elements)
-      'vue/no-deprecated-slot-attribute': 'off',
-      // goa-file-upload-input dispatches _selectFile (camelCase CustomEvent, not _select-file).
-      // Source: @abgov/web-components/index.js — dispatchEvent("_selectFile", ...).
-      // Vue 3 calls addEventListener with the exact name on native custom elements; no
-      // hyphenation is applied at runtime. This ignore prevents a false-positive lint warning.
-      'vue/v-on-event-hyphenation': ['warn', 'always', { ignore: ['_selectFile'] }],
       // Disable unsafe-* type-checked rules for Vue SFCs — projectService
       // cannot fully resolve Vue compiler-generated types, causing false positives.
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],

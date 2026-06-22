@@ -1,299 +1,74 @@
-/* Import GoA design tokens - must be first */
-@import "@abgov/design-tokens/dist/tokens.css";
+/* Global styles for the internal SPA. Component styling comes from PrimeVue
+   (Aura preset); this sheet provides resets, app-level tokens, base typography,
+   and the accessibility skip link. Per-component chrome lives in scoped styles. */
 
-/* Import GoA web components CSS */
-@import "@abgov/web-components/index.css";
+:root {
+  --app-sidebar-width: 256px;
+  --app-radius: 12px;
+  --app-bg: #f1f5f9;
+  --app-surface: #ffffff;
+  --app-border: #e2e8f0;
+  --app-text: #0f172a;
+  --app-text-muted: #64748b;
+}
 
-/* Base styles - Internal/Authenticated layout */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --app-bg: #0b1120;
+    --app-surface: #111827;
+    --app-border: #1f2937;
+    --app-text: #e5e7eb;
+    --app-text-muted: #94a3b8;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
 
-html {
-  height: 100%;
-}
-
+html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
-  font-family: var(--goa-font-family-sans);
-  font-size: var(--goa-font-size-4);
-  line-height: var(--goa-line-height-3);
-  color: var(--goa-color-greyscale-black);
-  background: var(--goa-color-greyscale-100, #f1f1f1);
 }
 
-/* Vue cloak directive */
-[v-cloak] {
-  display: none;
+body {
+  font-family:
+    Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--app-bg);
+  color: var(--app-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Internal page topbar pattern (from authenticated design samples) */
-.page-topbar {
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid var(--goa-color-greyscale-200, #dcdcdc);
-  flex-shrink: 0;
+#app {
+  min-height: 100vh;
 }
 
-.page-topbar h1 {
-  font-size: 1.375rem;
-  font-weight: 700;
-  color: var(--goa-color-greyscale-black);
-  margin: 0;
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  font-weight: 650;
 }
 
-.page-topbar p {
-  font-size: 0.9375rem;
-  color: var(--goa-color-text-secondary, #666);
-  margin: 4px 0 0;
+a {
+  color: var(--p-primary-600);
 }
 
-/* Page topbar with left/right sections */
-.page-topbar-left h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 4px;
-}
-
-.page-topbar-left p {
-  font-size: 0.9375rem;
-  color: var(--goa-color-text-secondary, #666);
-  margin: 0;
-}
-
-/* Internal page body pattern */
-.page-body {
-  padding: 16px 20px 24px;
-  flex: 1;
-}
-
-@media (min-width: 768px) {
-  .page-topbar {
-    padding: 24px 32px 16px;
-  }
-
-  .page-topbar h1 {
-    font-size: 1.5rem;
-  }
-
-  .page-body {
-    padding: 24px 32px;
-  }
-}
-
-/* Panel card (from authenticated design samples) */
-.panel {
-  background: #fff;
-  border: 1px solid var(--goa-color-greyscale-200, #dcdcdc);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px 12px;
-}
-
-.panel-header h2 {
-  font-size: 1rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.panel-body {
-  padding: 0 18px 14px;
-}
-
-.panel-footer {
-  padding: 10px 18px 14px;
-  border-top: 1px solid var(--goa-color-greyscale-100, #f1f1f1);
-}
-
-/* Panel grid utility */
-.panel-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 640px) {
-  .panel-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Content grid (asymmetric two-column) */
-.content-grid {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 16px;
-  align-items: start;
-}
-
-@media (max-width: 960px) {
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Toolbar pattern (list/table pages) */
-.toolbar {
-  display: flex;
-  gap: var(--goa-space-m, 16px);
-  margin-bottom: var(--goa-space-m, 16px);
-  align-items: flex-end;
-}
-
-.toolbar .search-wrap {
-  flex: 1;
-  min-width: 220px;
-}
-
-.toolbar .filter-btn-wrap {
-  flex-shrink: 0;
-  padding-bottom: 1px;
-}
-
-/* Filter chips */
-.filter-chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: var(--goa-space-m, 16px);
-  min-height: 0;
-}
-
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #e8f0fe;
-  color: #1a4cc0;
-  border: 1px solid #c2d1f5;
-  border-radius: 20px;
-  padding: 3px 10px 3px 12px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-}
-
-.filter-chip button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  color: #1a4cc0;
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.filter-chip button:hover {
-  color: #0d2a7a;
-}
-
-/* Sortable table headers */
-th.sortable {
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-}
-
-th.sortable:hover {
-  background: var(--goa-color-greyscale-100, #f1f1f1);
-}
-
-.sort-icon {
-  display: inline-block;
-  margin-left: 4px;
-  font-size: 1rem;
-  color: #bbb;
-  vertical-align: middle;
-  position: relative;
-  top: 2px;
-}
-
-th.sort-asc .sort-icon,
-th.sort-desc .sort-icon {
-  color: #333;
-}
-
-/* Drawer content */
-.drawer-body {
-  padding: 4px 0;
-}
-
-.drawer-section {
-  margin-bottom: 28px;
-}
-
-.drawer-section-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #555;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0 0 12px;
-}
-
-.drawer-check-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* No results */
-.no-results {
-  text-align: center;
-  padding: 48px 24px;
-  color: #666;
-  font-size: 0.9375rem;
-}
-
-/* Visually hidden utility for screen readers */
-.visually-hidden {
+.skip-link {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: var(--p-primary-600);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
 }
 
-/* Reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* Custom scrollbar for webkit browsers using GoA tokens */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--goa-color-greyscale-100);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--goa-color-greyscale-500);
-  border-radius: var(--goa-border-radius-m);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--goa-color-greyscale-700);
+.skip-link:focus {
+  top: 1rem;
 }

@@ -1,18 +1,16 @@
--- Refresh-token store — enables rotation + server-side revocation
--- (logout-everywhere), which a purely stateless JWT scheme cannot provide.
---
--- Only the sha256 hash of the refresh token is stored, never the token itself.
--- On refresh: look up by hash, revoke the presented row, issue a new pair. A
--- replayed (already-rotated) refresh token fails the lookup.
-
-CREATE TABLE IF NOT EXISTS refresh_token (
-  pk_refresh_token  TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  fk_user_account   TEXT NOT NULL REFERENCES user_account(pk_user_account) ON DELETE CASCADE,
-  token_hash        TEXT NOT NULL UNIQUE,
-  expires_at        TIMESTAMPTZ NOT NULL,
-  revoked_at        TIMESTAMPTZ,
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+-- Hash-only refresh-token store with rotation and server-side revocation (INV-7).
+-- The raw refresh token is never persisted: only its SHA-256 hash is stored.
+CREATE TABLE refresh_token (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES user_account(id) ON DELETE CASCADE,
+  token_hash  TEXT NOT NULL UNIQUE,
+  issued_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at  TIMESTAMPTZ NOT NULL,
+  revoked_at  TIMESTAMPTZ,
+  replaced_by UUID REFERENCES refresh_token(id) ON DELETE SET NULL,
+  user_agent  TEXT,
+  ip_address  TEXT
 );
 
-CREATE INDEX IF NOT EXISTS idx_refresh_token_user ON refresh_token (fk_user_account);
-CREATE INDEX IF NOT EXISTS idx_refresh_token_hash ON refresh_token (token_hash);
+CREATE INDEX idx_refresh_token_user ON refresh_token (user_id);
+CREATE INDEX idx_refresh_token_active ON refresh_token (user_id) WHERE revoked_at IS NULL;

@@ -6,44 +6,42 @@
     :secondary-items="secondaryItems"
     :account-items="accountItems"
   >
-    <div
+    <Message
       v-if="showSessionExpired"
-      class="session-expired-banner"
+      severity="warn"
+      :closable="false"
+      class="session-banner"
     >
-      <goa-callout
-        type="emergency"
-        heading="Session Expired"
-      >
-        <p>Your session has expired. Please sign in again to continue.</p>
-        <goa-spacer vspacing="s" />
-        <goa-button-group gap="relaxed">
-          <GoabButton
-            type="primary"
+      <div class="session-banner__body">
+        <span>Your session has expired. Please sign in again to continue.</span>
+        <div class="session-banner__actions">
+          <Button
+            label="Sign in"
+            size="small"
             @click="goToSignIn"
-          >
-            Sign In
-          </GoabButton>
-          <GoabButton
-            type="tertiary"
+          />
+          <Button
+            label="Dismiss"
+            size="small"
+            severity="secondary"
+            text
             @click="dismissSessionExpired"
-          >
-            Dismiss
-          </GoabButton>
-        </goa-button-group>
-      </goa-callout>
-      <goa-spacer vspacing="m" />
-    </div>
-    <router-view />
+          />
+        </div>
+      </div>
+    </Message>
+    <RouterView />
   </AppLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import Message from 'primevue/message'
+import Button from 'primevue/button'
 import { useAuthStore } from './stores/auth.store'
 import { useNavigation } from './composables/useNavigation'
 import AppLayout from './components/layout/AppLayout.vue'
-import { GoabButton } from './components/goa'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -53,9 +51,12 @@ const user = computed(() => authStore.user)
 
 const showSessionExpired = ref(false)
 
-watch(() => authStore.sessionExpired, (expired) => {
-  if (expired) showSessionExpired.value = true
-})
+watch(
+  () => authStore.sessionExpired,
+  (expired) => {
+    if (expired) showSessionExpired.value = true
+  },
+)
 
 function dismissSessionExpired() {
   showSessionExpired.value = false
@@ -72,3 +73,22 @@ onMounted(async () => {
   await authStore.fetchUser()
 })
 </script>
+
+<style scoped>
+.session-banner {
+  margin: 0 0 1rem;
+}
+
+.session-banner__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.session-banner__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+</style>

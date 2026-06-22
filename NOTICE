@@ -8,17 +8,6 @@ under its own license. Attribution and license notices below are preserved as
 required by those licenses.
 
 -------------------------------------------------------------------------------
-Government of Alberta Design System
-  Packages: @abgov/web-components, @abgov/design-tokens
-  License:  Apache License 2.0
-  Source:   https://github.com/GovAlta/ui-components
-
-  This template consumes the publicly published Government of Alberta Design
-  System component library. The library's header and footer components render
-  Government of Alberta branding by design; consult the upstream project for
-  branding and usage terms.
-
--------------------------------------------------------------------------------
 Encore (encore.dev)
   License: Mozilla Public License 2.0
   Source:  https://github.com/encoredev/encore

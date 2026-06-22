@@ -1,34 +1,30 @@
 {
   "$schema": "https://encore.dev/schemas/infra.schema.json",
-
-  "secrets": {
-    "JWT_PRIVATE_KEY":         { "$env": "JWT_PRIVATE_KEY" },
-    "JWT_PUBLIC_KEY":          { "$env": "JWT_PUBLIC_KEY" },
-    "JWT_REFRESH_PRIVATE_KEY": { "$env": "JWT_REFRESH_PRIVATE_KEY" },
-    "JWT_REFRESH_PUBLIC_KEY":  { "$env": "JWT_REFRESH_PUBLIC_KEY" },
-    "CSRF_SECRET":             { "$env": "CSRF_SECRET" },
-
-    "ENTRA_CLIENT_ID":         { "$env": "ENTRA_CLIENT_ID" },
-    "ENTRA_CLIENT_SECRET":     { "$env": "ENTRA_CLIENT_SECRET" },
-
-    "SAML_PRIVATE_KEY":        { "$env": "SAML_PRIVATE_KEY" },
-    "SAML_CERT_SP":            { "$env": "SAML_CERT_SP" },
-    "SAML_CERT":               { "$env": "SAML_CERT" },
-
-    "GATEWAY_OAUTH_CLIENT_ID":     { "$env": "GATEWAY_OAUTH_CLIENT_ID" },
-    "GATEWAY_OAUTH_CLIENT_SECRET": { "$env": "GATEWAY_OAUTH_CLIENT_SECRET" }
+  "metadata": {
+    "app_id": "vue-encore-enterprise-template",
+    "env_name": "self-host",
+    "env_type": "production",
+    "cloud": "local",
+    "base_url": "http://localhost:4000"
   },
-
   "sql_servers": [
     {
-      "host": "localhost:5432",
+      "host": "${SQL_HOST}",
       "databases": {
         "app": {
-          "name": "app",
-          "username": "app",
-          "password": { "$env": "POSTGRES_PASSWORD" }
+          "username": "${SQL_USERNAME}",
+          "password": { "$env": "SQL_PASSWORD" }
         }
       }
     }
-  ]
+  ],
+  "secrets": {
+    "JWT_PRIVATE_KEY": { "$env": "JWT_PRIVATE_KEY" },
+    "JWT_PUBLIC_KEY": { "$env": "JWT_PUBLIC_KEY" },
+    "JWT_REFRESH_PRIVATE_KEY": { "$env": "JWT_REFRESH_PRIVATE_KEY" },
+    "JWT_REFRESH_PUBLIC_KEY": { "$env": "JWT_REFRESH_PUBLIC_KEY" },
+    "ENTRA_CLIENT_SECRET": { "$env": "ENTRA_CLIENT_SECRET" },
+    "SAML_IDP_CERT": { "$env": "SAML_IDP_CERT" },
+    "GATEWAY_OAUTH_CLIENT_SECRET": { "$env": "GATEWAY_OAUTH_CLIENT_SECRET" }
+  }
 }

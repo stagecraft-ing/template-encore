@@ -1,40 +1,45 @@
-/**
- * Auth-related types — shared across the auth service.
- *
- * Multi-provider, multi-role by design (preserving the Express AuthUser model):
- *   - `provider` is an open string: "mock" | "entra-id" | "saml".
- *   - `roles` is a string[] sourced from the IdP (Entra role/group claims,
- *     SAML role attributes, or mock fixtures), refreshed on each login.
- */
-
-export interface SSOProfile {
-  provider: string;
-  providerId: string;
+/** Identity surfaced by the authHandler to every auth:true endpoint (spec 003). */
+export interface AuthData {
+  userID: string;
   email: string;
-  displayName: string;
-  roles?: string[];
+  name: string;
+  roles: string[];
+  ssoProvider: string;
+}
+
+/** Normalized profile a driver returns before it is resolved to a user_account row. */
+export interface SSOProfile {
+  ssoProvider: string;
+  ssoProviderId: string;
+  email: string;
+  name: string;
+  roles: string[];
   attributes?: Record<string, unknown>;
 }
 
+/** A row of the user_account table (snake_case as returned by the database). */
 export interface UserRecord {
-  pk_user_account: string;
-  user_email_address: string;
-  user_display_name: string;
+  id: string;
+  email: string;
+  name: string;
   user_roles: string[];
-  sso_provider_name: string;
+  sso_provider: string;
   sso_provider_id: string | null;
   attributes: Record<string, unknown>;
   is_active: boolean;
-  last_login_at: string | null;
-  created_at: string;
-  updated_at: string;
+  last_login_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
 }
 
-export interface RefreshTokenRecord {
-  pk_refresh_token: string;
-  fk_user_account: string;
-  token_hash: string;
-  expires_at: string;
-  revoked_at: string | null;
-  created_at: string;
+/** Bare profile payload returned by GET /api/v1/auth/me (spec 006 FR-001). */
+export interface MeResponse {
+  id: string;
+  email: string;
+  name: string;
+  roles: string[];
+  ssoProvider: string;
+  isActive: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
 }

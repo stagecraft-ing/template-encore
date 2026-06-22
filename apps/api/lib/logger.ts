@@ -1,44 +1,65 @@
-import log from "encore.dev/log";
-
 /**
- * Structured logger — thin wrapper over Encore's `encore.dev/log`.
+ * Structured logging with a PII guard (INV-11, compliance tag CC-006).
  *
- * Replaces the pino logger from the Express version. Encore writes JSON in
- * production and pretty-prints in dev; structured fields go through the
- * second argument, and trace IDs are attached automatically (no manual
- * correlation-id threading required):
- *
- *   import logger, { logSecurityEvent } from "../../lib/logger";
- *   logger.info("user logged in", { userId, provider: "entra-id" });
- *   logger.error(err, "DB query failed", { table: "user_account" });
- *   logSecurityEvent("authz.denied.unauthenticated", undefined, { ip, path });
+ * PII is never written to the log stream. LOG_PII is a development-only escape
+ * hatch and is refused in production: the module throws at load time if
+ * LOG_PII is true while NODE_ENV is production. Durable audit records (which do
+ * carry actor identity) go to the audit_log table via lib/audit.ts, not here.
  */
+import * as log from "encore.dev/log";
+import { env } from "./env";
 
-// CC-006: Fail fast if PII logging is enabled in production. Mirrors the
-// guard the Express app applied in createApp().
-if (process.env.NODE_ENV === "production" && process.env.LOG_PII === "true") {
-  throw new Error(
-    "LOG_PII=true is not permitted in production. Set LOG_PII=false or remove it."
-  );
+if (env.isProduction && env.logPii) {
+  throw new Error("LOG_PII must be false in production (CC-006 / INV-11)");
 }
 
-/**
- * Emit a structured security/audit event to the log stream. Ports
- * `logSecurityEvent` from the Express middleware/logger.middleware.ts — the
- * many auth/authz/CSRF events throughout the ported handlers route through
- * this. For durable, queryable audit records, use `logAuditEvent` (audit.ts),
- * which writes to the audit_log table.
- */
-export function logSecurityEvent(
-  event: string,
-  principal?: string,
-  fields: Record<string, unknown> = {}
-): void {
-  log.info(`security.event ${event}`, {
-    event,
-    principal: principal ?? "anonymous",
-    ...fields,
-  });
+// Normalized (lowercased, separators stripped) keys whose values are redacted.
+const PII_KEYS = new Set([
+  "email",
+  "name",
+  "password",
+  "token",
+  "accesstoken",
+  "refreshtoken",
+  "authorization",
+  "cookie",
+  "setcookie",
+  "ip",
+  "ipaddress",
+  "useragent",
+  "attributes",
+  "assertion",
+  "samlresponse",
+  "code",
+]);
+
+type Fields = Record<string, unknown>;
+
+function normalize(key: string): string {
+  return key.toLowerCase().replace(/[-_]/g, "");
 }
 
-export default log;
+export function redact(fields?: Fields): Fields | undefined {
+  if (!fields || env.logPii) return fields;
+  const out: Fields = {};
+  for (const [k, v] of Object.entries(fields)) {
+    out[k] = PII_KEYS.has(normalize(k)) ? "[redacted]" : v;
+  }
+  return out;
+}
+
+export function logInfo(message: string, fields?: Fields): void {
+  log.info(message, redact(fields));
+}
+export function logWarn(message: string, fields?: Fields): void {
+  log.warn(message, redact(fields));
+}
+export function logError(message: string, fields?: Fields): void {
+  log.error(message, redact(fields));
+}
+
+// CC-006: a dedicated channel for security-relevant events (login, csrf, rate
+// limiting, gateway access). Fields are redacted exactly like ordinary logs.
+export function logSecurityEvent(event: string, fields?: Fields): void {
+  log.info(`security.${event}`, redact(fields));
+}

@@ -1,34 +1,30 @@
 /**
- * Generate RS256 keypairs for local JWT signing.
+ * Generates the RS256 keypairs used to sign access and refresh tokens (INV-7).
+ * Writes PEM files into apps/api/keys/ (gitignored). Run via `npm run generate-keys`.
  *
- *   npm run generate-keys   (from apps/api)
- *
- * Writes four PEM files into apps/api/keys/ (gitignored). lib/jwt.ts loads
- * these when the corresponding Encore secret is unset — the dev convenience
- * path. In production, set JWT_PRIVATE_KEY / JWT_PUBLIC_KEY /
- * JWT_REFRESH_PRIVATE_KEY / JWT_REFRESH_PUBLIC_KEY as Encore secrets instead.
+ * For non-dev environments, set the matching Encore secrets from these PEM files
+ * (JWT_PRIVATE_KEY / JWT_PUBLIC_KEY / JWT_REFRESH_PRIVATE_KEY / JWT_REFRESH_PUBLIC_KEY)
+ * rather than shipping key files.
  */
-import crypto from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
+import { generateKeyPairSync } from "node:crypto";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-// Must match KEYS_DIR in lib/jwt.ts (process.cwd()/keys).
-const KEYS_DIR = path.resolve(process.cwd(), "keys");
+const keysDir = join(dirname(fileURLToPath(import.meta.url)), "..", "keys");
 
-function genPair(prefix: string): void {
-  const { privateKey, publicKey } = crypto.generateKeyPairSync("rsa", {
+function writePair(prefix: string): void {
+  const { publicKey, privateKey } = generateKeyPairSync("rsa", {
     modulusLength: 2048,
     publicKeyEncoding: { type: "spki", format: "pem" },
     privateKeyEncoding: { type: "pkcs8", format: "pem" },
   });
-  fs.writeFileSync(path.join(KEYS_DIR, `${prefix}-private.pem`), privateKey, { mode: 0o600 });
-  fs.writeFileSync(path.join(KEYS_DIR, `${prefix}-public.pem`), publicKey, { mode: 0o644 });
-  console.log(`  wrote ${prefix}-private.pem, ${prefix}-public.pem`);
+  writeFileSync(join(keysDir, `${prefix}-private.pem`), privateKey, { mode: 0o600 });
+  writeFileSync(join(keysDir, `${prefix}-public.pem`), publicKey, { mode: 0o644 });
+  console.log(`wrote ${prefix}-private.pem and ${prefix}-public.pem`);
 }
 
-fs.mkdirSync(KEYS_DIR, { recursive: true });
-console.log(`Generating RS256 keypairs in ${KEYS_DIR}`);
-genPair("jwt");
-genPair("jwt-refresh");
-console.log("\nDone. Suggested CSRF_SECRET for your .env:");
-console.log(`  CSRF_SECRET=${crypto.randomBytes(32).toString("base64")}`);
+mkdirSync(keysDir, { recursive: true });
+writePair("access");
+writePair("refresh");
+console.log("done: RS256 access + refresh keypairs written to apps/api/keys/");

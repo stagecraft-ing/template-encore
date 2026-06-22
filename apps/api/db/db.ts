@@ -1,22 +1,13 @@
 import { SQLDatabase } from "encore.dev/storage/sqldb";
 
 /**
- * Single shared "app" database. Encore provisions and migrates it
- * automatically:
- *   - `encore run` (dev) spins up a local Postgres via Docker and applies
- *     ./migrations/<n>_<slug>.up.sql in numeric order.
- *   - Deploy applies migrations against the configured DB before going live.
+ * The single application database (spec 001 locked decision; spec 002 INV-2).
  *
- * Queries use the tagged-template API. Parameters interpolated via ${…} are
- * automatically parameterized — there is no string-concat path (parameterized
- * SQL only):
+ * All access goes through Encore's tagged-template API, which auto-parameterizes
+ * every `${...}` interpolation: db.query`SELECT ... WHERE id = ${id}`. There is no
+ * string-concatenation path to the database (INV-2).
  *
- *   const user = await db.queryRow<{ pk_user_account: string }>`
- *     SELECT pk_user_account FROM user_account WHERE user_email_address = ${email}
- *   `;
- *   await db.exec`UPDATE user_account SET is_active = ${false} WHERE pk_user_account = ${id}`;
- *
- * For raw pg access (the migration runner, scripts), use db.connectionString.
+ * Migrations in ./migrations are applied automatically on `encore run` and deploy.
  */
 export const db = new SQLDatabase("app", {
   migrations: "./migrations",

@@ -6,10 +6,6 @@
         "source": "spec-edge"
       },
       {
-        "path": "apps/api",
-        "source": "manifest-metadata"
-      },
-      {
         "path": "apps/api/.env.example",
         "source": "spec-edge"
       },

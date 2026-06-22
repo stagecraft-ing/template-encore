@@ -1,82 +1,54 @@
+/**
+ * Driver discovery and the default-driver entry point (spec 003).
+ * A driver is listed only when its configuration is present (FR-003).
+ */
 import { api } from "encore.dev/api";
 import { env } from "../lib/env";
+import { ACCESS_COOKIE } from "../lib/cookie-config";
+import { parseCookies } from "../lib/cookies";
 import { verifyAccessToken } from "../lib/jwt";
-import { readCookie } from "../lib/cookies";
-import { COOKIE_NAMES } from "../lib/cookie-config";
+import { redirect, writeJson } from "./http";
 import { isMockEnabled } from "./mock";
 import { isEntraConfigured } from "./entra-id";
 import { isSamlConfigured } from "./saml";
 
-/**
- * Driver discovery + status + default-driver login redirect.
- *
- * Replaces the Express multi-driver router's /drivers, /status, and the
- * backward-compatible /login (which dispatched to the AUTH_DRIVER default).
- * Per-driver login/callback endpoints live in mock.ts / entra-id.ts / saml.ts.
- */
-
-function availableDrivers(): string[] {
-  const list: string[] = [];
-  if (isMockEnabled()) list.push("mock");
-  if (isEntraConfigured()) list.push("entra-id");
-  if (isSamlConfigured()) list.push("saml");
-  return list;
+export function configuredDrivers(): string[] {
+  const drivers: string[] = [];
+  if (isMockEnabled()) drivers.push("mock");
+  if (isEntraConfigured()) drivers.push("entra-id");
+  if (isSamlConfigured()) drivers.push("saml");
+  return drivers;
 }
 
-/** GET /api/v1/auth/drivers — list the SSO drivers available in this env. */
 export const drivers = api(
   { expose: true, method: "GET", path: "/api/v1/auth/drivers" },
-  async (): Promise<{ drivers: string[] }> => {
-    return { drivers: availableDrivers() };
-  }
+  async (): Promise<{ drivers: string[] }> => ({ drivers: configuredDrivers() }),
 );
 
-/**
- * GET /api/v1/auth/status — report auth state without requiring auth.
- * api.raw so it can inspect the access_token cookie and return
- * authenticated:false (rather than 401) when absent/expired.
- */
+// status is raw so it never returns 401: it simply reports whether the caller's
+// access cookie is currently valid.
 export const status = api.raw(
   { expose: true, method: "GET", path: "/api/v1/auth/status" },
-  async (req, resp) => {
-    const token = readCookie(
-      req.headers["cookie"],
-      COOKIE_NAMES.ACCESS_TOKEN
-    );
+  async (req, res) => {
+    const cookies = parseCookies(req.headers.cookie);
     let authenticated = false;
+    const token = cookies[ACCESS_COOKIE];
     if (token) {
       try {
-        verifyAccessToken(token);
+        await verifyAccessToken(token);
         authenticated = true;
       } catch {
         authenticated = false;
       }
     }
-    resp.setHeader("Content-Type", "application/json");
-    resp.writeHead(200);
-    resp.end(JSON.stringify({ authenticated, drivers: availableDrivers() }));
-  }
+    writeJson(res, 200, { authenticated, drivers: configuredDrivers() });
+  },
 );
 
-/**
- * GET /api/v1/auth/login — backward-compatible default-driver entry point.
- * Redirects to the configured AUTH_DRIVER's login, or the only available
- * driver. The SPA can also link directly to /api/v1/auth/<driver>/login.
- */
+// Redirect to the configured default driver's login.
 export const login = api.raw(
   { expose: true, method: "GET", path: "/api/v1/auth/login" },
-  async (_req, resp) => {
-    const available = availableDrivers();
-    const preferred =
-      env.AUTH_DRIVER && available.includes(env.AUTH_DRIVER)
-        ? env.AUTH_DRIVER
-        : available[0];
-    if (!preferred) {
-      resp.writeHead(503, { "Content-Type": "application/json" });
-      resp.end(JSON.stringify({ code: "unavailable", message: "No auth drivers configured" }));
-      return;
-    }
-    resp.writeHead(302, { Location: `/api/v1/auth/${preferred}/login` });
-    resp.end();
-  }
+  async (_req, res) => {
+    redirect(res, `/api/v1/auth/${env.authDriver}/login`);
+  },
 );

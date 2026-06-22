@@ -9,14 +9,14 @@ defers_to:
   - api-web-standards (enterprise web API standards: read for compliance)
   - api-rest-standards (REST design standards: read for compliance)
   - api-security (API security standards: read for compliance)
-  - ci-design-system (GoA Design System: read for UI compliance)
-  - ci-page-form (GoA form page UX rules: pageType: form, form-section)
-  - ci-page-list (GoA list page UX rules: pageType: list, admin queues, report tables)
-  - ci-page-detail (GoA detail page UX rules: pageType: detail, admin detail records)
-  - ci-page-dashboard (GoA dashboard page UX rules: pageType: dashboard, report summaries)
-  - ci-page-landing (GoA landing page UX rules: pageType: landing)
-  - ci-page-content (GoA content page UX rules: pageType: content, informational, document)
-  - ci-page-help (GoA help page UX rules: pageType: help)
+  - ci-design-system (PrimeVue design system guidance: read for UI compliance)
+  - ci-page-form (form page UX rules: pageType: form, form-section)
+  - ci-page-list (list page UX rules: pageType: list, admin queues, report tables)
+  - ci-page-detail (detail page UX rules: pageType: detail, admin detail records)
+  - ci-page-dashboard (dashboard page UX rules: pageType: dashboard, report summaries)
+  - ci-page-landing (landing page UX rules: pageType: landing)
+  - ci-page-content (content page UX rules: pageType: content, informational, document)
+  - ci-page-help (help page UX rules: pageType: help)
 ---
 
 # Template Skill: Scaffold Feature
@@ -324,7 +324,7 @@ If the project maintains an OpenAPI spec (`apps/api/openapi.yaml`), update it fo
 
 **Target**: `apps/web/src/` (single-stack) or `apps/web/src/` (public dual) / `apps/web-internal/src/` (staff dual)
 
-> **Pre-generation quality gate**: load `ref:template-code-quality` before writing any Vue or store code. Key rules: no `any` in stores, `await` every async action, use `slot="name"` on GoA components (not `v-slot`).
+> **Pre-generation quality gate**: load `ref:template-code-quality` before writing any Vue or store code. Key rules: no `any` in stores, `await` every async action, use named slot syntax (`<template #slotName>`) for PrimeVue components such as `Card` (`#title`, `#content`).
 
 ### B1. Create View
 
@@ -332,6 +332,8 @@ If the project maintains an OpenAPI spec (`apps/api/openapi.yaml`), update it fo
 <!-- apps/web{-internal}/src/views/FeatureNameView.vue -->
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import Card from 'primevue/card'
+import Message from 'primevue/message'
 import { useAuthStore } from '@/stores/auth.store'
 import { useFeatureNameStore } from '@/stores/feature-name.store'
 
@@ -347,15 +349,21 @@ onMounted(async () => {
 
 <template>
   <div class="feature-name-view">
-    <goa-container type="non-interactive">
-      <h1>Feature Title</h1>
-      <!-- GoA design system components -->
-    </goa-container>
+    <Message v-if="error" severity="error" :closable="false">
+      <strong>Error</strong>
+      <p>{{ error }}</p>
+    </Message>
+    <Card>
+      <template #title>Feature Title</template>
+      <template #content>
+        <!-- PrimeVue components: import each one per-SFC from 'primevue/<component>' -->
+      </template>
+    </Card>
   </div>
 </template>
 ```
 
-**Page-type UX guidance**: read the content-spec file for this page, then read the matching CI skill. The `viewType` field selects which table below applies.
+**Page-type UX guidance**: read the content-spec file for this page, then read the matching CI skill. The `viewType` field selects which table below applies. All page implementations use PrimeVue components (per-SFC imports).
 
 **Public-facing pages** (`apps/web` or `apps/web` public dual):
 
@@ -380,11 +388,11 @@ onMounted(async () => {
 | `user-management` | `page-type-user-management.md` |
 | `wizard` | `page-type-wizard.md` |
 
-All internal views render inside the `goa-work-side-menu` layout. Do NOT add `goa-work-side-menu` inside individual views: it is in `AppLayout.vue`. Views provide only their page content.
+All internal views render inside the PrimeVue sidebar layout (`AppLayout.vue`). Do NOT add a sidebar or navigation chrome inside individual views: `AppLayout.vue` provides that. Views provide only their page content.
 
 **View rules:**
 - `<script setup lang="ts">`: no Options API
-- GoA design system components (see `docs/GOA-COMPONENTS.md`)
+- PrimeVue components imported per-SFC (e.g. `import Card from 'primevue/card'`). No `@abgov` imports.
 - Exactly one `<h1>` per view
 - No direct API calls: use Pinia stores
 - Add `data-testid` attributes to interactive elements for E2E testing
@@ -692,49 +700,85 @@ test.describe('Feature Use Case Flow', () => {
 
 ---
 
-## Section G: GoA Component Patterns
+## Section G: PrimeVue Component Patterns
 
-The GoA design system uses **slot-based composition**, not `:items` array props.
+PrimeVue components are imported per-SFC and typed via the `primevue` package. No wrapper layer or global type declaration file is required.
 
-### G1. Dropdown / Select
+### G1. Select / Dropdown
 
-**Correct: `<goa-dropdown-item>` as slot children:**
-```vue
-<GoabDropdown v-model="form.field" name="field" placeholder="Select an option">
-  <goa-dropdown-item value="VALUE_A" label="Label A" />
-  <goa-dropdown-item value="VALUE_B" label="Label B" />
-</GoabDropdown>
-```
-
-**Wrong: `:items` prop is silently ignored at runtime:**
-```vue
-<!-- DO NOT USE: options array bound to :items renders nothing -->
-<GoabDropdown v-model="form.field" name="field" :items="options" />
-```
-
-### G2. Textarea
-
-Bind `rows` as a **number**, not a string:
+Use `Select` (not a custom wrapper). Options are an array bound to `:options`:
 
 ```vue
-<!-- Correct: number binding -->
-<goa-textarea v-model="form.text" :rows="6" :maxlength="4000" />
+<script setup lang="ts">
+import Select from 'primevue/select'
+
+const value = ref('')
+const options = [
+  { label: 'Label A', value: 'VALUE_A' },
+  { label: 'Label B', value: 'VALUE_B' },
+]
+</script>
+
+<template>
+  <Select
+    v-model="value"
+    :options="options"
+    option-label="label"
+    option-value="value"
+    placeholder="Select an option"
+  />
+</template>
 ```
 
-### G3. Quick Component Reference
+### G2. Callout / Message
 
-| Component | Required pattern |
-|-----------|-----------------|
-| `GoabDropdown` | Slot children `<goa-dropdown-item value="..." label="..." />`: no `:items` prop |
-| `goa-textarea` | `:rows="N"` (number binding), `:maxlength="N"` |
-| `GoabButton` | `type="primary\|secondary\|tertiary"` |
-| `GoabCheckbox` | `v-model`, `label` |
-| `goa-form-item` | `label`, `requirement="required\|optional"`, `helptext` |
-| `goa-callout` | `type="information\|success\|important\|emergency"` + `heading` |
-| `goa-badge` | `type="success\|midtone\|important\|information\|emergency"` + `content` |
-| `goa-input` | `v-model`, `type`, `maxlength`, `data-testid` |
-| `goa-container` | Wraps grouped content sections |
-| `goa-spacer` | `vspacing="xs\|s\|m\|l\|xl"` |
+Use `Message` for inline callouts:
+
+```vue
+<script setup lang="ts">
+import Message from 'primevue/message'
+</script>
+
+<template>
+  <!-- severity: "info" | "warn" | "error" | "success" -->
+  <Message severity="warn" :closable="false">
+    <strong>Important notice</strong>
+    <p>Review the information before proceeding.</p>
+  </Message>
+</template>
+```
+
+### G3. Card Container
+
+Use `Card` with `#title` and `#content` named slots:
+
+```vue
+<script setup lang="ts">
+import Card from 'primevue/card'
+</script>
+
+<template>
+  <Card>
+    <template #title>Section Heading</template>
+    <template #content>
+      <!-- page content here -->
+    </template>
+  </Card>
+</template>
+```
+
+### G4. Quick Component Reference
+
+| PrimeVue component | Import | Key props |
+|--------------------|--------|-----------|
+| `<Message severity="warn">` | `primevue/message` | `severity` (`info` / `warn` / `error` / `success`), `:closable="false"` |
+| `<Card>` | `primevue/card` | `#title`, `#content` slots |
+| `<Button label="...">` | `primevue/button` | `label`, `icon`, `severity` (`secondary`, etc.), `@click` |
+| `<Tag value="X" severity="success"/>` | `primevue/tag` | `value`, `severity` |
+| `<InputText v-model/>` | `primevue/inputtext` | `v-model` |
+| `<Checkbox v-model binary/>` | `primevue/checkbox` | `v-model`, `binary` |
+| `<Select :options optionLabel optionValue v-model/>` | `primevue/select` | `options`, `optionLabel`, `optionValue` |
+| `<DataTable :value><Column field header/></DataTable>` | `primevue/datatable`, `primevue/column` | `field`, `header` |
 
 ---
 
@@ -749,13 +793,13 @@ Bind `rows` as a **number**, not a string:
 - [ ] `encore check` passes (run from `apps/api/`)
 - [ ] For AUTH-007 multi-role endpoints: `requireRole` lists ALL applicable roles; model branches on `auth.roles` and scopes the WHERE clause per external user role
 - [ ] Response shapes use Encore's bare payload (no `{ success, data }` wrapper)
-- [ ] Vue view with `<script setup lang="ts">` and GoA components
+- [ ] Vue view with `<script setup lang="ts">` and PrimeVue components (per-SFC imports)
 - [ ] Pinia store reads Encore error shape `{ code, message, details }`: not the Express `{ success, error }` envelope
 - [ ] All axios calls use relative paths (`/api/v1/...`): no hardcoded `localhost:4000`
 - [ ] Endpoint tests written and passing (model mock + auth mock)
 - [ ] Store/component tests written and passing
-- [ ] All dropdowns use `<goa-dropdown-item>` slot children: no `:items` prop arrays
-- [ ] Numeric props use binding (`:rows="6"`) not string literals (`rows="6"`)
+- [ ] Select/dropdown uses PrimeVue `Select` with `:options`, `optionLabel`, `optionValue`, and `v-model`
+- [ ] No `@abgov` / GoA component imports anywhere in the SPA
 - [ ] No `any` types outside test files
 - [ ] No `console.log`: use `logger` from `encore.dev/log`
 - [ ] Route registered in `router/index.ts` with lazy loading

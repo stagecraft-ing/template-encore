@@ -16,7 +16,7 @@ defers_to:
   - api-web-standards (enterprise web API standards)
   - api-rest-standards (REST design standards)
   - api-security (API security standards)
-  - ci-design-system (GoA Design System standards)
+  - ci-design-system (PrimeVue design system guidance)
   - business-requirements (requirements gathering: factory stage 1)
   - svc-req-orchestrator (service requirements: factory stage 2)
 ---
@@ -29,7 +29,7 @@ This document is the single source of truth for **how to build with the Vue + En
 - Pipeline workflow, stage sequencing, or validation gates: owned by `ref:factory-orchestrator`
 - Business requirements gathering: owned by factory stages 1-3
 - Enterprise API/REST/security standards enforcement: owned by `ref:api-web-standards`, `ref:api-rest-standards`, `ref:api-security`
-- GoA Design System rules: owned by `ref:ci-design-system`
+- PrimeVue design system guidance: owned by `ref:ci-design-system`
 - Test traceability validation (UC-nnn / TC-nnn coverage checks): owned by factory validation gates. The template **produces** the traceability report; the factory **validates** it.
 
 When the factory pipeline invokes template work (stages 4-5), this document provides the implementation knowledge. The factory provides the what and why; this document provides the how.
@@ -178,7 +178,7 @@ The Build Specification is the **authoritative list** of what to build. Do NOT i
 
 Apply identity and configuration: package names, environment variables, auth driver credentials, CORS/CSP. This makes the template yours before any feature work begins. There is no session store to configure; auth is stateless JWT issued by the Encore `auth` service.
 
-**Internal/dual variants**: this phase also configures the layout shell for internal web apps (Step 6c). The authenticated layout uses **no `goa-app-header`**: the `goa-work-side-menu` IS the chrome, providing heading, user identity, and navigation in a flex row layout. For **dual** variants, `apps/web-internal/` already ships with a **starter shell** containing `goa-work-side-menu`, slot-based navigation (`useNavigation` composable), and card-container layout. **Do not skip Step 6c because this shell exists**: it still requires validation: verify there is no `goa-app-header`, no `.app-body` wrapper, and that `.app-layout` uses flex row (not column). Customize service name, navigation items, and heading for the project. For **internal** variants, `apps/web/` starts with the public layout and must be swapped to `goa-work-side-menu` with no header. Either way, Step 6c must complete here: before feature scaffolding: so that every view built in Phase 4b sits inside the correct, fully-configured layout container.
+**Internal/dual variants**: this phase also configures the layout shell for internal web apps (Step 6c). The authenticated layout uses a **PrimeVue sidebar** (`AppLayout.vue` with a custom `<aside>` using PrimeVue `Avatar` and `Badge`): the sidebar IS the chrome, providing the brand logo, user identity, and navigation in a flex row layout. For **dual** variants, `apps/web-internal/` already ships with a **starter sidebar shell**. **Do not skip Step 6c because the shell exists**: it still requires validation and customization. Verify `.app-layout` uses flex row, confirm the sidebar brand name and nav items match the project, and ensure no public-layout header is present. For **internal** variants (single-stack targeting staff), `apps/web/` starts with the public top-header layout and must be swapped to the sidebar pattern. Either way, Step 6c must complete here: before feature scaffolding: so that every view built in Phase 4b sits inside the correct, fully-configured layout container.
 
 **Must complete before Phases 4-5.**
 
@@ -296,19 +296,19 @@ All endpoints declared in `api()`. All migrations in place. `encore check` exits
 
 > **Mandatory pre-read: Code Quality Rules**: If this is a fresh session (context was reset between Phase 4a and 4b), re-load `ref:template-code-quality` AND open `eslint.config.mjs` before writing any Vue or TypeScript code.
 
-> **Prerequisite 1**: Internal/dual variants must have completed configure Step 6c (layout shell swap) before building any views. If the layout shell still uses `goa-microsite-header`, stop and run Step 6c first: views built inside the wrong layout container will need to be reworked.
+> **Prerequisite 1**: Internal/dual variants must have completed configure Step 6c (layout shell configuration) before building any views. If the layout shell is not yet configured for the correct variant, stop and run Step 6c first: views built inside the wrong layout container will need to be reworked.
 
 > **Prerequisite 2: Read Encore endpoint signatures before building any store (Architecture Invariant #18)**: Before creating Pinia stores, **open every Encore service file** created in Phase 4a and list the exact HTTP methods, paths, and typed request/response interfaces each endpoint declares. Store methods MUST correspond 1:1 to declared Encore endpoints. Do NOT generate "standard CRUD" store methods by assumption: if there is no `DELETE` endpoint, the store must not have a `delete`/`remove` method. If the endpoint takes no path parameter, the store must not append `/${id}` to the URL. The Encore service file is the source of truth for what the store can call. See `ref:template-scaffold-feature` Section B2 for the detailed procedure.
 
-> **Page type specs differ by surface**: Public-facing pages use the standard `ci-page-*` skills. Internal/authenticated pages use a different set of specs from `.factory/Client_Interface/page-types/authenticated/`: these use `goa-work-side-menu` layout, `GoabxFormItem version="2"`, filter drawers, and different component conventions. See `ref:template-scaffold-feature` Section B1 for the complete mapping table by variant.
+> **Page type specs differ by surface**: Public-facing pages use the standard `ci-page-*` skills. Internal/authenticated pages use a different set of specs from `.factory/Client_Interface/page-types/authenticated/`: these use the PrimeVue sidebar layout, PrimeVue form components, filter panels, and different component conventions. See `ref:template-scaffold-feature` Section B1 for the complete mapping table by variant.
 
 > **Design system routing rule**: For each page, the `viewType` field determines which page-type skills and component conventions to use:
 >
 > | `viewType` | Page-Type Skills | Layout Shell | Target App (dual) |
 > |---|---|---|---|
-> | `public` | `ref:ci-page-*` skills (public folder) | `goa-microsite-header` + full-width | `apps/web-public/` |
-> | `public-authenticated` | `ref:ci-page-*` skills (public folder) | `goa-microsite-header` + full-width | `apps/web-public/` |
-> | `private-authenticated` | `.factory/Client_Interface/page-types/authenticated/` specs | `goa-work-side-menu` + card container | `apps/web-internal/` |
+> | `public` | `ref:ci-page-*` skills (public folder) | `AppHeader` (PrimeVue Menubar/Avatar) + full-width | `apps/web-public/` |
+> | `public-authenticated` | `ref:ci-page-*` skills (public folder) | `AppHeader` (PrimeVue Menubar/Avatar) + full-width | `apps/web-public/` |
+> | `private-authenticated` | `.factory/Client_Interface/page-types/authenticated/` specs | PrimeVue sidebar `AppLayout` + card container | `apps/web-internal/` |
 >
 > For single-variant projects (public or internal), all pages target `apps/web/`. For dual, public/public-authenticated pages target `apps/web-public/`, private-authenticated pages target `apps/web-internal/`.
 
@@ -556,14 +556,14 @@ Auth is stateless RS256 JWT in all three variants. There is no session store. Re
 │   │       ├── encore.service.ts    Service("web"): no middleware
 │   │       └── static.ts            api.static({ dir: "./build", notFound: ... })
 │   │
-│   └── web/                         Vue 3 SPA (GoA Design System)
+│   └── web/                         Vue 3 SPA (PrimeVue + Aura preset)
 │       ├── package.json
 │       ├── index.html
 │       ├── vite.config.ts           proxy /api → http://localhost:4000
 │       ├── vitest.config.ts
 │       ├── tsconfig.json
 │       └── src/
-│           ├── main.ts              ← ENTRY POINT (creates Vue app)
+│           ├── main.ts              ← ENTRY POINT (PrimeVue + Aura preset registered here)
 │           ├── App.vue              Root component
 │           ├── router/
 │           │   └── index.ts         Routes + nav guards
@@ -578,12 +578,9 @@ Auth is stateless RS256 JWT in all three variants. There is no session store. Re
 │           │   ├── ProfileView.vue
 │           │   └── NotFoundView.vue
 │           ├── components/
-│           │   ├── layout/          AppLayout, AppHeader, AppFooter
-│           │   └── goa/             GoA web component Vue wrappers
+│           │   └── layout/          AppLayout, AppHeader (PrimeVue Menubar/Avatar/Menu), AppFooter
 │           ├── composables/
 │           │   └── useNavigation.ts Navigation item registry
-│           ├── types/
-│           │   └── goa-components.d.ts
 │           └── assets/styles/
 │               └── main.css
 │
@@ -658,7 +655,7 @@ All code added to this template **must** use these technologies. Do not introduc
 | **Frontend** | Vue 3 (Composition API + `<script setup>`) | Single-file components only. Two SPAs: `web` (public), `web-internal` (staff). |
 | **State** | Pinia | Stores in `apps/web*/src/stores/`. No Vuex. |
 | **Routing** | Vue Router 4 | Lazy-load views: `() => import('./views/X.vue')` |
-| **Styling** | GoA Design System | `@abgov/web-components` + `@abgov/design-tokens` CSS variables. No Tailwind. |
+| **Styling** | PrimeVue | `primevue` + `@primevue/themes` (Aura preset, indigo primary) + `primeicons`. No Tailwind. |
 | **Backend** | **Encore.ts** | Typed `api()` / `api.raw()` endpoints; services discovered from `encore.service.ts`; `authHandler` + `Gateway`; per-service `middlewares` arrays. Replaces Express 5. |
 | **Auth** | **Stateless RS256 JWT** | Access (~15 min) + DB-backed refresh (~7 day, rotation/revocation) in httpOnly cookies; CSRF double-submit. Multi-driver: mock/entra-id/saml, selected by AUTH_DRIVER env. Not `express-session`. |
 | **Validation** | Zod (SPA/packages); Encore typed request interfaces (API) | No Joi, Yup, or class-validator in the backend. |
@@ -686,7 +683,7 @@ These are non-negotiable engineering decisions. Do not change them without expli
 
 4. **View → Component → Store**: Views are thin. Business state lives in Pinia stores. API calls go through stores, not directly from views.
 
-5. **GoA Design System only**: All UI uses `@abgov/web-components` via Vue wrappers. No Tailwind, no custom CSS frameworks.
+5. **PrimeVue only**: All UI uses PrimeVue components (Aura preset registered in `main.ts`; per-SFC imports). No `@abgov` / GoA components, no Tailwind, no other CSS frameworks.
 
 6. **Zod for SPA/package validation**: Config schemas, input validation, shared types in `packages/shared`. No alternatives. Encore endpoints use typed request interfaces natively; Zod is not applied at the Encore layer.
 
@@ -1140,17 +1137,19 @@ onMounted(async () => {
 
 <template>
   <div class="feature-name-view">
-    <goa-container type="non-interactive">
-      <h1>Feature Title</h1>
-      <!-- GoA design system components -->
-    </goa-container>
+    <Card>
+      <template #content>
+        <h1>Feature Title</h1>
+        <!-- PrimeVue components (per-SFC imports: import Card from 'primevue/card') -->
+      </template>
+    </Card>
   </div>
 </template>
 ```
 
 **View rules:**
 - Always use `<script setup lang="ts">`: no Options API
-- Use GoA design system components (see `docs/GOA-COMPONENTS.md`)
+- Use PrimeVue components with per-SFC imports (e.g. `import Card from 'primevue/card'`). The Aura preset is registered once in `main.ts`; do not re-register it in individual components.
 - Exactly one `<h1>` per view
 - Keep views thin: push logic to stores or composables
 - Do not call APIs directly from views: use Pinia stores
@@ -1235,28 +1234,52 @@ registerNavItem({
 
 Only add if the feature should appear in primary navigation. Admin features may be route-only.
 
-### 8.5 Vue Component (GoA Wrapper)
+### 8.5 PrimeVue Component Usage
 
-When you need `v-model` binding or event bridging with GoA web components, create a wrapper:
+PrimeVue components are typed via the `primevue` package itself. No wrapper files or custom type declaration files are needed. Import each component directly in the SFC that uses it:
 
 ```vue
-<!-- apps/web/src/components/goa/GoabCustomInput.vue -->
+<!-- apps/web/src/components/SomeFeaturePanel.vue -->
 <script setup lang="ts">
-defineProps<{ modelValue: string; label: string }>()
-defineEmits<{ 'update:modelValue': [value: string] }>()
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Message from 'primevue/message'
+
+defineProps<{ title: string }>()
 </script>
 
 <template>
-  <goa-form-item :label="label">
-    <goa-input
-      :value="modelValue"
-      @_change="$emit('update:modelValue', ($event as CustomEvent).detail.value)"
-    />
-  </goa-form-item>
+  <Card>
+    <template #title>{{ title }}</template>
+    <template #content>
+      <Message severity="info" :closable="false">
+        <strong>Tip</strong>
+        <p>Fill in the form below.</p>
+      </Message>
+      <InputText v-model="value" placeholder="Enter value" />
+      <Button label="Submit" @click="onSubmit" />
+    </template>
+  </Card>
 </template>
 ```
 
-Available GoA wrappers in `components/goa/`: `GoabButton`, `GoabInput`, `GoabModal`, `GoabDropdown`, `GoabTextarea`, `GoabCheckbox`, `GoabRadioGroup`.
+Common PrimeVue components and their import paths:
+
+| Component | Import | Notes |
+|-----------|--------|-------|
+| `Button` | `primevue/button` | `label`, `icon`, `severity`, `@click` |
+| `Card` | `primevue/card` | `#title` and `#content` named slots |
+| `Message` | `primevue/message` | `severity="info\|warn\|error\|success"`, `:closable="false"` |
+| `Tag` | `primevue/tag` | `value`, `severity` |
+| `Avatar` | `primevue/avatar` | `label`, `size`, `shape="circle"` |
+| `InputText` | `primevue/inputtext` | `v-model` |
+| `Checkbox` | `primevue/checkbox` | `v-model`, `binary` |
+| `Select` | `primevue/select` | `:options`, `optionLabel`, `optionValue`, `v-model` |
+| `DataTable` | `primevue/datatable` | `:value` |
+| `Column` | `primevue/column` | `field`, `header` (child of `DataTable`) |
+| `ProgressSpinner` | `primevue/progressspinner` | loading state |
+| `Menu` | `primevue/menu` | `:model`, `:popup="true"` |
 
 ### 8.6 Composable
 
@@ -1664,7 +1687,7 @@ cd apps/api && encore gen client --lang typescript --output ../web/src/lib/encor
 apps/web/src/views/FeatureNameView.vue
 ```
 
-Use `<script setup lang="ts">`. GoA design system components. Single `<h1>`.
+Use `<script setup lang="ts">`. PrimeVue components with per-SFC imports. Single `<h1>`.
 
 ### Step 8: Create Pinia Store (if needed)
 
@@ -1774,7 +1797,7 @@ These checks verify template-specific concerns. They complement (do not replace)
 | 7b | **Unit tests pass** | `npm run test --workspaces --if-present`: zero failures |
 | 8 | **Orphan detection** | No dead imports, no dangling secret references after removals |
 | 9 | **Environment variable coverage** | Every non-secret config in source has entry in `.env.example` |
-| 10 | **Architecture invariants** | Stateless JWT (no `express-session`), no Vuex, no ORM, no Tailwind, Encore service pattern (`api()` + `model.ts`), `<script setup>` in Vue, AUTH_DRIVER config (not runtime registry), SQLDatabase tagged-template queries |
+| 10 | **Architecture invariants** | Stateless JWT (no `express-session`), no Vuex, no ORM, no Tailwind, no `@abgov`/GoA components, PrimeVue per-SFC imports only, Encore service pattern (`api()` + `model.ts`), `<script setup>` in Vue, AUTH_DRIVER config (not runtime registry), SQLDatabase tagged-template queries |
 
 ---
 
@@ -1822,7 +1845,7 @@ Supplementary artifacts (read for implementation context, not for feature deriva
 
 3. **The factory owns requirements derivation.** Do not re-derive the feature list (endpoints, pages) from raw factory artifacts. When invoked from the factory pipeline, the Build Specification is the authoritative source of what to build.
 
-4. **Enterprise standards skills are shared references.** Both the factory and template reference `ref:api-web-standards`, `ref:api-rest-standards`, `ref:api-security`, `ref:ci-design-system`. The factory enforces them via validation gates. The template applies them during implementation. When implementing Vue views, extract UX and content rules from CI page-type skills but output Vue SFCs (not static HTML or content-spec JSON).
+4. **Enterprise standards skills are shared references.** Both the factory and template reference `ref:api-web-standards`, `ref:api-rest-standards`, `ref:api-security`, `ref:ci-design-system`. The factory enforces them via validation gates. The template applies them during implementation. When implementing Vue views, extract UX and content rules from CI page-type skills but output Vue SFCs using PrimeVue components (not static HTML, GoA web components, or content-spec JSON).
 
 5. **The template's `CODEMAP.md` is the authoritative project structure reference.** If the factory's stage 4 checks for `CODEMAP.md` to determine output paths, this template's CODEMAP provides that information.
 

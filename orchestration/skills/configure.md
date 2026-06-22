@@ -296,143 +296,127 @@ After updating the route, delete `HomeView.vue` following Pattern E in template-
 
 ### 6b. Internal App Layout Shell (internal and dual variants only)
 
-Internal/staff-facing apps use a fundamentally different layout: **no `goa-app-header`**: the `goa-work-side-menu` IS the chrome. The sidebar provides heading, user identity, and navigation. Layout is a flex row: `goa-work-side-menu` + card-container content area.
+Internal/staff-facing apps use a fundamentally different layout: a **PrimeVue-based sidebar** (`AppLayout.vue`). The sidebar provides the brand mark, user identity, and navigation. Layout is a flex row: sticky `<aside>` sidebar + scrollable `<main>` content area.
 
 **This step must be done during configure: not deferred to feature scaffolding.**
 
 **Target**: `apps/web/src/` (internal variant) or `apps/web-internal/src/` (dual variant). Do not touch the public SPA.
 
-> **Dual variant (`apps/web-internal/`)**: The template already ships a starter shell with `goa-work-side-menu`. Do NOT skip this step because it already exists. You must still validate and customize:
-> 1. **Validate**: confirm `AppLayout.vue` has no `goa-app-header`, no `.app-body` wrapper, and `.app-layout` uses flex row
-> 2. **Customize**: update service name/heading, configure nav items for the project's pages
-> 3. **Verify expansion**: confirm surrounding CSS does not clip the sidebar
+> **Dual variant (`apps/web-internal/`)**: The template already ships a starter sidebar shell using PrimeVue `Avatar` and `Badge`. Do NOT skip this step because the shell already exists. You must still validate and customize:
+> 1. **Validate**: confirm `AppLayout.vue` has no `AppHeader` import, no top navigation bar, and `.app-layout` uses flex row (`min-height: 100vh; display: flex`)
+> 2. **Customize**: update the `serviceName` default prop, configure nav items (`primaryItems`, `secondaryItems`, `accountItems`) for the project's pages
+> 3. **Verify icon mapping**: confirm the `ICONS` record in `AppLayout.vue` maps all icon names used by the project's nav items to PrimeIcons class strings (e.g. `home: 'pi pi-home'`)
 
-> **Internal variant (`apps/web/src/`)**: the app starts with the public layout and must be fully swapped using the structure below.
+> **Internal variant (single-stack targeting staff, `apps/web/src/`)**: the SPA starts with the public top-header layout and must be swapped to the sidebar pattern using the structure in `apps/web-internal/src/components/layout/AppLayout.vue` as the reference.
 
 #### 6b-1. Configure `AppLayout.vue`
 
+The sidebar layout uses plain HTML elements styled with component-scoped CSS and PrimeVue `Avatar`/`Badge`. The key structure is:
+
 ```vue
 <!-- apps/web{-internal}/src/components/layout/AppLayout.vue -->
+<script setup lang="ts">
+import Avatar from 'primevue/avatar'
+import Badge from 'primevue/badge'
+// ... props: serviceName, user, primaryItems, secondaryItems, accountItems
+</script>
+
 <template>
   <div class="app-layout">
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
-    <goa-work-side-menu
-      :heading="serviceName"
-      :user-name="user?.name"
-      :user-secondary-text="user?.email"
-    >
-      <goa-work-side-menu-item
-        v-for="item in primaryItems"
-        :key="item.id"
-        slot="primary"
-        :icon="item.icon"
-        :label="item.label"
-        :url="item.to"
-        :current="isCurrentRoute(item.to)"
-        @click.prevent="navigateTo(item.to)"
-      />
-      <goa-work-side-menu-item
-        v-for="item in secondaryItems"
-        :key="item.id"
-        slot="secondary"
-        :icon="item.icon"
-        :label="item.label"
-        :badge="item.badge"
-        @click.prevent="navigateTo(item.to)"
-      />
-      <goa-work-side-menu-item
-        v-for="item in accountItems"
-        :key="item.id"
-        slot="account"
-        :label="item.label"
-        :url="item.to"
-        @click.prevent="navigateTo(item.to)"
-      />
-      <goa-work-side-menu-item
-        slot="account"
-        label="Sign Out"
-        @click.prevent="handleLogout"
-      />
-    </goa-work-side-menu>
+    <aside class="sidebar" aria-label="Primary">
+      <!-- Brand mark -->
+      <RouterLink to="/" class="sidebar__brand">
+        <span class="sidebar__logo" aria-hidden="true">VE</span>
+        <span class="sidebar__title">{{ serviceName }}</span>
+      </RouterLink>
 
-    <div class="card-container">
-      <div class="desktop-card-container">
-        <main id="main-content" class="main-content">
-          <slot />
-        </main>
+      <!-- Primary navigation -->
+      <nav class="sidebar__nav">
+        <RouterLink
+          v-for="item in primaryItems"
+          :key="item.id"
+          :to="item.to"
+          class="sidebar__link"
+        >
+          <i :class="iconClass(item.icon)" aria-hidden="true" />
+          <span>{{ resolveLabel(item.label) }}</span>
+        </RouterLink>
+      </nav>
+
+      <!-- Account section -->
+      <div class="sidebar__account">
+        <div v-if="user" class="sidebar__user">
+          <Avatar :label="initials" shape="circle" size="normal" />
+          <div class="sidebar__user-info">
+            <span class="sidebar__user-name">{{ user.name }}</span>
+            <span v-if="user.email" class="sidebar__user-email">{{ user.email }}</span>
+          </div>
+        </div>
+        <button type="button" class="sidebar__link sidebar__signout" @click="handleLogout">
+          <i class="pi pi-sign-out" aria-hidden="true" />
+          <span>Sign out</span>
+        </button>
       </div>
-    </div>
+    </aside>
+
+    <main id="main-content" class="content">
+      <div class="content__inner">
+        <slot />
+      </div>
+    </main>
   </div>
 </template>
 ```
 
-> **CSS note**: There is **no `goa-app-header`** on authenticated pages. `.app-layout` is a flex ROW (not column) with `height: 100vh` and `overflow: hidden`.
+**CSS note**: `.app-layout` is a flex ROW (`display: flex; min-height: 100vh`). The sidebar uses `position: sticky; top: 0; height: 100vh`. Active link styling uses `--p-primary-50` and `--p-primary-700` from the Aura preset (no `--goa-*` vars).
 
 ```css
 <style scoped>
 .app-layout {
+  min-height: 100vh;
+  display: flex;
+}
+
+.sidebar {
+  width: var(--app-sidebar-width);
+  flex-shrink: 0;
+  background: var(--app-surface);
+  border-right: 1px solid var(--app-border);
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0.75rem;
+  gap: 0.5rem;
+  position: sticky;
+  top: 0;
   height: 100vh;
-  display: flex;
-  overflow: hidden;
 }
 
-.card-container {
+.content {
   flex: 1;
-  padding: 16px;
-  background: #f1f1f1;
-  overflow: hidden;
-  display: flex;
   min-width: 0;
 }
 
-.desktop-card-container {
-  flex: 1;
-  background: #ffffff;
-  border-radius: 24px;
-  border: 1px solid var(--goa-color-greyscale-200, #dcdcdc);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  min-width: 0;
-}
-
-.skip-link {
-  position: absolute;
-  top: -100%;
-  left: var(--goa-space-m);
-  z-index: 9999;
-  padding: var(--goa-space-s) var(--goa-space-m);
-  background: var(--goa-color-interactive-default);
-  color: var(--goa-color-greyscale-white);
-  text-decoration: none;
-  border-radius: var(--goa-border-radius-m);
-  font-weight: 600;
-}
-
-.skip-link:focus {
-  top: var(--goa-space-m);
+.content__inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
 }
 </style>
 ```
 
 **Key differences from public layout:**
-- **No `goa-microsite-header` and no `goa-app-header`**: sidebar is the chrome
-- **`goa-work-side-menu`** provides heading, user identity, and primary navigation
-- **Flat flex row**: sidebar + card-container as direct children of `.app-layout`
-- **No footer**: internal apps do not use `goa-app-footer`
+
+- **No `AppHeader.vue` and no top navigation bar**: the sidebar is the chrome
+- PrimeVue `Avatar` shows user initials; `Badge` decorates secondary nav items with counts
+- **Flat flex row**: `<aside>` + `<main>` as direct children of `.app-layout`
+- **No footer**: internal apps do not use a page footer
+- CSS variables use `--p-primary-*` (PrimeVue Aura) and `--app-*` (application tokens in `main.css`), not `--goa-*`
 
 #### 6b-2. Verify No AppHeader in Internal Layout
 
-Internal authenticated pages do not use `goa-app-header` or `goa-app-footer`. If an `AppHeader.vue` or `AppFooter.vue` exists in `apps/web-internal/src/components/layout/`, it must NOT be imported or used by `AppLayout.vue`. The heading and user identity are provided by `goa-work-side-menu` props.
+Internal authenticated pages do not use a top-of-page header. If an `AppHeader.vue` exists in `apps/web-internal/src/components/layout/`, confirm it is NOT imported or used by `AppLayout.vue`. User identity and service name are provided by the sidebar.
 
 #### 6b-3. Update `App.vue`
 
@@ -441,7 +425,7 @@ Verify `App.vue` passes correct props to `AppLayout`:
 ```vue
 <!-- apps/web{-internal}/src/App.vue -->
 <AppLayout
-  service-name="{App Name} - Internal"
+  :service-name="'{App Name} Internal'"
   :user="user"
   :primary-items="primaryItems"
   :secondary-items="secondaryItems"
@@ -453,12 +437,12 @@ Verify `App.vue` passes correct props to `AppLayout`:
 
 | Element | Public (`apps/web`) | Internal (`apps/web-internal`) |
 |---------|--------------------|---------------------------------|
-| Microsite header | `goa-microsite-header type="alpha"` | **None** |
-| App header | `goa-app-header` with nav links | **None**: sidebar provides heading + user identity |
-| Navigation | Header links | `goa-work-side-menu` (left sidebar, `primary`/`secondary`/`account` slots) |
-| Content area | Full-width centered | Card container flex right of side menu |
-| Footer | Full nav + meta sections | **None** |
-| Page layout | Each view wraps in `goa-container` | Each view sits in `<main>` inside card container |
+| Top header | Custom `AppHeader.vue` (PrimeVue `Button`, `Avatar`, `Menu`) | **None** |
+| Navigation | Header links (`RouterLink`) | Sidebar `RouterLink` items + PrimeIcons |
+| User identity | Avatar + name in `AppHeader` dropdown | Avatar + name in sidebar account section |
+| Content area | Full-width centered under header | Flex right of sticky sidebar |
+| Footer | `AppFooter.vue` | **None** |
+| Page layout | Each view inside its own markup | Each view sits inside `<main>` inside sidebar layout |
 
 ---
 

@@ -25,7 +25,7 @@ my-dual-app/
 │   │   │   ├── auth/              ← `auth` service: authHandler + Gateway; SAML driver
 │   │   │   ├── gateway/           ← `gateway` service: api.raw BFF proxy /api/v1/data/*
 │   │   │   └── web/               ← `web` service: api.static serving apps/web/build
-│   │   └── web/                   Vue 3 SPA (citizen-facing; GoA Design System)
+│   │   └── web/                   Vue 3 SPA (citizen-facing; PrimeVue)
 │   ├── packages/                  @template/shared (SPA only; not imported by apps/api)
 │   └── ... (root config, scripts, modules)
 │
@@ -40,7 +40,7 @@ my-dual-app/
     │   │   ├── auth/              ← `auth` service: authHandler + Gateway; Entra ID driver
     │   │   ├── gateway/           ← `gateway` service: api.raw BFF proxy
     │   │   └── web/               ← `web` service: api.static serving apps/web-internal/build
-    │   └── web-internal/          Vue 3 SPA (staff-facing; GoA Design System)
+    │   └── web-internal/          Vue 3 SPA (staff-facing; PrimeVue)
     │       └── src/views/admin/   (if user-management module: UserListView, UserDetailView)
     ├── packages/
     └── ... (root config, scripts, modules)
@@ -63,7 +63,7 @@ All code added to either application **must** use these technologies.
 | **Frontend** | Vue 3 (Composition API + `<script setup>`) | Single-file components only. |
 | **State** | Pinia | `apps/web*/src/stores/`. No Vuex. |
 | **Routing** | Vue Router 4 | Lazy-load views: `() => import('./views/X.vue')` |
-| **Styling** | GoA Design System | `@abgov/web-components` + `@abgov/design-tokens`. No Tailwind. |
+| **Styling** | PrimeVue | `primevue` + `@primevue/themes` (Aura preset, indigo primary); component-scoped CSS. No Tailwind. |
 | **Backend** | **Encore.ts** | Typed `api()` / `api.raw()` endpoints; services discovered from `encore.service.ts`; `authHandler` + `Gateway`; service `middlewares` arrays. |
 | **Auth (public)** | **Stateless RS256 JWT + SAML 2.0** | `AUTH_DRIVER=saml`; access + DB-backed refresh in httpOnly cookies. Not `express-session`. |
 | **Auth (internal)** | **Stateless RS256 JWT + Entra ID** | `AUTH_DRIVER=entra-id`; same JWT mechanism; different IdP. |
@@ -295,7 +295,7 @@ App.vue                                 App.vue
     │                                       │   └── admin/ (if user-management module)
     └── AppFooter                           └── AppFooter
 
-GoA wrappers (both):  GoabButton │ GoabInput │ GoabModal │ GoabDropdown │ GoabTextarea │ GoabCheckbox │ GoabRadioGroup
+PrimeVue (per-SFC imports, both apps):  Button │ Card │ Menu │ Avatar │ Tag │ Message │ Badge │ ProgressSpinner │ DataTable
 ```
 
 ---
@@ -383,7 +383,7 @@ export const listCases = api(
 4. **Postgres via `SQLDatabase`**: each app has its own `SQLDatabase("app")`; tagged-template queries only; Redis is rate-limit-only.
 5. **BFF pattern**: each app's `gateway` service proxies `/api/v1/data/*` with S2S OAuth tokens and traversal sanitisation.
 6. **PII never logged**: `lib/logger.ts` redacts in both apps; `LOG_PII=false` in production.
-7. **GoA Design System**: all UI uses `@abgov/web-components` via Vue wrappers.
+7. **PrimeVue UI**: all SPA UI in both apps uses PrimeVue components (Aura theme preset, registered in `main.ts`). No `@abgov`/GoA.
 8. **Single deployable per audience**: each Encore app (`public/apps/api`, `internal/apps/api`) serves its built SPA via `api.static`; port 4000 per app (assign distinct ports for simultaneous local dev).
 
 ---

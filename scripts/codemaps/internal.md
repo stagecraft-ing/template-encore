@@ -34,14 +34,14 @@ my-internal-app/
 │   │
 │   ├── web/                       Vue 3 SPA (public-facing; not primary for this profile)
 │   │
-│   └── web-internal/              Vue 3 SPA (staff-facing; GoA Design System)
+│   └── web-internal/              Vue 3 SPA (staff-facing; PrimeVue)
 │       └── src/
 │           ├── main.ts            ← ENTRY POINT (frontend)
 │           ├── router/            Routes + nav guards
 │           ├── stores/            Pinia auth state (Encore-adapted)
 │           ├── views/             HomeView, LoginView, ProfileView, ConnectivityTestView, AboutView
 │           │                      admin/ (if user-management module: UserListView, UserDetailView)
-│           ├── components/        Layout (AppHeader/Footer/Layout) + GoA wrappers
+│           ├── components/        Layout (AppHeader/Footer/Layout) built on PrimeVue
 │           └── lib/               encore-client.ts (typed client reference)
 │
 ├── packages/                      Reusable libraries (NOT consumed by the Encore backend)
@@ -69,7 +69,7 @@ All code added to this application **must** use these technologies. Do not intro
 | **Frontend** | Vue 3 (Composition API + `<script setup>`) | Single-file components only. |
 | **State** | Pinia | Stores in `apps/web-internal/src/stores/`. No Vuex. |
 | **Routing** | Vue Router 4 | Lazy-load views: `() => import('./views/X.vue')` |
-| **Styling** | GoA Design System | `@abgov/web-components` + `@abgov/design-tokens`. No Tailwind. |
+| **Styling** | PrimeVue | `primevue` + `@primevue/themes` (Aura preset, indigo primary); component-scoped CSS. No Tailwind. |
 | **Backend** | **Encore.ts** | Typed `api()` / `api.raw()` endpoints; services discovered from `encore.service.ts`; `authHandler` + `Gateway`; service `middlewares` arrays. |
 | **Auth** | **Stateless RS256 JWT + Entra ID** | Access (~15 min) + DB-backed refresh (~7 day, rotation/revocation) in httpOnly cookies; CSRF double-submit. `AUTH_DRIVER=entra-id` for this profile. Not `express-session`. |
 | **Persistence** | **Postgres via `SQLDatabase("app")`** | Tagged-template queries only. Redis is optional, for rate-limit backing only (`REDIS_URL`). |
@@ -274,19 +274,19 @@ user-management/  (if module installed) encore.service.ts, users.ts, roles.ts, t
 ```
 App.vue
 └── AppLayout.vue                  Skip nav link + id="main-content" on <main>
-    ├── AppHeader.vue              GoA nav bar + user menu
+    ├── AppHeader.vue              PrimeVue header bar + user menu
     ├── <router-view />
     │   ├── HomeView.vue           Landing page
     │   ├── LoginView.vue          Auth method selection (Entra ID / mock)
-    │   ├── ProfileView.vue        User info (protected, goa-skeleton loading state)
+    │   ├── ProfileView.vue        User info (protected, ProgressSpinner loading state)
     │   ├── ConnectivityTestView.vue  BFF gateway connectivity test (protected)
     │   ├── AboutView.vue          App info
     │   └── admin/                 (if user-management module)
     │       ├── UserListView.vue   User management table (search, pagination)
     │       └── UserDetailView.vue User detail + role assignment UI
-    └── AppFooter.vue              application footer (GoA Design System)
+    └── AppFooter.vue              application footer (PrimeVue)
 
-GoA wrappers:  GoabButton │ GoabInput │ GoabModal │ GoabDropdown │ GoabTextarea │ GoabCheckbox │ GoabRadioGroup
+PrimeVue (per-SFC imports):  Button │ Card │ Menu │ Avatar │ Tag │ Message │ Badge │ ProgressSpinner │ DataTable
 ```
 
 ---
@@ -420,7 +420,7 @@ if (hasRole('admin')) { /* show admin UI */ }
 4. **Postgres via `SQLDatabase`**: `user_account` / `refresh_token` / `audit_log`. Tagged-template queries only. Redis is rate-limit-only.
 5. **BFF pattern**: `gateway` proxies `/api/v1/data/*` to the private backend with S2S OAuth tokens, traversal sanitisation, 5xx masking, audit.
 6. **PII never logged**: `lib/logger.ts` redacts; `LOG_PII=false` in production or the app fails fast.
-7. **GoA Design System**: all UI uses `@abgov/web-components` via Vue wrappers.
+7. **PrimeVue UI**: all SPA UI uses PrimeVue components (Aura theme preset, registered in `main.ts`). No `@abgov`/GoA.
 8. **Single deployable**: the `web` service serves the built SPA via `api.static`; one Encore app, port 4000.
 
 ---
@@ -449,7 +449,7 @@ colocate `foo.test.ts` next to `foo.ts`; run `encore check` for the backend grap
 
 **TypeScript**: strict mode; `interface` for object shapes, `type` for unions.
 
-**Frontend**: `<script setup>` for all components; GoA web components via Vue wrappers; lazy-load views; Pinia for shared state.
+**Frontend**: `<script setup>` for all components; PrimeVue components imported per-SFC (e.g. `import Button from 'primevue/button'`); Aura theme preset registered once in `main.ts`; lazy-load views; Pinia for shared state.
 
 **Backend (Encore)**:
 - Endpoints are typed `api()` or `api.raw()`; business logic in the service module.

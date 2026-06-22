@@ -134,7 +134,7 @@ npm run gen:client       # regenerate typed client
 | [AUTH-SETUP.md](docs/AUTH-SETUP.md) | SAML and Entra ID driver configuration |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Building and deploying each Encore app independently |
 | [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Local dev: running both apps, port assignment |
-| [GOA-COMPONENTS.md](docs/GOA-COMPONENTS.md) | GoA Design System component usage |
+| [PrimeVue documentation](https://primevue.org/) | UI component library (Aura theme) used by both SPAs |
 | [TESTING.md](docs/TESTING.md) | Testing strategy (unit / E2E; `encore check`) |
 | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common issues and solutions |
 

@@ -25,7 +25,7 @@ The base app skeleton (`apps/api`) is a complete Encore.ts application. A profil
 
 - Encore.ts application at `apps/api` (port 4000)
 - Services: `lib` (security primitives) / `db` (SQLDatabase) / `health` (probes) / `auth` (stateless RS256 JWT + multi-driver SSO) / `gateway` (BFF `/api/v1/data/*` proxy) / `web` (static SPA serving)
-- Vue 3 SPAs with GoA Design System, Pinia, Vue Router 4
+- Vue 3 SPAs with PrimeVue (Aura preset, indigo primary), Pinia, Vue Router 4
 - Postgres via `SQLDatabase("app")` with auto-applied migrations
 - Stateless RS256 JWT auth (access + DB-backed refresh rotation); httpOnly cookies; no `express-session`
 - Multi-driver authentication: `mock` (local dev) / `saml` (external-facing) / `entra-id` (staff-facing); all three drivers ship in-app; a profile sets the default via `AUTH_DRIVER`

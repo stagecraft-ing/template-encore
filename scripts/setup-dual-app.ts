@@ -4,8 +4,8 @@
  * Produces TWO independent, standalone Encore apps under the destination
  * (Option A from spec 008's "Dual-app under Encore"):
  *
- *   <dest>/public     AUTH_DRIVER=saml      external-facing; web service serves apps/web
- *   <dest>/internal   AUTH_DRIVER=entra-id  staff-facing;   web service serves apps/web-internal
+ *   <dest>/public     AUTH_DRIVER=rauthy    external-facing; web service serves apps/web
+ *   <dest>/internal   AUTH_DRIVER=rauthy    staff-facing;   web service serves apps/web-internal
  *
  * Each subdirectory is a complete copy of the template base (the same copy +
  * driver-selection core the single-app generator uses, spec 008), so each has
@@ -28,13 +28,13 @@ import { copyTemplateBase, setAuthDriver, TEMPLATE_ROOT } from './setup-app'
 export interface DualVariant {
   /** Subdirectory under <dest>. */
   dir: 'public' | 'internal'
-  authDriver: 'saml' | 'entra-id'
+  authDriver: 'rauthy'
   description: string
 }
 
 export const DUAL_VARIANTS: DualVariant[] = [
-  { dir: 'public', authDriver: 'saml', description: 'External-facing portal (SAML)' },
-  { dir: 'internal', authDriver: 'entra-id', description: 'Staff-facing portal (Entra ID)' },
+  { dir: 'public', authDriver: 'rauthy', description: 'External-facing portal (rauthy OIDC)' },
+  { dir: 'internal', authDriver: 'rauthy', description: 'Staff-facing portal (rauthy OIDC)' },
 ]
 
 /**
@@ -154,8 +154,8 @@ async function main(): Promise<void> {
 
   if (dryRun) {
     console.log('\n  [DRY RUN] Plan:')
-    console.log(`    1. Copy base into ${dest}/public  (AUTH_DRIVER=saml)`)
-    console.log(`    2. Copy base into ${dest}/internal (AUTH_DRIVER=entra-id) + serve apps/web-internal`)
+    console.log(`    1. Copy base into ${dest}/public  (AUTH_DRIVER=rauthy)`)
+    console.log(`    2. Copy base into ${dest}/internal (AUTH_DRIVER=rauthy) + serve apps/web-internal`)
     return
   }
 
@@ -172,8 +172,8 @@ async function main(): Promise<void> {
 
   console.log('\nGenerating both variants...')
   const roots = setupDualApp({ dest })
-  console.log(`  public:   ${roots.public}   (AUTH_DRIVER=saml)`)
-  console.log(`  internal: ${roots.internal} (AUTH_DRIVER=entra-id, serves apps/web-internal)`)
+  console.log(`  public:   ${roots.public}   (AUTH_DRIVER=rauthy)`)
+  console.log(`  internal: ${roots.internal} (AUTH_DRIVER=rauthy, serves apps/web-internal)`)
 
   // Initialize each variant as its own git repo (independent apps), non-fatal.
   // Developer-UX only — see the `noGit` derivation above for why
@@ -202,8 +202,8 @@ async function main(): Promise<void> {
   }
 
   console.log('\nDone! Two independent Encore apps:')
-  console.log(`  cd ${roots.public}   && (cd apps/api && encore run)   # external, SAML`)
-  console.log(`  cd ${roots.internal} && (cd apps/api && encore run)   # staff, Entra ID`)
+  console.log(`  cd ${roots.public}   && (cd apps/api && encore run)   # external, rauthy`)
+  console.log(`  cd ${roots.internal} && (cd apps/api && encore run)   # staff, rauthy`)
 }
 
 const isEntry = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)

@@ -119,8 +119,8 @@ export function copyTemplateBase(templateRoot: string, dest: string): void {
       // Top-level exclusions
       if (relParts.length === 0 && EXCLUDED_TOP_LEVEL.has(name)) continue
 
-      // Skip template-only docs/encore-ts/ (keep the rest of docs/)
-      if (rel.length === 2 && rel[0] === 'docs' && name === 'encore-ts') continue
+      // Skip template-only docs (development history; keep the rest of docs/)
+      if (rel.length === 2 && rel[0] === 'docs' && (name === 'encore-ts' || name === 'migration')) continue
 
       if (entry.isDirectory()) {
         // Normalize separators so the comparison is platform-independent.

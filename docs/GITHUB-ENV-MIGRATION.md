@@ -5,16 +5,16 @@ This guide explains how to migrate your repository's GitHub Actions deployment w
 ## Why are we changing?
 
 **Before (old approach):**
-- Repo-level secrets with suffixes: `AZURE_CREDENTIALS_PUBLIC`, `AZURE_CREDENTIALS_INTERNAL`
-- Repo-level variables with suffixes: `AZURE_WEBAPP_NAME_PUBLIC`, `AZURE_WEBAPP_RG_INTERNAL`
+- Repo-level secrets with suffixes: `DEPLOY_CREDENTIALS_PUBLIC`, `DEPLOY_CREDENTIALS_INTERNAL`
+- Repo-level variables with suffixes: `WEBAPP_NAME_PUBLIC`, `WEBAPP_GROUP_INTERNAL`
 - Caller workflows had to pass each secret/variable explicitly to the reusable workflow
 - Adding a new secret meant updating every caller workflow
 
 **After (new approach):**
 - GitHub Environments (e.g. `dev-public`, `uat-internal`, `production-public`)
-- Each environment has unsuffixed names: `AZURE_CREDENTIALS`, `AZURE_WEBAPP_NAME`, `AZURE_WEBAPP_RG`
+- Each environment has unsuffixed names: `DEPLOY_CREDENTIALS`, `WEBAPP_NAME`, `WEBAPP_GROUP`
 - Caller workflows only pass `environment: <name>` and `secrets: inherit`
-- Adding a new secret only requires updating the reusable workflow — callers stay untouched
+- Adding a new secret only requires updating the reusable workflow; callers stay untouched
 
 
 ## Overview of changes
@@ -22,7 +22,7 @@ This guide explains how to migrate your repository's GitHub Actions deployment w
 You need to do three things:
 
 1. **Create GitHub Environments** and populate their secrets/variables
-2. **Update the reusable workflow** (`deploy-azure-webapp-reusable.yml`)
+2. **Update the reusable workflow** (`deploy-reusable.yml`)
 3. **Update caller workflows** (e.g. `deploy-public-dev.yml`, `deploy-internal-prod.yml`)
 
 
@@ -42,48 +42,40 @@ Go to your repo → **Settings → Environments** and create the environments yo
 
 | Environment           | Trigger branch  | Used by                    |
 | --------------------- | --------------- | -------------------------- |
-| `dev-public`          | `dev`           | Dev — public app           |
-| `dev-internal`        | `dev`           | Dev — internal app         |
-| `uat-public`          | `uat`           | UAT — public app           |
-| `uat-internal`        | `uat`           | UAT — internal app         |
-| `production-public`   | manual only     | Production — public app    |
-| `production-internal` | manual only     | Production — internal app  |
+| `dev-public`          | `dev`           | Dev, public app            |
+| `dev-internal`        | `dev`           | Dev, internal app          |
+| `uat-public`          | `uat`           | UAT, public app            |
+| `uat-internal`        | `uat`           | UAT, internal app          |
+| `production-public`   | manual only     | Production, public app     |
+| `production-internal` | manual only     | Production, internal app   |
 
 ### What to add to each environment
 
 Each environment needs these three values:
 
-| Name                | Type       | Value                                   |
-| ------------------- | ---------- | --------------------------------------- |
-| `AZURE_CREDENTIALS` | **Secret** | The JSON service principal credentials  |
-| `AZURE_WEBAPP_NAME` | Variable   | Azure Web App name (e.g. `myapp-dev`)   |
-| `AZURE_WEBAPP_RG`   | Variable   | Azure resource group name               |
+| Name                 | Type       | Value                                       |
+| -------------------- | ---------- | ------------------------------------------- |
+| `DEPLOY_CREDENTIALS` | **Secret** | The deploy credentials for your host        |
+| `WEBAPP_NAME`        | Variable   | App/service name (e.g. `myapp-dev`)         |
+| `WEBAPP_GROUP`       | Variable   | Resource group / namespace name             |
 
-The `AZURE_CREDENTIALS` secret is the same JSON format you had before:
-
-```json
-{
-  "clientId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-  "clientSecret": "your-secret-value",
-  "subscriptionId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-  "tenantId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-}
-```
+The `DEPLOY_CREDENTIALS` secret is whatever credential format your container host or app host expects (for
+example a JSON service-principal blob or an API token). It is the same format you used before.
 
 
 ## Step 2: Update the reusable workflow
 
-Replace your existing `deploy-azure-webapp-reusable.yml` with the updated version from the template. The key changes are:
+Replace your existing `deploy-reusable.yml` with the updated version from the template. The key changes are:
 
-1. **Removed** `azure-webapp-name` and `azure-webapp-rg` inputs — these are now read from the environment
-2. **Removed** the `secrets:` declaration block — callers use `secrets: inherit` instead
-3. **Removed** `VITE_*` env variables from the build step — the BFF auth pattern handles auth server-side
-4. **Added** `environment: ${{ inputs.environment }}` on the deploy job — this is how GitHub resolves environment-scoped secrets/variables
+1. **Removed** `webapp-name` and `webapp-group` inputs; these are now read from the environment
+2. **Removed** the `secrets:` declaration block; callers use `secrets: inherit` instead
+3. **Removed** `VITE_*` env variables from the build step; the BFF auth pattern handles auth server-side
+4. **Added** `environment: ${{ inputs.environment }}` on the deploy job; this is how GitHub resolves environment-scoped secrets/variables
 
 The reusable workflow now references:
-- `${{ secrets.AZURE_CREDENTIALS }}` — resolved from the GitHub Environment
-- `${{ vars.AZURE_WEBAPP_NAME }}` — resolved from the GitHub Environment
-- `${{ vars.AZURE_WEBAPP_RG }}` — resolved from the GitHub Environment
+- `${{ secrets.DEPLOY_CREDENTIALS }}`, resolved from the GitHub Environment
+- `${{ vars.WEBAPP_NAME }}`, resolved from the GitHub Environment
+- `${{ vars.WEBAPP_GROUP }}`, resolved from the GitHub Environment
 
 You can copy the file directly from the template repo.
 
@@ -94,7 +86,7 @@ You can copy the file directly from the template repo.
 
 Each caller workflow becomes very simple. Here are the three files you need:
 
-**`.github/workflows/deploy-azure-webapp-dev.yml`**
+**`.github/workflows/deploy-dev.yml`**
 
 ```yaml
 name: Deploy to Dev
@@ -115,13 +107,13 @@ permissions:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy-azure-webapp-reusable.yml
+    uses: ./.github/workflows/deploy-reusable.yml
     with:
       environment: dev
     secrets: inherit
 ```
 
-**`.github/workflows/deploy-azure-webapp-uat.yml`**
+**`.github/workflows/deploy-uat.yml`**
 
 ```yaml
 name: Deploy to UAT
@@ -142,13 +134,13 @@ permissions:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy-azure-webapp-reusable.yml
+    uses: ./.github/workflows/deploy-reusable.yml
     with:
       environment: uat
     secrets: inherit
 ```
 
-**`.github/workflows/deploy-azure-webapp-prod.yml`**
+**`.github/workflows/deploy-prod.yml`**
 
 ```yaml
 name: Deploy to Production
@@ -163,7 +155,7 @@ permissions:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy-azure-webapp-reusable.yml
+    uses: ./.github/workflows/deploy-reusable.yml
     with:
       environment: production
     secrets: inherit
@@ -194,7 +186,7 @@ permissions:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy-azure-webapp-reusable.yml
+    uses: ./.github/workflows/deploy-reusable.yml
     with:
       environment: dev-public
       api-app: api-public
@@ -217,7 +209,7 @@ permissions:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy-azure-webapp-reusable.yml
+    uses: ./.github/workflows/deploy-reusable.yml
     with:
       environment: production-internal
       api-app: api-internal
@@ -243,11 +235,11 @@ After verifying your deployments work with the new approach, remove the old repo
 
 1. Go to **Settings → Secrets and variables → Actions**
 2. Delete the old suffixed secrets:
-   - `AZURE_CREDENTIALS_PUBLIC`, `AZURE_CREDENTIALS_INTERNAL` (or unsuffixed `AZURE_CREDENTIALS` at repo level)
-   - `VITE_AZURE_AD_CLIENT_ID`, `VITE_AZURE_AD_TENANT_ID`, etc. (no longer needed — BFF handles auth server-side)
+   - `DEPLOY_CREDENTIALS_PUBLIC`, `DEPLOY_CREDENTIALS_INTERNAL` (or unsuffixed `DEPLOY_CREDENTIALS` at repo level)
+   - any `VITE_*` auth client/issuer secrets (no longer needed; the BFF handles auth server-side)
 3. Delete the old suffixed variables:
-   - `AZURE_WEBAPP_NAME_PUBLIC`, `AZURE_WEBAPP_NAME_INTERNAL`
-   - `AZURE_WEBAPP_RG_PUBLIC`, `AZURE_WEBAPP_RG_INTERNAL`
+   - `WEBAPP_NAME_PUBLIC`, `WEBAPP_NAME_INTERNAL`
+   - `WEBAPP_GROUP_PUBLIC`, `WEBAPP_GROUP_INTERNAL`
 4. Delete old caller workflow files that are no longer used
 
 
@@ -257,26 +249,26 @@ The key insight is how `secrets: inherit` and GitHub Environments interact:
 
 1. The **caller workflow** sets `secrets: inherit`, which passes all repo-level and environment-scoped secrets to the reusable workflow.
 2. The **reusable workflow's deploy job** has `environment: ${{ inputs.environment }}`, which tells GitHub to resolve `${{ secrets.X }}` and `${{ vars.X }}` from that specific environment.
-3. This means `${{ secrets.AZURE_CREDENTIALS }}` in the reusable workflow automatically resolves to the correct credentials for the target environment — no suffixes needed.
+3. This means `${{ secrets.DEPLOY_CREDENTIALS }}` in the reusable workflow automatically resolves to the correct credentials for the target environment; no suffixes needed.
 
 ```
 Caller (deploy-public-dev.yml)
   └─ environment: dev-public + secrets: inherit
       └─ Reusable workflow (deploy job)
           └─ environment: dev-public  ← GitHub resolves secrets/vars from this environment
-              ├─ secrets.AZURE_CREDENTIALS  → dev-public's AZURE_CREDENTIALS
-              ├─ vars.AZURE_WEBAPP_NAME     → dev-public's AZURE_WEBAPP_NAME
-              └─ vars.AZURE_WEBAPP_RG       → dev-public's AZURE_WEBAPP_RG
+              ├─ secrets.DEPLOY_CREDENTIALS  → dev-public's DEPLOY_CREDENTIALS
+              ├─ vars.WEBAPP_NAME            → dev-public's WEBAPP_NAME
+              └─ vars.WEBAPP_GROUP           → dev-public's WEBAPP_GROUP
 ```
 
 
 ## Checklist
 
 - [ ] GitHub Environments created (Settings → Environments)
-- [ ] `AZURE_CREDENTIALS` secret set on each environment
-- [ ] `AZURE_WEBAPP_NAME` variable set on each environment
-- [ ] `AZURE_WEBAPP_RG` variable set on each environment
-- [ ] `deploy-azure-webapp-reusable.yml` updated from template
+- [ ] `DEPLOY_CREDENTIALS` secret set on each environment
+- [ ] `WEBAPP_NAME` variable set on each environment
+- [ ] `WEBAPP_GROUP` variable set on each environment
+- [ ] `deploy-reusable.yml` updated from template
 - [ ] Caller workflows updated to use `environment:` + `secrets: inherit`
 - [ ] Old suffixed repo-level secrets/variables deleted
 - [ ] Old caller workflow files deleted

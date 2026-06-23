@@ -44,7 +44,7 @@ Before processing the REMOVE list, apply these variant-specific removals automat
 | Vue views | Staff-only admin views | Public app is external user-facing only |
 | Config | Internal-only env vars | No internal stack |
 
-The `auth` service always ships all three drivers (`mock`, `entra-id`, `saml`): `AUTH_DRIVER` selects the active one. Do not delete driver files; configure `AUTH_DRIVER=saml` (plus `AUTH_DRIVER=mock` for dev).
+The `auth` service always ships both drivers (`mock`, `rauthy`): `AUTH_DRIVER` selects the active one. Do not delete driver files; configure `AUTH_DRIVER=rauthy` (plus `AUTH_DRIVER=mock` for dev).
 
 ### Internal Variant: Remove These:
 
@@ -53,7 +53,7 @@ The `auth` service always ships all three drivers (`mock`, `entra-id`, `saml`): 
 | Module | `api-gateway` module | Internal stack owns data directly (no BFF proxy needed) |
 | Module | `user-management` module (if not required) | Optional feature module |
 | Vue views | External-user-only public views | Internal app is staff-facing only |
-| Config | Public-only SAML env vars (if unused in dev) | `AUTH_DRIVER=entra-id` for internal |
+| Config | Unused rauthy OIDC env vars (if only the mock driver is used in dev) | `AUTH_DRIVER=rauthy` for internal |
 
 ### Dual Variant: Remove These:
 
@@ -85,11 +85,11 @@ Use when a dual template is being narrowed to single-stack.
 
 ### Pattern B: Remove an Auth Driver Configuration
 
-Auth drivers (`mock`, `entra-id`, `saml`) are static files in `apps/api/auth/`. Removing them is rarely needed: the driver is inactive unless `AUTH_DRIVER` selects it.
+Auth drivers (`mock`, `rauthy`) are static files in `apps/api/auth/`. Removing them is rarely needed: the driver is inactive unless `AUTH_DRIVER` selects it.
 
 If the project will never use a driver and you want to remove the dead code:
 
-1. **Identify driver files**: `apps/api/auth/{mock,entra-id,saml}.ts`
+1. **Identify driver files**: `apps/api/auth/{mock,rauthy}.ts`
 2. **Remove the driver handler** from `apps/api/auth/drivers.ts` (the discovery and login dispatcher)
 3. **Remove driver-specific secrets** from `apps/api/lib/secrets.ts` and `apps/api/infra.config.json`
 4. **Remove driver env vars** from `apps/api/.env.example`

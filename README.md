@@ -8,7 +8,7 @@
 
 Monorepo template for enterprise applications: public-facing (external user) and internal (staff). An
 **Encore.ts** backend (BFF API gateway, stateless RS256 JWT auth, Postgres) plus two Vue 3 SPAs built on
-PrimeVue, with pluggable authentication (SAML 2.0, Microsoft Entra ID, Mock) and TypeScript throughout.
+PrimeVue, with pluggable authentication (rauthy OIDC, Mock) and TypeScript throughout.
 
 > **Backend = Encore.ts.** The original Express 5 BFF was retired in the Encore migration (specs 001 to 006).
 > See [`CODEMAP.md`](CODEMAP.md) for the architectural blueprint and `specs/001-encore-app-architecture` /
@@ -55,10 +55,10 @@ so Encore can start the local Postgres database.
 > an Encore-based app.
 
 ```bash
-# Public-facing (SAML)
+# Public-facing (rauthy OIDC)
 npx tsx scripts/setup-app.ts --profile public --dest ../my-public-app
 
-# Internal/staff (Entra ID)
+# Internal/staff (rauthy OIDC)
 npx tsx scripts/setup-app.ts --profile internal --dest ../my-internal-app
 
 # Minimal (mock auth: local dev only)
@@ -102,7 +102,7 @@ npm run gen:client       # regenerate the typed client → apps/web/src/lib/enco
 | [CODEMAP.md](CODEMAP.md) | Architecture overview, service graph, security model (start here) |
 | [specs/001-encore-app-architecture](specs/001-encore-app-architecture/spec.md) | Authoritative backend layout + service decomposition |
 | [specs/002-security-data-invariants](specs/002-security-data-invariants/spec.md) | Security/data invariant freeze (INV-1 to INV-11) |
-| [docs/AUTH-SETUP.md](docs/AUTH-SETUP.md) | SAML, Entra ID, and Mock driver configuration |
+| [docs/AUTH-SETUP.md](docs/AUTH-SETUP.md) | rauthy OIDC and Mock driver configuration |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Building and deploying the Encore app |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Development workflow and conventions |
 | [docs/TESTING.md](docs/TESTING.md) | Testing strategy (unit / E2E) |

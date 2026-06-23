@@ -37,7 +37,7 @@ cd ../..
 
 The backend reads non-secret config from `apps/api/.env` and secrets from Encore's secret store (with dev
 fallbacks). The defaults work out of the box with `AUTH_DRIVER=mock`. See [apps/api/.env.example](../apps/api/.env.example)
-for the full set (`AUTH_DRIVER`, `API_BASE_URL`, `FRONTEND_URL`, JWT keys, `CSRF_SECRET`, `ENTRA_*`, `SAML_*`,
+for the full set (`AUTH_DRIVER`, `API_BASE_URL`, `FRONTEND_URL`, JWT keys, `CSRF_SECRET`, `RAUTHY_*`,
 `GATEWAY_OAUTH_*`, `RATE_LIMIT_*`). See [AUTH-SETUP.md](AUTH-SETUP.md) for driver configuration.
 
 ### 3. Start development servers
@@ -194,7 +194,7 @@ Node inspector to the `encore run` process.
 ## Environment Variables
 
 - **Non-secret config**: `apps/api/.env` (loaded by `encore run`). Template: [apps/api/.env.example](../apps/api/.env.example).
-- **Secrets** (JWT keys, `CSRF_SECRET`, `ENTRA_CLIENT_SECRET`, `SAML_*` keys, `GATEWAY_OAUTH_*`): declared via
+- **Secrets** (JWT keys, `CSRF_SECRET`, `RAUTHY_CLIENT_SECRET`, `GATEWAY_OAUTH_*`): declared via
   `secret(...)` in `apps/api/lib/secrets.ts`. Set locally with `encore secret set --type local <NAME>` or rely
   on the dev fallbacks (JWT reads `apps/api/keys/*.pem`). In production, bind via `infra.config.json` `$env` or
   `encore secret set --type prod <NAME>`. Never commit secret values.
@@ -245,7 +245,7 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md). Quick fixes:
 ## Additional Resources
 
 - [CODEMAP.md](../CODEMAP.md): architecture overview and service graph
-- [Authentication Setup](AUTH-SETUP.md): SAML, Entra ID, Mock
+- [Authentication Setup](AUTH-SETUP.md): rauthy (OIDC), Mock
 - [Testing](TESTING.md) · [Deployment](DEPLOYMENT.md) · [PrimeVue docs](https://primevue.org/) (Aura theme)
 - [Encore.ts documentation](https://encore.dev/docs/ts)
 

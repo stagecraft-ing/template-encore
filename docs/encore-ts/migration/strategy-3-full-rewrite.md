@@ -591,7 +591,7 @@ that with `api.raw` and write the headers yourself.
 - **Passport strategies.** No Passport equivalent in Encore. Roll
   the auth strategy you need inside the `authHandler` directly —
   OAuth flows are a few hundred lines and the substrate's
-  `auth/google.ts` and `auth/microsoft.ts` show the shape.
+  `auth/rauthy.ts` shows the shape for an OIDC flow.
 - **WebSocket / SSE.** Encore supports streaming via `api.streamIn`,
   `api.streamOut`, and `api.streamInOut` — see Encore docs. The
   Express `ws` package patterns don't directly translate.

@@ -23,7 +23,7 @@ Read `CODEMAP.md` in full. Extract and summarize:
 - **Backend**: The standalone Encore.ts application at `apps/api`: its Encore services, `encore.app` manifest, `infra.config.json` bindings, and port (4000)
 - **Frontend**: The two Vue 3 SPAs (`apps/web`, `apps/web-internal`): their entry points, router, stores, and components
 - **Service graph**: Encore services discovered from `encore.service.ts` files: `lib`, `db`, `health`, `auth`, `gateway`, `web`, and any feature services
-- **Auth model**: Stateless RS256 JWT (access + DB-backed refresh) in httpOnly cookies; multi-driver SSO (`AUTH_DRIVER` env: `mock`, `entra-id`, `saml`)
+- **Auth model**: Stateless RS256 JWT (access + DB-backed refresh) in httpOnly cookies; multi-driver SSO (`AUTH_DRIVER` env: `mock`, `rauthy`)
 - **Architectural invariants**: Rules from `CODEMAP.md` Invariants section
 
 ---
@@ -32,9 +32,9 @@ Read `CODEMAP.md` in full. Extract and summarize:
 
 | Variant | Active Backend | Active Frontend(s) | Auth Driver | Use Case |
 |---------|---------------|-------------------|-------------|----------|
-| **public** | `apps/api` (single Encore app, SAML) | `apps/web` | `saml` | External user-facing BFF |
-| **internal** | `apps/api` (single Encore app, Entra ID) | `apps/web` | `entra-id` | Staff-facing, owns DB |
-| **dual** | Two independent Encore apps (one per audience) | `apps/web` (public) + `apps/web-internal` (staff) | `saml` (public), `entra-id` (internal) | Both external user and staff stacks |
+| **public** | `apps/api` (single Encore app, rauthy OIDC) | `apps/web` | `rauthy` | External user-facing BFF |
+| **internal** | `apps/api` (single Encore app, rauthy OIDC) | `apps/web` | `rauthy` | Staff-facing, owns DB |
+| **dual** | Two independent Encore apps (one per audience) | `apps/web` (public) + `apps/web-internal` (staff) | `rauthy` (public), `rauthy` (internal) | Both external user and staff stacks |
 
 **Dual variant: two independent Encore apps, not one app with two audiences:**
 
@@ -42,8 +42,8 @@ The dual variant is two separate Encore applications that happen to live in the 
 
 | Stack | App directory | Auth driver | Audiences | Data access |
 |-------|--------------|-------------|-----------|-------------|
-| Public | `apps/api` (public) | `saml` | External users | BFF: proxies to internal via `gateway` service |
-| Internal | `apps/api` (internal) | `entra-id` | staff users | Owns the database (`SQLDatabase("app")`) |
+| Public | `apps/api` (public) | `rauthy` | External users | BFF: proxies to internal via `gateway` service |
+| Internal | `apps/api` (internal) | `rauthy` | staff users | Owns the database (`SQLDatabase("app")`) |
 
 During inventory, note which `AUTH_DRIVER` is configured and which driver files exist under `apps/api/auth/`.
 
@@ -75,7 +75,7 @@ Surface this to the user:
 > Variant required: **dual** (both `public-site` and `staff-portal` surfaces found)
 > Project structure found: **[describe what exists]**
 >
-> The dual variant requires two independent Encore apps (one SAML + external user, one Entra ID + staff)
+> The dual variant requires two independent Encore apps (one rauthy OIDC + external user, one rauthy OIDC + staff)
 > and two Vue SPAs (`apps/web`, `apps/web-internal`).
 >
 > To resolve, choose one:
@@ -151,7 +151,7 @@ List every module found in the `modules/` directory. For each:
 | `data-redis` | Keep (if rate-limit via Redis needed) | Keep | Keep |
 | `user-management` | Conditional | Keep (if user admin needed) | Conditional |
 
-Note: auth drivers (`mock`, `saml`, `entra-id`) are now built into `apps/api/auth/` and selected by `AUTH_DRIVER`: they are not installable modules. The session-store modules (`session-store-postgres`, `session-store-redis`, `api-docs`) are retired; they have no Encore analog.
+Note: auth drivers (`mock`, `rauthy`) are now built into `apps/api/auth/` and selected by `AUTH_DRIVER`: they are not installable modules. The session-store modules (`session-store-postgres`, `session-store-redis`, `api-docs`) are retired; they have no Encore analog.
 
 ---
 

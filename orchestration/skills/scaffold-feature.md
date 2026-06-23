@@ -392,7 +392,7 @@ All internal views render inside the PrimeVue sidebar layout (`AppLayout.vue`). 
 
 **View rules:**
 - `<script setup lang="ts">`: no Options API
-- PrimeVue components imported per-SFC (e.g. `import Card from 'primevue/card'`). No `@abgov` imports.
+- PrimeVue components imported per-SFC (e.g. `import Card from 'primevue/card'`). No third-party design-system imports.
 - Exactly one `<h1>` per view
 - No direct API calls: use Pinia stores
 - Add `data-testid` attributes to interactive elements for E2E testing
@@ -799,7 +799,7 @@ import Card from 'primevue/card'
 - [ ] Endpoint tests written and passing (model mock + auth mock)
 - [ ] Store/component tests written and passing
 - [ ] Select/dropdown uses PrimeVue `Select` with `:options`, `optionLabel`, `optionValue`, and `v-model`
-- [ ] No `@abgov` / GoA component imports anywhere in the SPA
+- [ ] No third-party design-system component imports anywhere in the SPA
 - [ ] No `any` types outside test files
 - [ ] No `console.log`: use `logger` from `encore.dev/log`
 - [ ] Route registered in `router/index.ts` with lazy loading

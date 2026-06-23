@@ -257,13 +257,13 @@ All fields in `manifest.json` with their types and the Encore meaning.
 
 ```json
 {
-  "name": "SAML_CERT",
-  "description": "SAML IdP X.509 certificate",
+  "name": "RAUTHY_CLIENT_SECRET",
+  "description": "rauthy OIDC client secret",
   "required": true
 }
 ```
 
-The composer adds `"SAML_CERT": { "$env": "SAML_CERT" }` to `apps/api/infra.config.json`. No secret value is ever written by the tooling.
+The composer adds `"RAUTHY_CLIENT_SECRET": { "$env": "RAUTHY_CLIENT_SECRET" }` to `apps/api/infra.config.json`. No secret value is ever written by the tooling.
 
 ### corsEntries entry
 

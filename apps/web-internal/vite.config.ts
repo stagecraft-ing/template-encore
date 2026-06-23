@@ -14,9 +14,9 @@ export default defineConfig(({ mode }) => {
   // Load all env vars (not just VITE_) from project root .env
   const env = loadEnv(mode, path.resolve(__dirname, '..', '..'), '')
 
-  const hasTls = !!(env.SAML_PRIVATE_KEY && env.SAML_CERT_SP)
+  const hasTls = !!(env.DEV_TLS_KEY && env.DEV_TLS_CERT)
   const httpsConfig = hasTls
-    ? { key: wrapPem(env.SAML_PRIVATE_KEY, 'PRIVATE KEY'), cert: wrapPem(env.SAML_CERT_SP, 'CERTIFICATE') }
+    ? { key: wrapPem(env.DEV_TLS_KEY, 'PRIVATE KEY'), cert: wrapPem(env.DEV_TLS_CERT, 'CERTIFICATE') }
     : undefined
   const apiProtocol = hasTls ? 'https' : 'http'
 

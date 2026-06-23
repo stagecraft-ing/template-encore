@@ -91,9 +91,9 @@ Before any work begins, determine the variant. When invoked from the factory pip
 
 | Condition | Variant | Auth |
 |-----------|---------|------|
-| `public-site` surface only | **public** | SAML + Mock (AUTH_DRIVER=saml) |
-| `staff-portal` surface only | **internal** | Entra ID + Mock (AUTH_DRIVER=entra-id) |
-| Both surfaces present | **dual** | Two independent Encore apps: public (AUTH_DRIVER=saml) + internal (AUTH_DRIVER=entra-id) |
+| `public-site` surface only | **public** | rauthy + Mock (AUTH_DRIVER=rauthy) |
+| `staff-portal` surface only | **internal** | rauthy + Mock (AUTH_DRIVER=rauthy) |
+| Both surfaces present | **dual** | Two independent Encore apps: public (AUTH_DRIVER=rauthy) + internal (AUTH_DRIVER=rauthy) |
 
 
 Auth is stateless RS256 JWT with DB-backed refresh tokens in all variants: there is no session store to select.
@@ -103,8 +103,8 @@ Auth is stateless RS256 JWT with DB-backed refresh tokens in all variants: there
 | `areas[].viewType` | Logical Surface | Stack |
 |---|---|---|
 | `public` | `public-site` | external user/unauthenticated |
-| `public-authenticated` | `public-site` | external user-authenticated (SAML) |
-| `private-authenticated` | `staff-portal` | staff user (Entra ID) |
+| `public-authenticated` | `public-site` | external user-authenticated (rauthy OIDC) |
+| `private-authenticated` | `staff-portal` | staff user (rauthy OIDC) |
 
 If only `public-site` areas are present: **public** variant. If only `staff-portal`: **internal** variant. If both: **dual** variant.
 
@@ -146,7 +146,7 @@ When invoked from the factory pipeline (stages 4-5), the factory produces a **Bu
 | API Build Specification | `{project-root}/apps/api/api-build-spec.json` | `{project-root}/apps/api-public/api-build-spec.json` AND `{project-root}/apps/api-internal/api-build-spec.json` |
 | UI Build Specification | Not materialized as a single file in template-mode: the factory passes the UI page list in the stage invocation prompt. Fall back to `{project-root}/content-specs/*.json` (one file per page) if present. | Same: passed in-prompt; per-stack `content-specs/` if materialized |
 
-The API Build Specification is conformant to the schema `https://goa.local/factory/api-build-spec.schema.json` (`Factory Agent/Orchestrator/schemas/api-build-spec.schema.json` in the factory repo). The factory's `fac_s4_runner.py` validates against this file post-stage; if it is missing or malformed, FAC-S4-COV-007 fails.
+The API Build Specification is conformant to the schema `https://factory.local/factory/api-build-spec.schema.json` (`Factory Agent/Orchestrator/schemas/api-build-spec.schema.json` in the factory repo). The factory's `fac_s4_runner.py` validates against this file post-stage; if it is missing or malformed, FAC-S4-COV-007 fails.
 
 The Build Specification is the **authoritative list** of what to build. Do NOT independently re-derive endpoints from sitemap.json or content-spec files: the factory has already performed that derivation.
 
@@ -340,7 +340,7 @@ For each MODIFY item: update existing tests or add new ones.
 
 **Skill**: `ref:template-trim`
 
-Remove everything from the REMOVE list. Applies variant-driven removals automatically (e.g., public variant removes Entra ID configuration; internal variant removes SAML configuration).
+Remove everything from the REMOVE list. Applies variant-driven removals automatically (e.g., a variant that only uses the mock driver in development removes unused rauthy OIDC configuration).
 
 Clean removal = files deleted + imports removed + registrations removed + docs updated.
 
@@ -413,7 +413,7 @@ grep -rn "MOCK_\|TODO\|PLACEHOLDER\|placeholder\|mockData\|mock_data\|hardcoded"
 
 **Step 6: Template variable preservation check:**
 ```bash
-grep -c "{{" .env.example apps/api/.env.example 2>/dev/null
+grep -c "{{" apps/api/.env.example 2>/dev/null
 ```
 Compare against the original template. If any `{{PLACEHOLDER}}` patterns were removed or renamed from `.example` files, restore them.
 
@@ -474,13 +474,13 @@ Each sub-skill accepts a **variant parameter** (`public`, `internal`, or `dual`)
 
 ## 1. Template Variants
 
-The ACME template supports three deployment configurations. The codebase is the same base Encore app: the variant determines which auth driver is active and, for dual, whether two independent apps are generated.
+The template supports three deployment configurations. The codebase is the same base Encore app: the variant determines which auth driver is active and, for dual, whether two independent apps are generated.
 
 | Variant | Apps | Auth Driver | Use Case |
 |---------|------|-------------|----------|
-| **Public** | `apps/api` + `apps/web` | AUTH_DRIVER=saml (+ mock dev) | External user-facing BFF. Data proxied from private backend via the `gateway` service. |
-| **Internal** | `apps/api` + `apps/web` | AUTH_DRIVER=entra-id (+ mock dev) | Staff-facing. Owns the SQLDatabase directly. |
-| **Dual** | Two independent Encore apps: `<dest>/public` + `<dest>/internal` | public=saml, internal=entra-id | Both external user and staff stacks. Each is a complete standalone Encore app. |
+| **Public** | `apps/api` + `apps/web` | AUTH_DRIVER=rauthy (+ mock dev) | External user-facing BFF. Data proxied from private backend via the `gateway` service. |
+| **Internal** | `apps/api` + `apps/web` | AUTH_DRIVER=rauthy (+ mock dev) | Staff-facing. Owns the SQLDatabase directly. |
+| **Dual** | Two independent Encore apps: `<dest>/public` + `<dest>/internal` | public=rauthy, internal=rauthy | Both external user and staff stacks. Each is a complete standalone Encore app. |
 
 Auth is stateless RS256 JWT in all three variants. There is no session store. Redis, when present, is rate-limit backing only (set via `REDIS_URL`).
 
@@ -538,8 +538,7 @@ Auth is stateless RS256 JWT in all three variants. There is no session store. Re
 │   │   │   ├── handler.ts           authHandler + Gateway({ authHandler }): validates access-token cookie
 │   │   │   ├── drivers.ts           driver discovery + default login + /api/v1/auth/status
 │   │   │   ├── mock.ts              mock driver (instant login, ?user=0|1|2)
-│   │   │   ├── entra-id.ts          Entra ID OIDC driver (redirect + callback)
-│   │   │   ├── saml.ts              SAML 2.0 driver (redirect + POST callback)
+│   │   │   ├── rauthy.ts            rauthy OIDC driver (redirect + callback)
 │   │   │   ├── me.ts                GET /api/v1/auth/me (auth:true) → MeResponse
 │   │   │   ├── refresh.ts           POST /api/v1/auth/refresh (rotate refresh token)
 │   │   │   ├── logout.ts            POST /api/v1/auth/logout (auth:true, revoke + clear)
@@ -599,7 +598,6 @@ Auth is stateless RS256 JWT in all three variants. There is no session store. Re
 ├── e2e/                             Playwright E2E tests
 ├── .github/workflows/               CI/CD
 ├── apps/api/.env.example            Encore backend dev config template
-├── .env.example                     Root dev config template
 ├── CODEMAP.md                       Architecture blueprint (read first)
 ├── package.json                     Monorepo root (npm workspaces; apps/api excluded)
 ├── eslint.config.mjs                Flat ESLint config
@@ -609,8 +607,8 @@ Auth is stateless RS256 JWT in all three variants. There is no session store. Re
 ### Dual-Stack Layout
 
 In dual-stack mode, the generator (`scripts/setup-dual-app.ts`) creates **two independent Encore apps** at the destination:
-- `<dest>/public/`: complete Encore app, AUTH_DRIVER=saml, `web` service serves `apps/web`
-- `<dest>/internal/`: complete Encore app, AUTH_DRIVER=entra-id, `web` service serves `apps/web-internal`
+- `<dest>/public/`: complete Encore app, AUTH_DRIVER=rauthy, `web` service serves `apps/web`
+- `<dest>/internal/`: complete Encore app, AUTH_DRIVER=rauthy, `web` service serves `apps/web-internal`
 
 Each app is a full copy of the `apps/api` skeleton with its own `encore.app`, `infra.config.json`, Gateway, authHandler, secrets, and independent deploy lifecycle. They do NOT share a monorepo: they are separate deployable units.
 
@@ -657,7 +655,7 @@ All code added to this template **must** use these technologies. Do not introduc
 | **Routing** | Vue Router 4 | Lazy-load views: `() => import('./views/X.vue')` |
 | **Styling** | PrimeVue | `primevue` + `@primevue/themes` (Aura preset, indigo primary) + `primeicons`. No Tailwind. |
 | **Backend** | **Encore.ts** | Typed `api()` / `api.raw()` endpoints; services discovered from `encore.service.ts`; `authHandler` + `Gateway`; per-service `middlewares` arrays. Replaces Express 5. |
-| **Auth** | **Stateless RS256 JWT** | Access (~15 min) + DB-backed refresh (~7 day, rotation/revocation) in httpOnly cookies; CSRF double-submit. Multi-driver: mock/entra-id/saml, selected by AUTH_DRIVER env. Not `express-session`. |
+| **Auth** | **Stateless RS256 JWT** | Access (~15 min) + DB-backed refresh (~7 day, rotation/revocation) in httpOnly cookies; CSRF double-submit. Multi-driver: mock/rauthy, selected by AUTH_DRIVER env. Not `express-session`. |
 | **Validation** | Zod (SPA/packages); Encore typed request interfaces (API) | No Joi, Yup, or class-validator in the backend. |
 | **Persistence** | **Postgres via Encore `SQLDatabase("app")`** | `user_account`, `refresh_token`, `audit_log`. Tagged-template (auto-parameterized) queries only. |
 | **Build** | Vite (frontend); `encore build docker` (backend) | Backend image: `Dockerfile.base` + `encore build docker --base`. |
@@ -677,13 +675,13 @@ These are non-negotiable engineering decisions. Do not change them without expli
 
 1. **Stateless JWT, not sessions**: Auth is RS256 access token (~15 min) plus DB-backed rotating revocable refresh token (~7 day) stored in httpOnly cookies. Frontend reads user via `GET /api/v1/auth/me` (auth:true). No `express-session`, no session ID cookie, no server-side session state.
 
-2. **Multi-driver auth by configuration, not registry**: The three drivers (`mock`, `entra-id`, `saml`) ship as static files in `apps/api/auth/`. `AUTH_DRIVER` env var selects the default. No `authService.registerDriver()`, no priority sort, no runtime registry. Driver selection is a config line, not a code operation.
+2. **Multi-driver auth by configuration, not registry**: The two drivers (`mock`, `rauthy`) ship as static files in `apps/api/auth/`. `AUTH_DRIVER` env var selects the default. No `authService.registerDriver()`, no priority sort, no runtime registry. Driver selection is a config line, not a code operation.
 
 3. **Encore service-directory composition**: New backend features are added as self-contained directories under `apps/api/`, each containing `encore.service.ts` + endpoint files + `model.ts` + optional `migrations/`. Encore discovers services at compile time. There is no `app.ts` middleware chain, no `modules.ts` loader, no `registerAllModules(app)` call.
 
 4. **View → Component → Store**: Views are thin. Business state lives in Pinia stores. API calls go through stores, not directly from views.
 
-5. **PrimeVue only**: All UI uses PrimeVue components (Aura preset registered in `main.ts`; per-SFC imports). No `@abgov` / GoA components, no Tailwind, no other CSS frameworks.
+5. **PrimeVue only**: All UI uses PrimeVue components (Aura preset registered in `main.ts`; per-SFC imports). No third-party design-system components, no Tailwind, no other CSS frameworks.
 
 6. **Zod for SPA/package validation**: Config schemas, input validation, shared types in `packages/shared`. No alternatives. Encore endpoints use typed request interfaces natively; Zod is not applied at the Encore layer.
 
@@ -702,13 +700,13 @@ These are non-negotiable engineering decisions. Do not change them without expli
 13. **Dual variant requires two independent Encore apps**: Public and internal stacks MUST be separate Encore apps with separate `encore.app` manifests, separate Gateway + authHandler instances, separate secrets, and separate deploy lifecycles. This is a security and architectural boundary, not a code organization preference.
 
     **Required structure (Option A, the default):**
-    - `<dest>/public/`: SAML auth, `web` service serves `apps/web` (external user SPA), BFF gateway proxies to private backend
-    - `<dest>/internal/`: Entra ID auth, `web` service serves `apps/web-internal` (staff SPA), owns the database directly
+    - `<dest>/public/`: rauthy OIDC auth, `web` service serves `apps/web` (external user SPA), BFF gateway proxies to private backend
+    - `<dest>/internal/`: rauthy OIDC auth, `web` service serves `apps/web-internal` (staff SPA), owns the database directly
 
     **Why physical separation is mandatory:**
     - **Security isolation**: Each app has its own auth driver, its own `authHandler`, its own Gateway. A misconfiguration in one app cannot bleed into the other.
     - **Independent deployment**: Public and internal apps have different scaling needs, uptime SLAs, and deployment cadences.
-    - **Auth driver isolation**: SAML assertions contain external user PII. Entra ID tokens contain staff identity. These must never flow through the same authHandler in production.
+    - **Auth driver isolation**: The public app's OIDC tokens carry external user identity. The internal app's OIDC tokens carry staff identity. These must never flow through the same authHandler in production.
     - **Trust-zone separation**: The public app is internet-exposed. The internal app is not. They must be independently deployable to separate network zones.
 
     **What role-based access control IS for (within each app):**
@@ -719,14 +717,14 @@ These are non-negotiable engineering decisions. Do not change them without expli
     **What role-based access control is NOT for:**
     - Serving both external users and staff from a single Encore app by checking `getAuthData()!.roles`
     - Using `if (isStaff)` branches in a shared endpoint handler to return different data to different audiences
-    - Registering both SAML and Entra ID as concurrent active drivers in a single app for cross-audience use
+    - Registering two separate rauthy OIDC clients as concurrent active drivers in a single app for cross-audience use
 
 14. **Dual variant: separate API surfaces and separate S2S identity**: The two Encore apps serve different audiences and have different data ownership:
 
-    - **Public app**: external user-facing endpoints only. Internet-accessible. Authenticated via SAML. The `gateway` service proxies `/api/v1/data/*` to the private backend using S2S OAuth client credentials.
-    - **Internal app**: staff-facing and internal data endpoints only. Not internet-exposed. Authenticated via Entra ID. Owns the SQLDatabase.
+    - **Public app**: external user-facing endpoints only. Internet-accessible. Authenticated via rauthy OIDC. The `gateway` service proxies `/api/v1/data/*` to the private backend using S2S OAuth client credentials.
+    - **Internal app**: staff-facing and internal data endpoints only. Not internet-exposed. Authenticated via rauthy OIDC. Owns the SQLDatabase.
 
-    Cross-stack S2S authentication uses a **separate Entra ID app registration** (service principal, client credentials flow): not the staff SSO registration. Configure in `GATEWAY_OAUTH_*` secrets.
+    Cross-stack S2S authentication uses a **separate rauthy OIDC client** (service account, client credentials flow): not the staff SSO client. Configure in `GATEWAY_OAUTH_*` secrets.
 
 15. **Dual-Stack Routing Matrix (CRITICAL: read before writing any dual-variant code)**
 
@@ -737,8 +735,8 @@ These are non-negotiable engineering decisions. Do not change them without expli
     │  web (public)│ ──────────►  │  public Encore  │ ───────────────► │ internal Encore  │
     │  :5173       │  Vite proxy  │  app (:4000)    │  gateway proxy   │ app (:4001)       │
     │  (external)  │  → :4000     │  AUTH_DRIVER    │  S2S OAuth       │ (owns database)   │
-    │              │              │  =saml          │                  │ AUTH_DRIVER        │
-    └──────────────┘              └────────────────┘                   │ =entra-id         │
+    │              │              │  =rauthy        │                  │ AUTH_DRIVER        │
+    └──────────────┘              └────────────────┘                   │ =rauthy           │
                                                                         └─────────────────┘
                                                                                ▲
     ┌──────────────┐  /api/v1/*                                                │
@@ -761,8 +759,8 @@ These are non-negotiable engineering decisions. Do not change them without expli
 
     | From | To | Why it's wrong |
     |------|----|---------------|
-    | `web` (public SPA) | internal Encore app | External users must never bypass the BFF: no SAML auth on the internal app |
-    | `web-internal` | public Encore app | Staff should not go through the BFF: they have direct Entra ID auth on the internal app |
+    | `web` (public SPA) | internal Encore app | External users must never bypass the BFF: no external-user OIDC auth on the internal app |
+    | `web-internal` | public Encore app | Staff should not go through the BFF: they have direct rauthy OIDC auth on the internal app |
     | public Encore app | PostgreSQL | Public app does not own a domain database: all data comes via the internal app's BFF proxy |
     | internal Encore app | public Encore app | Internal never calls back to public: data flows one direction only |
 
@@ -1375,7 +1373,7 @@ When configuring a new project from the template, update these files:
 
 **Core (`apps/api/.env`):**
 ```
-AUTH_DRIVER=mock                  # mock | saml | entra-id
+AUTH_DRIVER=mock                  # mock | rauthy
 FRONTEND_URL=http://localhost:5173
 LOG_LEVEL=debug
 LOG_PII=false
@@ -1384,28 +1382,21 @@ RATE_LIMIT_MAX=1000
 
 Auth driver, JWT keys, and database connection are declared as Encore `secret()` values in `apps/api/lib/secrets.ts` and bound in `apps/api/infra.config.json`. In production these come from the Encore secret store.
 
-**SAML (public variant: `apps/api/.env`):**
+**rauthy OIDC (`apps/api/.env`):**
 ```
-AUTH_DRIVER=saml
-SAML_ENTRY_POINT={IdP SSO URL}
-SAML_ISSUER={SP entity ID}
-SAML_CERT={IdP certificate, base64}
-SAML_PRIVATE_KEY={SP private key, base64}
-SAML_CERT_SP={SP certificate, base64}
-```
-
-**Entra ID (internal variant: `apps/api/.env`):**
-```
-AUTH_DRIVER=entra-id
-ENTRA_TENANT_ID={Azure tenant ID}
-ENTRA_CLIENT_ID={App registration client ID}
-ENTRA_CLIENT_SECRET={Client secret}
+AUTH_DRIVER=rauthy
+RAUTHY_ISSUER={rauthy issuer URL}
+RAUTHY_CLIENT_ID={OIDC client ID}
+RAUTHY_CLIENT_SECRET={OIDC client secret}
+RAUTHY_REDIRECT_URI=http://localhost:4000/api/v1/auth/rauthy/callback
+RAUTHY_SCOPES=openid profile email
+RAUTHY_DEFAULT_ROLE=user
 ```
 
 **BFF gateway (when gateway is active):**
 ```
 PRIVATE_API_BASE_URL={private backend URL}
-GATEWAY_OAUTH_TENANT_ID={tenant}
+GATEWAY_OAUTH_ISSUER={issuer}
 GATEWAY_OAUTH_CLIENT_ID={client id}
 GATEWAY_OAUTH_CLIENT_SECRET={client secret}
 GATEWAY_OAUTH_SCOPE={scope}
@@ -1448,16 +1439,15 @@ CORS policy is configured in `apps/api/encore.app` under `global_cors`:
 ### Multi-Driver by Configuration
 
 ```
-Driver selection: AUTH_DRIVER env (mock | entra-id | saml)
+Driver selection: AUTH_DRIVER env (mock | rauthy)
 
 apps/api/auth/
   ├── handler.ts        authHandler(token) → AuthData  +  Gateway({ authHandler })
   ├── drivers.ts        GET /api/v1/auth/drivers, /status, /login (default driver dispatch)
   ├── mock.ts           GET /api/v1/auth/mock/login?user=0|1|2 → instant principal
-  ├── entra-id.ts       GET .../entra-id/login → 302 Microsoft → GET .../entra-id/callback
-  └── saml.ts           GET .../saml/login → 302 IdP → POST .../saml/callback
+  └── rauthy.ts         GET .../rauthy/login → 302 rauthy → GET .../rauthy/callback
 
-All three drivers ship in the base app. AUTH_DRIVER selects the default.
+Both drivers ship in the base app. AUTH_DRIVER selects the default.
 No authService.registerDriver(). No priority sort. No runtime registry.
 ```
 
@@ -1493,11 +1483,8 @@ function requireRole(auth: AuthData, required: string | string[]): void  // thro
 | GET | `/api/v1/auth/status` | - | `{ authenticated, drivers }` |
 | GET | `/api/v1/auth/login` | - | Login via default AUTH_DRIVER |
 | GET | `/api/v1/auth/mock/login` | - | Mock instant login (`?user=0\|1\|2`) |
-| GET | `/api/v1/auth/entra-id/login` | - | OIDC redirect to Microsoft |
-| GET | `/api/v1/auth/entra-id/callback` | - | OIDC code exchange |
-| GET | `/api/v1/auth/saml/login` | - | SAML 2.0 redirect to IdP |
-| POST | `/api/v1/auth/saml/callback` | - | SAML assertion POST |
-| GET | `/api/v1/auth/saml/metadata` | - | SP metadata XML |
+| GET | `/api/v1/auth/rauthy/login` | - | OIDC redirect to rauthy |
+| GET | `/api/v1/auth/rauthy/callback` | - | OIDC code exchange |
 | GET | `/api/v1/auth/csrf-token` | - | `{ token }` (replay as `X-CSRF-Token`) |
 | GET | `/api/v1/auth/me` | Y | Current user (`MeResponse`) |
 | POST | `/api/v1/auth/refresh` | - | Rotate refresh token → new access cookie |
@@ -1520,7 +1507,7 @@ Every project defines its own roles in the business requirements. The mock users
 
 1. **Read business requirements** to identify all roles (e.g., `EXTERNAL`, `STAFF`, `CASEWORKER`, `MANAGER`, `ADMINISTRATOR`)
 2. **Replace mock users** in `apps/api/auth/mock.ts`: one user per distinct role combination
-3. **Set `ENTRA_DEFAULT_ROLE`** to the lowest-privilege role in `apps/api/.env`
+3. **Set `RAUTHY_DEFAULT_ROLE`** to the lowest-privilege role in `apps/api/.env`
 4. **Apply `requireRole(auth, ...)`** to every protected endpoint using the exact role strings, and scope data queries to `auth.roles` in the model layer (AUTH-007)
 5. **Use `hasRole()`** in frontend for conditional UI rendering
 6. **Update the mock driver test** (`apps/api/auth/mock.test.ts`): mandatory, not optional. Run `encore check && vitest` before proceeding.
@@ -1549,7 +1536,7 @@ Access token:  RS256, ~15 min, in httpOnly cookie
 Refresh token: RS256, ~7 day, in httpOnly cookie + hash stored in refresh_token table
                Revocation: set revoked_at in DB. "Log out everywhere": revoke all rows for user.
 CSRF:          double-submit cookie, constant-time compare (not session-backed)
-OAuth state:   short-lived OAUTH_STATE cookie (entra-id.ts), not a session
+OAuth state:   short-lived OAUTH_STATE cookie (rauthy.ts), not a session
 ```
 
 **Redis**, when configured via `REDIS_URL`, swaps the in-memory rate-limit backend (`lib/rate-limit.ts`) for a Redis-backed one. Redis is **never** a session store or token store in this template.
@@ -1573,7 +1560,7 @@ Authenticated request (auth: true)
 /api/v1/data/*path          gateway/proxy.ts (api.raw; GET/POST/PUT/PATCH/DELETE)
   ├── sanitise forwarded path (traversal protection)
   ├── token-cache.ts          getAccessToken() → OAuth client-credentials (cached, deduped)
-  │   └── POST https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token
+  │   └── POST {rauthy issuer}/oidc/token
   ▼
 fetch() to private backend   Authorization: Bearer {token}
   ▼
@@ -1746,7 +1733,7 @@ After removing any Encore service: `encore check` must pass before committing.
 **Remove an entire stack** (dual → single):
 - Delete the unused Encore app directory
 - Remove from deployment workflows in `.github/workflows/`
-- Delete related `.env.*.example`
+- Delete the related `apps/api/.env.example` entries for the removed stack
 - Update README and CODEMAP
 
 **Remove an auth driver:**
@@ -1797,7 +1784,7 @@ These checks verify template-specific concerns. They complement (do not replace)
 | 7b | **Unit tests pass** | `npm run test --workspaces --if-present`: zero failures |
 | 8 | **Orphan detection** | No dead imports, no dangling secret references after removals |
 | 9 | **Environment variable coverage** | Every non-secret config in source has entry in `.env.example` |
-| 10 | **Architecture invariants** | Stateless JWT (no `express-session`), no Vuex, no ORM, no Tailwind, no `@abgov`/GoA components, PrimeVue per-SFC imports only, Encore service pattern (`api()` + `model.ts`), `<script setup>` in Vue, AUTH_DRIVER config (not runtime registry), SQLDatabase tagged-template queries |
+| 10 | **Architecture invariants** | Stateless JWT (no `express-session`), no Vuex, no ORM, no Tailwind, no third-party design-system components, PrimeVue per-SFC imports only, Encore service pattern (`api()` + `model.ts`), `<script setup>` in Vue, AUTH_DRIVER config (not runtime registry), SQLDatabase tagged-template queries |
 
 ---
 
@@ -1845,7 +1832,7 @@ Supplementary artifacts (read for implementation context, not for feature deriva
 
 3. **The factory owns requirements derivation.** Do not re-derive the feature list (endpoints, pages) from raw factory artifacts. When invoked from the factory pipeline, the Build Specification is the authoritative source of what to build.
 
-4. **Enterprise standards skills are shared references.** Both the factory and template reference `ref:api-web-standards`, `ref:api-rest-standards`, `ref:api-security`, `ref:ci-design-system`. The factory enforces them via validation gates. The template applies them during implementation. When implementing Vue views, extract UX and content rules from CI page-type skills but output Vue SFCs using PrimeVue components (not static HTML, GoA web components, or content-spec JSON).
+4. **Enterprise standards skills are shared references.** Both the factory and template reference `ref:api-web-standards`, `ref:api-rest-standards`, `ref:api-security`, `ref:ci-design-system`. The factory enforces them via validation gates. The template applies them during implementation. When implementing Vue views, extract UX and content rules from CI page-type skills but output Vue SFCs using PrimeVue components (not static HTML, third-party web components, or content-spec JSON).
 
 5. **The template's `CODEMAP.md` is the authoritative project structure reference.** If the factory's stage 4 checks for `CODEMAP.md` to determine output paths, this template's CODEMAP provides that information.
 

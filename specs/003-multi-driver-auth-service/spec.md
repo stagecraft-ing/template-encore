@@ -1,6 +1,6 @@
 ---
 id: "003-multi-driver-auth-service"
-title: "Multi-driver auth service: Encore authHandler/Gateway, mock/entra-id/saml SSO, JWT issuance and refresh rotation"
+title: "Multi-driver auth service: Encore authHandler/Gateway, mock/rauthy OIDC SSO, JWT issuance and refresh rotation"
 status: approved
 created: "2026-06-10"
 owner: bart
@@ -12,19 +12,19 @@ depends_on: ["001-encore-app-architecture", "002-security-data-invariants"]
 code_aliases: ["AUTH_SERVICE", "AUTH_GATEWAY"]
 summary: >
   The auth service: a dual-mode Encore authHandler (httpOnly session cookie
-  + Bearer), a Gateway binding it, three SSO drivers (mock, entra-id, saml)
+  + Bearer), a Gateway binding it, two SSO drivers (mock, rauthy OIDC)
   selected by AUTH_DRIVER, RS256 JWT issuance, refresh-token rotation and
   revocation, CSRF protection, rate limiting, and auth-event audit.
 establishes:
   - "apps/api/auth/"
 ---
 
-# 003 — Multi-driver auth service: Encore authHandler/Gateway, mock/entra-id/saml SSO, JWT issuance and refresh rotation
+# 003 - Multi-driver auth service: Encore authHandler/Gateway, mock/rauthy OIDC SSO, JWT issuance and refresh rotation
 
 ## 1. Purpose
 
 The `auth` service is the authentication surface of the Encore.ts backend. It
-provides a dual-mode `authHandler` validated by a `Gateway`, three SSO drivers
+provides a dual-mode `authHandler` validated by a `Gateway`, two SSO drivers
 selectable by configuration, RS256 JWT issuance with DB-backed refresh rotation
 and revocation, CSRF-token issuance, logout with optional IdP SLO, and driver
 discovery. It is the load-bearing realisation of most of the invariants in spec
@@ -61,9 +61,8 @@ authenticated endpoints across the application, including the BFF proxy
   (`db` from `../db/db`), parameterized only (INV-2).
 - **`drivers.ts`** — `GET /api/v1/auth/drivers` (list), `/status` (raw, no
   401), `/login` (raw, default-driver redirect).
-- **`mock.ts`**, **`entra-id.ts`**, **`saml.ts`** — per-driver login + callback
-  flows (`isMockEnabled` / `isEntraConfigured` / `isSamlConfigured` gate
-  availability); `saml.ts` also serves SP metadata.
+- **`mock.ts`**, **`rauthy.ts`**: per-driver login + callback
+  flows (`isMockEnabled` / `isRauthyConfigured` gate availability).
 - **`me.ts`**, **`refresh.ts`**, **`logout.ts`**, **`csrf-token.ts`** — the
   profile read and the cookie/token lifecycle endpoints.
 
@@ -78,9 +77,8 @@ authenticated endpoints across the application, including the BFF proxy
 | `GET /api/v1/auth/drivers` | typed | list of configured drivers |
 | `GET /api/v1/auth/status` | raw | auth status (no 401) |
 | `GET /api/v1/auth/login` | raw | default-driver redirect |
-| `GET /api/v1/auth/{mock,entra-id,saml}/login` | raw | per-driver SSO entry point |
-| `GET /api/v1/auth/{mock,entra-id,saml}/callback` | raw | per-driver SSO callback (CSRF-exempt) |
-| `GET /api/v1/auth/saml/metadata` | raw | SP metadata XML |
+| `GET /api/v1/auth/{mock,rauthy}/login` | raw | per-driver SSO entry point |
+| `GET /api/v1/auth/{mock,rauthy}/callback` | raw | per-driver SSO callback (CSRF-exempt) |
 
 ### 3.3 Invariant enforcement
 
@@ -99,8 +97,8 @@ This service enforces the following invariants from spec `002-security-data-inva
   revoke presented token); `auth/handler.ts` verifies access tokens.
 - **INV-8 (audit trail)** — login, logout, and refresh MUST write best-effort
   audit records.
-- **INV-9 (multi-driver registry)** — all three drivers (`mock`, `entra-id`,
-  `saml`) are implemented and discoverable via `GET /api/v1/auth/drivers`.
+- **INV-9 (multi-driver registry)**: both drivers (`mock`, `rauthy`) are
+  implemented and discoverable via `GET /api/v1/auth/drivers`.
 
 ### 3.4 Functional requirements
 
@@ -112,9 +110,9 @@ read identity via `getAuthData()`.
 primary path) and, additively, `Authorization: Bearer`; it MUST surface
 `TOKEN_EXPIRED` distinctly so the client can trigger the silent refresh flow.
 
-**FR-003**: All three drivers (`mock`, `entra-id`, `saml`) MUST be available at
-parity and discoverable via `/api/v1/auth/drivers`; availability is
-config-gated — a driver absent from config is simply not listed.
+**FR-003**: Both drivers (`mock`, `rauthy`) MUST be available at parity and
+discoverable via `/api/v1/auth/drivers`; availability is config-gated: a driver
+absent from config is simply not listed.
 
 **FR-004**: Refresh MUST rotate (issue a new pair, revoke the presented token)
 and MUST be revocable server-side; only the SHA-256 hash of a refresh token is

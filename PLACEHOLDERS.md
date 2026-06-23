@@ -15,32 +15,33 @@ All placeholders follow this format:
 **Example**:
 ```bash
 # Before (placeholder)
-SAML_ENTRY_POINT={{YOUR_SAML_IDP_SSO_URL}}
+RAUTHY_ISSUER={{YOUR_OIDC_ISSUER_URL}}
 
 # After (actual value)
-SAML_ENTRY_POINT=https://idp.example.com/saml/sso
+RAUTHY_ISSUER=https://rauthy.example.com
 ```
 
 ## Common Placeholders
 
-### Authentication - SAML 2.0
+### Authentication - rauthy OIDC
 
 | Placeholder | Description | Format |
 |-------------|-------------|--------|
-| `{{YOUR_SAML_IDP_SSO_URL}}` | Identity Provider SSO URL | `https://idp.example.com/saml/sso` |
-| `{{YOUR_IDP_CERTIFICATE_BASE64}}` | IdP public certificate | PEM format, single line with `\n` |
-| `{{YOUR_SP_PRIVATE_KEY_BASE64}}` | Service Provider private key | PEM format, single line with `\n` |
-| `{{YOUR_SP_CERTIFICATE_BASE64}}` | Service Provider certificate | PEM format, single line with `\n` |
-| `{{YOUR_SAML_IDP_LOGOUT_URL}}` | Single Logout URL | `https://idp.example.com/saml/logout` |
+| `{{YOUR_OIDC_ISSUER_URL}}` | rauthy OIDC issuer base URL | `https://rauthy.example.com` |
+| `{{YOUR_OIDC_CLIENT_ID}}` | OIDC client ID registered in rauthy | e.g. `my-app` |
+| `{{YOUR_OIDC_CLIENT_SECRET}}` | OIDC client secret | opaque string from rauthy |
+| `{{YOUR_OIDC_REDIRECT_URI}}` | OIDC callback URL | `https://app.example.com/api/v1/auth/rauthy/callback` |
+
+> Scopes default to `openid profile email groups`; override with `RAUTHY_SCOPES` if needed.
+> `RAUTHY_DEFAULT_ROLE` sets the fallback role when no role claim is present (default: `user`).
 
 ### API Gateway (S2S OAuth)
 
 | Placeholder | Description | Where to Find |
 |-------------|-------------|---------------|
-| `{{AZURE_TENANT_ID}}` | Azure AD Tenant ID | Azure Portal → Azure Active Directory → Overview |
-| `{{S2S_CLIENT_ID}}` | S2S OAuth client ID | Azure Portal → App registrations → Your app → Overview |
-| `{{S2S_CLIENT_SECRET}}` | S2S OAuth client secret | Azure Portal → App registrations → Certificates & secrets |
-| `{{S2S_OAUTH_SCOPE}}` | OAuth scope for private API | e.g. `api://private-app/.default` |
+| `{{S2S_CLIENT_ID}}` | S2S OAuth client ID | Your OIDC provider's client registration |
+| `{{S2S_CLIENT_SECRET}}` | S2S OAuth client secret | Your OIDC provider's client credentials |
+| `{{S2S_OAUTH_SCOPE}}` | OAuth scope for private API | e.g. `private-api/.default` |
 | `{{PRIVATE_BACKEND_URL}}` | Private backend API URL | e.g. `http://private-api:3001/api/v1` |
 
 ### Session & Security
@@ -54,8 +55,7 @@ SAML_ENTRY_POINT=https://idp.example.com/saml/sso
 
 ### Environment Configuration
 
-- [.env.example](.env.example) - Development with mock auth
-- [.env.external.example](.env.external.example) - External (SAML) production
+- [apps/api/.env.example](apps/api/.env.example) - Backend env template (mock auth by default; rauthy OIDC vars included)
 
 ### Documentation
 
@@ -71,9 +71,9 @@ SAML_ENTRY_POINT=https://idp.example.com/saml/sso
 Look for values wrapped in `{{...}}`:
 
 ```bash
-# .env.external.example
-SAML_ENTRY_POINT={{YOUR_SAML_IDP_SSO_URL}}
-SAML_CERT={{YOUR_IDP_CERTIFICATE_BASE64}}
+# apps/api/.env.example
+RAUTHY_ISSUER={{YOUR_OIDC_ISSUER_URL}}
+RAUTHY_CLIENT_SECRET={{YOUR_OIDC_CLIENT_SECRET}}
 REDIS_URL={{REDIS_CONNECTION_STRING}}
 ```
 
@@ -82,9 +82,9 @@ REDIS_URL={{REDIS_CONNECTION_STRING}}
 Remove the `{{` and `}}` brackets and insert your real values:
 
 ```bash
-# .env (your actual config)
-SAML_ENTRY_POINT=https://idp.example.com/saml/sso
-SAML_CERT=MIICpDCCAYwCCQ...
+# apps/api/.env (your actual config)
+RAUTHY_ISSUER=https://rauthy.example.com
+RAUTHY_CLIENT_SECRET=s3cr3t-from-rauthy
 REDIS_URL=redis://my-redis:6379
 ```
 
@@ -94,7 +94,7 @@ Before deploying, ensure no `{{...}}` patterns remain:
 
 ```bash
 # Search for unreplaced placeholders
-grep -r "{{" .env
+grep -r "{{" apps/api/.env
 
 # Should return nothing if all placeholders are replaced
 ```
@@ -113,7 +113,7 @@ GitHub's secret detection can flag example values as potential secrets:
 
 Using `{{VARIABLE_NAME}}` avoids false positives:
 
-- `{{YOUR_SAML_IDP_SSO_URL}}` - Recognized as placeholder
+- `{{YOUR_OIDC_ISSUER_URL}}` - Recognized as placeholder
 - Clear indication that value must be replaced
 - Consistent pattern across all files
 - Easy to search and validate
@@ -125,7 +125,7 @@ Using `{{VARIABLE_NAME}}` avoids false positives:
 1. **Never commit actual secrets** - Only use placeholders in example files
 2. **Use .gitignore** - Ensure `.env` is ignored (not `.env.example`)
 3. **Search before deploy** - Run `grep "{{" .env` to find unreplaced placeholders
-4. **Use secret managers** - Store production secrets in Azure Key Vault, not files
+4. **Use secret managers** - Store production secrets in your cloud provider's secret manager, not files
 
 ### For Template Maintainers
 

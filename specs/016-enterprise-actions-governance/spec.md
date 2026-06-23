@@ -66,7 +66,7 @@ Compliant publishers in use today:
 |-----------|----------|
 | `actions/checkout`, `actions/setup-node`, `actions/cache`, `actions/upload-artifact` | first-party CI plumbing |
 | `github/codeql-action` | first-party security scanning |
-| `azure/login`, `azure/webapps-deploy` | Azure deployment workflows |
+| the host-provider's login/deploy publisher | container-host deployment workflows (pinned per downstream project) |
 | `./.github/actions/*`, `./.github/workflows/*.yml` | local composite + reusable (path-local, exempt from SHA-pin) |
 
 There are zero non-allow-listed refs across `.github/**`.

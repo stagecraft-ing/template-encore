@@ -12,7 +12,7 @@ description: >
 
 inputs:
   image-name:
-    description: Image name without registry or tag (e.g. `acme/alberta-api`).
+    description: Image name without registry or tag (e.g. `my-org/api`).
     required: true
   registry:
     description: Container registry hostname (e.g. `ghcr.io`).
@@ -39,7 +39,7 @@ runs:
       run: |
         docker build \
           -f "${{ inputs.api-context }}/Dockerfile.base" \
-          -t "alberta-api-base:${{ github.sha }}" \
+          -t "encore-api-base:${{ github.sha }}" \
           "${{ inputs.api-context }}"
 
     - name: Build Encore image
@@ -48,7 +48,7 @@ runs:
       run: |
         "${{ inputs.encore-cli }}" build docker \
           --config "${{ inputs.infra-config }}" \
-          --base "alberta-api-base:${{ github.sha }}" \
+          --base "encore-api-base:${{ github.sha }}" \
           "${{ inputs.image-name }}:${{ github.sha }}"
 
     - name: Tag image

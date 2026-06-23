@@ -186,8 +186,7 @@ server/
 ├── auth/
 │   ├── encore.service.ts            # Service("auth", { middlewares: [security, rateLimit, csrf] })
 │   ├── handler.ts                   # authHandler + Gateway (cookie OR bearer)
-│   ├── google.ts                    # GET /auth/google + /auth/google/callback
-│   ├── microsoft.ts                 # GET /auth/microsoft + /auth/microsoft/callback (tid claim verified)
+│   ├── rauthy.ts                    # GET /auth/rauthy + /auth/rauthy/callback (OIDC code + PKCE)
 │   ├── refresh.ts                   # POST /auth/refresh
 │   ├── me.ts                        # GET /auth/me
 │   ├── csrf-token.ts                # GET /auth/csrf-token
@@ -232,7 +231,7 @@ table below tracks high-level status so a fresh session can scan it.
 | M1 | Scaffold | `encore.app`, `infra.config.json`, `Dockerfile.base`, `Dockerfile`, `scripts/docker-build.sh`, `scripts/migrate.mjs`, new `package.json`, new `tsconfig.json`, new `.env.example`, root `package.json` scripts, `vite.config.ts` proxy → :4000. | **DONE** | `ab24445` |
 | M2 | Shared lib | `lib/*.ts` — env, secrets, jwt, cookies, cookie-config, csrf, rate-limit, security-headers, errors, audit, logger, role-hierarchy. | **DONE** | `df651a1` |
 | M3 | `db/` service + migration rename | `db/encore.service.ts`, `db/db.ts`, copied `migrations/` to `db/migrations/`, renamed `NNN_X.sql` → `<n>_X.up.sql`. | **DONE** | `adc47cd` |
-| M4 | `auth/` service | handler, gateway, google, microsoft, refresh, me, csrf-token, logout, user-model, refresh-token-model, service helpers. **First complete service — pattern locked.** | **DONE** | `c6237ad` |
+| M4 | `auth/` service | handler, gateway, rauthy (OIDC), refresh, me, csrf-token, logout, user-model, refresh-token-model, service helpers. **First complete service: pattern locked.** | **DONE** | `c6237ad` |
 | M5 | Domain services port | 13 services. Per-service commit seams below. | **DONE — 13 / 13** | see below |
 | M5.1 | health | `/health`, `/health/live`, `/health/ready` | **DONE** | `6839933` |
 | M5.2 | resources | `GET /resources`, `/resources/:id`, `/resources/:id/updates` | **DONE** | `e1e05f9` |
@@ -277,7 +276,7 @@ table below tracks high-level status so a fresh session can scan it.
 | Risk | Mitigation |
 |---|---|
 | File-upload size limits enforced inconsistently between `api.raw` and Encore-typed endpoints. | One shared `multer` config in `lib/upload.ts` consumed by both file and AI image endpoints. |
-| OIDC callback redirect URLs hardcoded to a single API base | Keep `API_BASE_URL` env var; reuse for both Google and Microsoft callback paths. |
+| OIDC callback redirect URLs hardcoded to a single API base | Keep `API_BASE_URL` env var; reuse it for the rauthy OIDC callback path. |
 | Encore's auto-generated OpenAPI may not match the hand-curated `openapi.yaml` | **Partially resolved (M8).** Hand-curated file deleted. `npm run gen:openapi` script ships in `server/package.json` but fails today with `unknown builtin type ANY` on `Record<string, unknown>` JSON-blob columns (`form_schema`, `submission_data`, `metadata`, `filter_criteria`, `resource_tags`). The runtime + the TS client generator handle these fine — only the OpenAPI exporter is strict. Two paths to unblock: (a) wait for encore.dev to model TS `unknown` in its OpenAPI generator, or (b) tighten the column types to concrete shapes. The TS client at `client/src/lib/encore-client.ts` generates clean and is the de-facto API contract for the SPA. |
 | Existing client expects `{ success, data }` everywhere | **Resolved (M6).** `lib/api.ts` parses Encore's `{ code, message, details? }` directly; the CSRF interceptor reads sub-codes at `body.details.code` (where `csrfMiddleware.withDetails()` lands them). Composables drop the inner `res.data.data` unwrap for single-entity endpoints; paginated responses keep `res.data.data` because the field name `data` is part of the typed wire response, not a legacy envelope. Auth store consumes `MeResponse` bare. |
 | Service-to-service calls were implicit imports today (`import * as auth from '../services/auth.service'`) | Becomes typed `~encore/clients` calls. Cleaner, but requires regenerating `encore.gen/` on every shape change. CI workflow handles this. |

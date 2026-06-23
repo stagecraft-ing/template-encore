@@ -134,8 +134,8 @@ summary: >
   every build of the template enforces: role-scoped data access,
   parameterized SQL, httpOnly cookies, CSRF, security headers, rate
   limiting, RS256 JWT with refresh rotation, audit trail, multi-driver
-  auth, the BFF proxy contract, and GoA compliance tags. apps/api/lib and
-  apps/api/db are the enforcement substrate.
+  auth, the BFF proxy contract, and compliance metadata tags. apps/api/lib
+  and apps/api/db are the enforcement substrate.
 establishes:
   - "apps/api/lib/"
   - "apps/api/db/"
@@ -153,7 +153,7 @@ migration" framing: these are simply the template's guarantees.
 ```yaml
 ---
 id: "003-multi-driver-auth-service"
-title: "Multi-driver auth service: Encore authHandler/Gateway, mock/entra-id/saml SSO, JWT issuance and refresh rotation"
+title: "Multi-driver auth service: Encore authHandler/Gateway, mock/rauthy OIDC SSO, JWT issuance and refresh rotation"
 status: approved
 created: "2026-06-10"
 owner: bart
@@ -165,7 +165,7 @@ depends_on: ["001-encore-app-architecture", "002-security-data-invariants"]
 code_aliases: ["AUTH_SERVICE", "AUTH_GATEWAY"]
 summary: >
   The auth service: a dual-mode Encore authHandler (httpOnly session cookie
-  + Bearer), a Gateway binding it, three SSO drivers (mock, entra-id, saml)
+  + Bearer), a Gateway binding it, two SSO drivers (mock, rauthy OIDC)
   selected by AUTH_DRIVER, RS256 JWT issuance, refresh-token rotation and
   revocation, CSRF protection, rate limiting, and auth-event audit.
 establishes:
@@ -364,7 +364,7 @@ state as plain fact, not as a retirement.
 ```yaml
 ---
 id: "010-dual-app-generator"
-title: "Dual-app generator: two independent Encore apps (external SAML + staff Entra)"
+title: "Dual-app generator: two independent Encore apps (external + staff, both rauthy OIDC)"
 status: approved
 created: "2026-06-10"
 owner: bart
@@ -376,10 +376,10 @@ depends_on: ["005-spa-static-serving", "008-encore-generator-core", "009-user-ma
 code_aliases: ["DUAL_APP_GENERATOR"]
 summary: >
   setup-dual-app.ts generates two independent Encore applications from one
-  invocation: <dest>/public (AUTH_DRIVER=saml, external-facing, apps/web)
-  and <dest>/internal (AUTH_DRIVER=entra-id, staff-facing,
+  invocation: <dest>/public (AUTH_DRIVER=rauthy, external-facing, apps/web)
+  and <dest>/internal (AUTH_DRIVER=rauthy, staff-facing,
   apps/web-internal wired into the internal app's web service). Independent
-  apps — separate encore.app files, databases, and deployments — are the
+  apps (separate encore.app files, databases, and deployments) are the
   locked isolation decision.
 establishes:
   - "scripts/setup-dual-app.ts"
@@ -422,7 +422,7 @@ establishes:
 ```yaml
 ---
 id: "012-azure-webapp-deploy"
-title: "Azure Web App deploy: zip path for dev/uat/prod plus the container path example"
+title: "Container deploy: zip path for dev/uat/prod plus the container path example"
 status: approved
 created: "2026-06-10"
 owner: bart
@@ -431,19 +431,19 @@ domain: ci-cd
 risk: medium
 implementation: complete
 depends_on: ["011-encore-ci-cd", "015-workflow-pins-lint", "016-enterprise-actions-governance"]
-code_aliases: ["DEPLOY_AZURE_ZIP", "DEPLOY_ENCORE_CONTAINER"]
+code_aliases: ["DEPLOY_ZIP", "DEPLOY_ENCORE_CONTAINER"]
 summary: >
-  Two deployment paths for Azure App Service: (1) the zip path — the
+  Two deployment paths for your container host: (1) the zip path, the
   compiled Encore artifact (main.mjs + runtime) deployed per environment by
   the dev/uat/prod workflows over a shared reusable workflow, started with
   `node main.mjs`; (2) the container path, kept as the inert
-  encore-cd.yml.example with an Azure Container Apps step. All third-party
+  encore-cd.yml.example with a container-deploy step. All third-party
   actions SHA-pinned and within the enterprise allow-list.
 establishes:
-  - ".github/workflows/deploy-azure-webapp-reusable.yml"
-  - ".github/workflows/deploy-azure-webapp-dev.yml"
-  - ".github/workflows/deploy-azure-webapp-uat.yml"
-  - ".github/workflows/deploy-azure-webapp-prod.yml"
+  - ".github/workflows/deploy-reusable.yml"
+  - ".github/workflows/deploy-dev.yml"
+  - ".github/workflows/deploy-uat.yml"
+  - ".github/workflows/deploy-prod.yml"
 ---
 ```
 

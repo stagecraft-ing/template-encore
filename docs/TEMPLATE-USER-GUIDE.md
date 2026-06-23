@@ -28,7 +28,7 @@ The base app skeleton (`apps/api`) is a complete Encore.ts application. A profil
 - Vue 3 SPAs with PrimeVue (Aura preset, indigo primary), Pinia, Vue Router 4
 - Postgres via `SQLDatabase("app")` with auto-applied migrations
 - Stateless RS256 JWT auth (access + DB-backed refresh rotation); httpOnly cookies; no `express-session`
-- Multi-driver authentication: `mock` (local dev) / `saml` (external-facing) / `entra-id` (staff-facing); all three drivers ship in-app; a profile sets the default via `AUTH_DRIVER`
+- Multi-driver authentication: `mock` (local dev) / `rauthy` (self-hosted OIDC, external-facing or staff-facing); both drivers ship in-app; a profile sets the default via `AUTH_DRIVER`
 - CSRF double-submit, security headers, rate limiting (Redis-backed when `REDIS_URL` is set)
 - BFF gateway: `/api/v1/data/*` catch-all proxy to a private backend with S2S OAuth tokens
 - Vitest + Playwright test setup; ESLint 9 + Prettier
@@ -39,7 +39,7 @@ The base app skeleton (`apps/api`) is a complete Encore.ts application. A profil
 - Declarative overlays for cross-cutting infrastructure (secrets, CORS entries, env vars)
 - SPA views and navigation items for the added feature
 
-Session stores (`session-store-redis`, `session-store-postgres`) and the Express auth-driver modules (`auth-saml`, `auth-entra-id`, `auth-mock` as standalone modules, `auth-core`, `service-auth`) are **retired**. Those concerns are now handled by the base app directly (stateless JWT) or by the `AUTH_DRIVER` profile axis (driver selection is configuration, not a file-copy module).
+Session stores (`session-store-redis`, `session-store-postgres`) and the Express auth-driver modules (`auth-rauthy`, `auth-mock` as standalone modules, `auth-core`, `service-auth`) are **retired**. Those concerns are now handled by the base app directly (stateless JWT) or by the `AUTH_DRIVER` profile axis (driver selection is configuration, not a file-copy module).
 
 ---
 
@@ -48,10 +48,10 @@ Session stores (`session-store-redis`, `session-store-postgres`) and the Express
 ### Create a new app
 
 ```bash
-# Public-facing app (SAML auth via your SAML identity provider)
+# Public-facing app (rauthy OIDC auth via your self-hosted OIDC provider)
 npx tsx scripts/setup-app.ts --profile public --dest ../my-public-app
 
-# Internal/staff app (Entra ID / Azure AD)
+# Internal/staff app (rauthy OIDC auth)
 npx tsx scripts/setup-app.ts --profile internal --dest ../my-internal-app
 
 # Minimal (mock auth; local development only)
@@ -65,7 +65,7 @@ After the script completes:
 ```bash
 cd ../my-public-app
 cd apps/api
-cp .env.example .env    # configure secrets (SAML_*, JWT_*, etc.)
+cp .env.example .env    # configure secrets (RAUTHY_*, JWT_*, etc.)
 npm run generate-keys   # generate RSA JWT signing keys (dev only)
 cd ../..
 npm run dev             # api on :4000, web on :5173, web-internal on :5174
@@ -81,8 +81,8 @@ This produces two complete, independent Encore apps:
 
 | Directory | `AUTH_DRIVER` | Audience |
 |-----------|--------------|----------|
-| `<dest>/public` | `saml` | external-facing |
-| `<dest>/internal` | `entra-id` | staff-facing |
+| `<dest>/public` | `rauthy` | external-facing |
+| `<dest>/internal` | `rauthy` | staff-facing |
 
 See [DUAL-APP-GUIDE.md](DUAL-APP-GUIDE.md) for details.
 
@@ -90,13 +90,13 @@ See [DUAL-APP-GUIDE.md](DUAL-APP-GUIDE.md) for details.
 
 ## Profiles
 
-A profile sets `AUTH_DRIVER` in `apps/api/.env.example` and ensures the matching secret bindings exist in `apps/api/infra.config.json`. All three drivers ship in-app; the profile only controls which one is the default.
+A profile sets `AUTH_DRIVER` in `apps/api/.env.example` and ensures the matching secret bindings exist in `apps/api/infra.config.json`. Both drivers ship in-app; the profile only controls which one is the default.
 
 | Profile | `AUTH_DRIVER` | Secrets populated | Use case |
 |---------|--------------|-------------------|----------|
 | `minimal` | `mock` | none | local dev; mock login only |
-| `public` | `saml` | `SAML_*` | external-facing (your SAML IdP) |
-| `internal` | `entra-id` | `ENTRA_*` | staff-facing (Azure AD) |
+| `public` | `rauthy` | `RAUTHY_*` | external-facing (rauthy OIDC) |
+| `internal` | `rauthy` | `RAUTHY_*` | staff-facing (rauthy OIDC) |
 
 `SQLDatabase("app")` is always present; there is no session store and no session-store profile axis.
 
@@ -194,7 +194,7 @@ Inspect `template.json` in the project root. The `modules` map records what is i
 
 1. **Copy the base Encore app.** The template is the base. Everything at the template root is copied into `--dest` except the governance and generator machinery: `modules/`, `scripts/`, `specs/`, `standards/`, `tools/`, `.derived/`, `.claude/`, `orchestration/`, `Cargo.*`, `Makefile`, `AGENTS.md`, `CODEMAP.md`. The destination is a clean Encore app plus SPAs.
 
-2. **Select the auth driver.** The profile sets `AUTH_DRIVER` in `apps/api/.env.example`. All three drivers (`mock`/`entra-id`/`saml`) ship in-app; selection is the `AUTH_DRIVER` env plus which secrets are populated. No driver files are copied or deleted. No runtime `registerDriver` calls are emitted.
+2. **Select the auth driver.** The profile sets `AUTH_DRIVER` in `apps/api/.env.example`. Both drivers (`mock`/`rauthy`) ship in-app; selection is the `AUTH_DRIVER` env plus which secrets are populated. No driver files are copied or deleted. No runtime `registerDriver` calls are emitted.
 
 3. **Compose optional domain modules.** For each `--with <module>`, `encore-composer.ts` copies the service directory, merges migrations (renumbered), merges secrets into `infra.config.json`, and merges CORS entries into `encore.app`. Encore discovers the copied service directory at compile time.
 
@@ -291,11 +291,10 @@ npx tsx scripts/remove-module.ts user-management --yes
 
 ### Auth configuration
 
-All three drivers ship in-app. Set `AUTH_DRIVER` in `apps/api/.env.example` (or `apps/api/.env`) to choose the default. Supply the matching secrets via `apps/api/infra.config.json` (dev) or Encore's secret store (production).
+Both drivers ship in-app. Set `AUTH_DRIVER` in `apps/api/.env.example` (or `apps/api/.env`) to choose the default. Supply the matching secrets via `apps/api/infra.config.json` (dev) or Encore's secret store (production).
 
 For local development with mock auth: `AUTH_DRIVER=mock` (no external IdP required).
-For production SAML: `AUTH_DRIVER=saml` plus `SAML_*` secrets.
-For production Entra ID: `AUTH_DRIVER=entra-id` plus `ENTRA_*` secrets.
+For production OIDC: `AUTH_DRIVER=rauthy` plus `RAUTHY_*` secrets (`RAUTHY_ISSUER`, `RAUTHY_CLIENT_ID`, `RAUTHY_CLIENT_SECRET`, `RAUTHY_REDIRECT_URI`, `RAUTHY_SCOPES`, `RAUTHY_DEFAULT_ROLE`).
 
 See `docs/AUTH-SETUP.md` for detailed driver configuration.
 

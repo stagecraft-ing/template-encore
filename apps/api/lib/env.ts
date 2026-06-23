@@ -24,7 +24,7 @@ function bool(name: string, fallback: boolean): boolean {
   return v === "true" || v === "1";
 }
 
-export type AuthDriver = "mock" | "entra-id" | "saml";
+export type AuthDriver = "mock" | "rauthy";
 
 export const env = {
   get isProduction(): boolean {
@@ -37,18 +37,13 @@ export const env = {
   logPii: bool("LOG_PII", false),
   redisUrl: str("REDIS_URL"),
 
-  // Entra ID (OIDC) non-secret config.
-  entraTenantId: str("ENTRA_TENANT_ID"),
-  entraClientId: str("ENTRA_CLIENT_ID"),
-  entraRedirectUri: strOr("ENTRA_REDIRECT_URI", "http://localhost:4000/api/v1/auth/entra-id/callback"),
-  entraDefaultRole: strOr("ENTRA_DEFAULT_ROLE", "user"),
-
-  // SAML 2.0 non-secret config (the IdP cert is a secret; see lib/secrets.ts).
-  samlEntryPoint: str("SAML_ENTRY_POINT"),
-  samlIssuer: str("SAML_ISSUER"),
-  samlCallbackUrl: strOr("SAML_CALLBACK_URL", "http://localhost:4000/api/v1/auth/saml/callback"),
-  samlLogoutUrl: str("SAML_LOGOUT_URL"),
-  samlAttrRoles: strOr("SAML_ATTR_ROLES", "roles"),
+  // rauthy (OIDC) non-secret config; the issuer is discovered from RAUTHY_ISSUER
+  // (.well-known/openid-configuration). The client secret is in lib/secrets.ts.
+  rauthyIssuer: str("RAUTHY_ISSUER"),
+  rauthyClientId: str("RAUTHY_CLIENT_ID"),
+  rauthyRedirectUri: strOr("RAUTHY_REDIRECT_URI", "http://localhost:4000/api/v1/auth/rauthy/callback"),
+  rauthyScopes: strOr("RAUTHY_SCOPES", "openid profile email groups"),
+  rauthyDefaultRole: strOr("RAUTHY_DEFAULT_ROLE", "user"),
 
   // BFF gateway non-secret config (the OAuth client secret is in lib/secrets.ts).
   privateApiBaseUrl: str("PRIVATE_API_BASE_URL"),

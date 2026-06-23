@@ -1,10 +1,10 @@
-# Codemap: Enterprise Public Application
+# Codemap: Public Application
 
 > Architectural blueprint: execution flows, service graph, API surfaces, and component relationships.
 > For developer onboarding and AI agent context. Reduces codebase to ~5% of tokens, ~90% of understanding.
 >
 > **Backend = Encore.ts.** The Express 5 BFF was retired in the Encore migration (specs 001 to 006).
-> Auth driver for this profile: **SAML 2.0** (`AUTH_DRIVER=saml`).
+> Auth driver for this profile: **rauthy OIDC** (`AUTH_DRIVER=rauthy`).
 
 ---
 
@@ -25,8 +25,8 @@ my-public-app/
 │   │   ├── db/                    ← `db` service: SQLDatabase("app") + migrations (no endpoints)
 │   │   │   └── migrations/        1_extensions, 2_user_account, 3_refresh_token, 4_audit_log
 │   │   ├── health/                ← `health` service: probes + /api/v1/info + /api/v1/csp-report
-│   │   ├── auth/                  ← `auth` service: authHandler + Gateway; SAML 2.0 (public profile)
-│   │   │                            handler.ts, drivers.ts, saml.ts, mock.ts, me.ts, refresh.ts,
+│   │   ├── auth/                  ← `auth` service: authHandler + Gateway; rauthy OIDC (public profile)
+│   │   │                            handler.ts, drivers.ts, rauthy.ts, mock.ts, me.ts, refresh.ts,
 │   │   │                            logout.ts, csrf-token.ts, user-model.ts, refresh-token-model.ts
 │   │   ├── gateway/               ← `gateway` service: api.raw BFF proxy /api/v1/data/*
 │   │   │                            proxy.ts (catch-all; auth:true), token-cache.ts (S2S OAuth)
@@ -70,7 +70,7 @@ All code added to this application **must** use these technologies. Do not intro
 | **Routing** | Vue Router 4 | Lazy-load views: `() => import('./views/X.vue')` |
 | **Styling** | PrimeVue | `primevue` + `@primevue/themes` (Aura preset, indigo primary); component-scoped CSS. No Tailwind. |
 | **Backend** | **Encore.ts** | Typed `api()` / `api.raw()` endpoints; services discovered from `encore.service.ts`; `authHandler` + `Gateway`; service `middlewares` arrays. |
-| **Auth** | **Stateless RS256 JWT + SAML 2.0** | Access (~15 min) + DB-backed refresh (~7 day, rotation/revocation) in httpOnly cookies; CSRF double-submit. `AUTH_DRIVER=saml` for this profile. Not `express-session`. |
+| **Auth** | **Stateless RS256 JWT + rauthy OIDC** | Access (~15 min) + DB-backed refresh (~7 day, rotation/revocation) in httpOnly cookies; CSRF double-submit. `AUTH_DRIVER=rauthy` for this profile. Not `express-session`. |
 | **Persistence** | **Postgres via `SQLDatabase("app")`** | Tagged-template queries only. Redis is optional, for rate-limit backing only (`REDIS_URL`). |
 | **Build** | Vite (frontend); `encore build docker` (backend) | `encore run --port=4000` for local dev. |
 | **Testing** | Vitest (unit), Playwright (E2E) | `encore check` validates backend graph/topology/types. |
@@ -95,7 +95,7 @@ Encore application (apps/api) ════════════════�
     ├── health    securityHeaders only (probes/CSP are unauthenticated)
     │
     ├── auth      securityHeaders + csrfMiddleware + apiRateLimit
-    │             authHandler + Gateway; driver = saml (public profile); me/refresh/logout/csrf-token
+    │             authHandler + Gateway; driver = rauthy (public profile); me/refresh/logout/csrf-token
     │
     ├── gateway   api.raw catch-all /api/v1/data/* (auth:true) → private backend (S2S OAuth)
     │
@@ -159,7 +159,7 @@ Browser / SPA
 Encore Gateway              authHandler runs for `auth: true` endpoints (cookie | Bearer → AuthData)
   │                         per-service middleware: securityHeaders, csrfMiddleware, apiRateLimit
   │
-  ├── /api/v1/auth/*         ───► auth service (saml, me, refresh, logout, csrf-token)
+  ├── /api/v1/auth/*         ───► auth service (rauthy, me, refresh, logout, csrf-token)
   ├── /api/v1/data/*         ───► gateway service (api.raw proxy to private backend, auth:true)
   ├── /health, /health/*     ───► health service (liveness/readiness probes)
   ├── /api/v1/info           ───► health service (API metadata)
@@ -167,13 +167,13 @@ Encore Gateway              authHandler runs for `auth: true` endpoints (cookie 
   └── /!path (non-API)       ───► web service (api.static → built SPA, history fallback)
 ```
 
-### 2. Authentication (SAML 2.0: Public Profile)
+### 2. Authentication (rauthy OIDC: Public Profile)
 
 ```
-AUTH_DRIVER=saml (external user-facing, your SAML identity provider)
+AUTH_DRIVER=rauthy (external user-facing, self-hosted rauthy OIDC provider)
 
-  GET /api/v1/auth/saml/login  → 302 IdP SSO
-  POST /api/v1/auth/saml/callback (SAML assertion)
+  GET /api/v1/auth/rauthy/login    → 302 rauthy authorize
+  GET /api/v1/auth/rauthy/callback (code exchange, PKCE)
     │
     ▼
   issue RS256 access + refresh JWT (httpOnly cookies);
@@ -185,8 +185,8 @@ Session lifecycle (stateless):
   GET  /api/v1/auth/csrf-token              → { token }  (replay as X-CSRF-Token on mutations)
   POST /api/v1/auth/refresh                 → rotate refresh token, mint new access cookie
   POST /api/v1/auth/logout      (auth:true) → revoke refresh token + clear cookies
-  GET  /api/v1/auth/saml/metadata           → SP metadata XML
 
+Role claim priority: roles, then groups, then RAUTHY_DEFAULT_ROLE (default: 'user').
 Mock driver also available for local dev (AUTH_DRIVER=mock):
   GET /api/v1/auth/mock/login?user=0|1|2   → instant login
 
@@ -194,7 +194,7 @@ JWT keys (RS256): apps/api/keys/*.pem in dev (npm run generate-keys);
   Encore secrets (JWT_PRIVATE_KEY / JWT_PUBLIC_KEY / JWT_REFRESH_PRIVATE_KEY / JWT_REFRESH_PUBLIC_KEY) in prod.
 ```
 
-**Driver files**: `apps/api/auth/{saml,mock}.ts` · **Handler/Gateway**: `apps/api/auth/handler.ts`
+**Driver files**: `apps/api/auth/{rauthy,mock}.ts` · **Handler/Gateway**: `apps/api/auth/handler.ts`
 **Secrets**: `apps/api/lib/secrets.ts`
 
 ### 3. API Gateway (BFF Pattern)
@@ -251,7 +251,7 @@ Backend (Encore)      npm run build:api → apps/api: encore build docker --base
 
 ```
 auth/        handler.ts (authHandler + Gateway), encore.service.ts (securityHeaders + csrfMiddleware + apiRateLimit),
-             drivers.ts, saml.ts, mock.ts, me.ts, refresh.ts, logout.ts, csrf-token.ts,
+             drivers.ts, rauthy.ts, mock.ts, me.ts, refresh.ts, logout.ts, csrf-token.ts,
              user-model.ts, refresh-token-model.ts
 gateway/     proxy.ts (5 api.raw data handlers), token-cache.ts (S2S OAuth), encore.service.ts
 health/      api.ts (health/liveness/readiness, info, csp-report), encore.service.ts (securityHeaders)
@@ -268,7 +268,7 @@ App.vue
     ├── AppHeader.vue              PrimeVue header bar + user menu
     ├── <router-view />
     │   ├── HomeView.vue           Landing page
-    │   ├── LoginView.vue          Auth method selection (SAML / mock)
+    │   ├── LoginView.vue          Auth method selection (rauthy / mock)
     │   ├── ProfileView.vue        User info (protected, ProgressSpinner loading state)
     │   ├── ConnectivityTestView.vue  BFF gateway connectivity test (protected)
     │   └── AboutView.vue          App info
@@ -287,9 +287,8 @@ PrimeVue (per-SFC imports):  Button │ Card │ Menu │ Avatar │ Tag │ Mes
 | GET | `/api/v1/auth/status` | - | auth | `{ authenticated, drivers }` |
 | GET | `/api/v1/auth/login` | - | auth | default driver (`AUTH_DRIVER`) |
 | GET | `/api/v1/auth/mock/login` | - | auth | mock instant login (`?user=0\|1\|2`) |
-| GET | `/api/v1/auth/saml/login` | - | auth | SAML 2.0 redirect to IdP |
-| POST | `/api/v1/auth/saml/callback` | - | auth | SAML assertion POST |
-| GET | `/api/v1/auth/saml/metadata` | - | auth | SP metadata XML |
+| GET | `/api/v1/auth/rauthy/login` | - | auth | rauthy OIDC authorize redirect |
+| GET | `/api/v1/auth/rauthy/callback` | - | auth | OIDC code exchange (PKCE) |
 | GET | `/api/v1/auth/csrf-token` | - | auth | `{ token }` (replay as `X-CSRF-Token`) |
 | GET | `/api/v1/auth/me` | Y | auth | current user (`MeResponse`) |
 | POST | `/api/v1/auth/refresh` | - | auth | rotate refresh token → new access cookie |
@@ -353,7 +352,7 @@ Audit:    lib/audit.ts → audit_log, best-effort, never blocks the user flow
 
 | Driver | Role source | Fallback |
 |--------|-------------|----------|
-| **SAML** | Attribute mapping via `SAML_ATTR_ROLES` | n/a |
+| **rauthy** | Token claims: `roles`, then `groups` | `RAUTHY_DEFAULT_ROLE` env (default: `user`) |
 | **Mock** | Hardcoded in `apps/api/auth/mock.ts` | n/a |
 
 ### Template default roles
@@ -390,12 +389,12 @@ if (hasRole('admin')) { /* show admin UI */ }
 ## Invariants
 
 1. **Standalone Encore backend**: one Encore app at `apps/api`, excluded from npm workspaces, self-contained.
-2. **Multi-driver auth**: `saml` is the production driver (`AUTH_DRIVER=saml`); `mock` is available for dev. Drivers live in `apps/api/auth/`.
+2. **Multi-driver auth**: `rauthy` is the production driver (`AUTH_DRIVER=rauthy`); `mock` is available for dev. Drivers live in `apps/api/auth/`.
 3. **Stateless JWT, not sessions**: RS256 access + DB-backed refresh rotation in httpOnly cookies. No `express-session`.
 4. **Postgres via `SQLDatabase`**: `user_account` / `refresh_token` / `audit_log`. Tagged-template queries only. Redis is rate-limit-only.
 5. **BFF pattern**: `gateway` proxies `/api/v1/data/*` to the private backend with S2S OAuth tokens, traversal sanitisation, 5xx masking, audit.
 6. **PII never logged**: `lib/logger.ts` redacts; `LOG_PII=false` in production or the app fails fast.
-7. **PrimeVue UI**: all SPA UI uses PrimeVue components (Aura theme preset, registered in `main.ts`). No `@abgov`/GoA.
+7. **PrimeVue UI**: all SPA UI uses PrimeVue components (Aura theme preset, registered in `main.ts`).
 8. **Single deployable**: the `web` service serves the built SPA via `api.static`; one Encore app, port 4000.
 
 ---
@@ -448,7 +447,7 @@ colocate `foo.test.ts` next to `foo.ts`; run `encore check` for the backend grap
 | `specs/048-encore-app-architecture/spec.md` | Authoritative backend layout + service decomposition |
 | `specs/049-preserved-migration-invariants/spec.md` | Security/data invariant freeze (INV-1 to INV-11) |
 | `README.md` | Project quick start |
-| `docs/AUTH-SETUP.md` | Configuring auth drivers (SAML, Mock) on Encore |
+| `docs/AUTH-SETUP.md` | Configuring auth drivers (rauthy, Mock) on Encore |
 | `docs/DEPLOYMENT.md` | Building and deploying the Encore app |
 | `docs/DEVELOPMENT.md` | Local dev setup, `encore run`, hot reload |
 | `docs/TESTING.md` | Writing and running unit and E2E tests |

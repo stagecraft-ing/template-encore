@@ -8,8 +8,8 @@ A plain-language introduction to the template's modularization approach, aimed a
 
 We maintain one application template that needs to serve different use cases:
 
-- **Public-facing apps**: SAML auth (your SAML identity provider), external-facing
-- **Internal/staff apps**: Entra ID auth (Azure AD), staff-facing
+- **Public-facing apps**: rauthy OIDC auth (self-hosted OIDC provider), external-facing
+- **Internal/staff apps**: rauthy OIDC auth (self-hosted OIDC provider), staff-facing
 - **Local dev**: Mock auth, no external dependencies
 
 Without modularization, we would need separate templates for each, leading to drift, duplicated fixes, and maintenance headaches.
@@ -23,14 +23,14 @@ Base Encore.ts App (apps/api; always present)
   lib/      shared security primitives (securityHeaders, csrf, jwt, roles, audit, logger)
   db/       SQLDatabase("app") + base migrations
   health/   probes + info + CSP report
-  auth/     authHandler + Gateway; multi-driver SSO (mock/saml/entra-id); stateless RS256 JWT
+  auth/     authHandler + Gateway; multi-driver SSO (mock/rauthy); stateless RS256 JWT
   gateway/  BFF api.raw proxy /api/v1/data/* (S2S OAuth)
   web/      api.static serving the built SPA at /!path
 
 + Profile axis (sets AUTH_DRIVER in .env.example):
   minimal   mock auth; local dev, no external IdP
-  public    saml; external-facing (your SAML IdP)
-  internal  entra-id; staff-facing (Azure AD)
+  public    rauthy; external-facing (rauthy OIDC)
+  internal  rauthy; staff-facing (rauthy OIDC)
 
 + Optional domain modules composed on top:
   user-management   app-managed role catalog + admin CRUD endpoints (reference shape)
@@ -44,7 +44,7 @@ Base Encore.ts App (apps/api; always present)
 
 The base app is a fully working app out of the box. Run `npm run dev` immediately after cloning; no modules needed for local development.
 
-- **Authentication**: stateless RS256 JWT (access ~15 min + DB-backed refresh ~7 day, rotation/revocation), httpOnly cookies, CSRF double-submit. Multi-driver: `mock`/`saml`/`entra-id` all ship in-app. No `express-session`.
+- **Authentication**: stateless RS256 JWT (access ~15 min + DB-backed refresh ~7 day, rotation/revocation), httpOnly cookies, CSRF double-submit. Multi-driver: `mock` and `rauthy` both ship in-app. No `express-session`.
 - **Persistence**: `SQLDatabase("app")` (`user_account`, `refresh_token`, `audit_log`). Tagged-template queries only (parameterized, never string-concatenated). Redis is optional, for rate-limit backing only (`REDIS_URL`).
 - **Security**: `lib` provides security headers, CSRF middleware, rate limiter, JWT utilities, roles (`requireRole`, `hasRole`), audit log, PII-redacting logger.
 - **BFF gateway**: `/api/v1/data/*` catch-all proxy with S2S OAuth tokens, traversal sanitisation, 5xx masking, audit.
@@ -62,7 +62,7 @@ Modules add **provider-specific domain features or declarative configuration** t
 | `data-postgres` | Thin declarative overlay: Postgres env documentation; `SQLDatabase` is already in `db` |
 | `data-redis` | Thin declarative overlay: `REDIS_URL` env declaration for the rate-limit backend selector |
 
-**Retired modules** (no Encore analog): `session-store-postgres`, `session-store-redis` (the backend is stateless JWT; no `express-session`), `api-docs` (Encore generates OpenAPI from the app graph), `auth-core`, `auth-mock`, `auth-entra-id`, `auth-saml`, `service-auth` (driver selection is configuration, not file-copy).
+**Retired modules** (no Encore analog): `session-store-postgres`, `session-store-redis` (the backend is stateless JWT; no `express-session`), `api-docs` (Encore generates OpenAPI from the app graph), `auth-core`, `auth-mock`, `auth-rauthy`, `service-auth` (driver selection is configuration, not file-copy).
 
 Modules never modify `apps/api` core files. They either copy a complete service directory (domain features) or contribute declarative configuration (overlays).
 

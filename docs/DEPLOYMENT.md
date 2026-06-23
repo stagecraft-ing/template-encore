@@ -13,8 +13,8 @@ The template ships two spec-governed deploy paths. Pick the one that matches you
 
 | Path | Workflow | Unit | When to use |
 |------|----------|------|-------------|
-| **Azure App Service zip** (Node continuity) | `deploy-azure-webapp-{dev,uat,prod}.yml` calling `deploy-azure-webapp-reusable.yml` | A Node zip carrying the scraped Encore artifact (`main.mjs` + `encore-runtime.node`), the built SPA, and production `node_modules`, started with `node main.mjs` | You deploy to Azure App Service for Linux and want to keep the familiar zip/Node idiom. |
-| **Encore container** (alignment) | `encore-cd.yml.example` (inert; spec 011) | An OCI image from `encore build docker` | You deploy to a container runtime (Azure Container Apps, App Service for Containers, OpenShift, Encore Cloud). This is the Encore-supported, robust unit. |
+| **Node zip** (Node continuity) | `deploy-{dev,uat,prod}.yml` calling `deploy-reusable.yml` | A Node zip carrying the scraped Encore artifact (`main.mjs` + `encore-runtime.node`), the built SPA, and production `node_modules`, started with `node main.mjs` | You deploy to a Node-based app host and want to keep the familiar zip/Node idiom. |
+| **Encore container** (alignment) | `encore-cd.yml.example` (inert; spec 011) | An OCI image from `encore build docker` | You deploy to a container runtime (your container host, OpenShift, Encore Cloud). This is the Encore-supported, robust unit. |
 
 > **Zip path caveat.** The zip is assembled by the OPTIONAL cancel-then-scrape build (the
 > `apps/api/scripts/docker-build.sh` model), which reaches into Encore internals and is sensitive to
@@ -43,7 +43,7 @@ encore build docker --config ./infra.config.json --base template-api-base:local 
 ```
 
 `npm run build:api` (root) wraps the `encore build docker` step. Tag and push the resulting image to your
-container registry (ACR, GHCR, or the platform's internal registry).
+container registry (GHCR or the platform's internal registry).
 
 ## Configuration
 
@@ -55,9 +55,9 @@ store or `infra.config.json` `$env` bindings). No secret value is committed.
 ```bash
 NODE_ENV=production
 PORT=4000
-API_BASE_URL=https://your-app.example.com       # builds OAuth/SAML callback URLs
+API_BASE_URL=https://your-app.example.com       # builds OAuth callback URLs
 FRONTEND_URL=https://your-app.example.com       # post-login redirect target
-AUTH_DRIVER=saml                                # or entra-id, mock
+AUTH_DRIVER=rauthy                              # or mock
 SERVE_CLIENT=true                               # serve the built SPA from the web service
 LOG_PII=false                                   # must be false in production (fail-fast)
 ```
@@ -70,8 +70,7 @@ JWT_PRIVATE_KEY / JWT_PUBLIC_KEY / JWT_REFRESH_PRIVATE_KEY / JWT_REFRESH_PUBLIC_
 CSRF_SECRET
 
 # Auth driver (whichever is active): see docs/AUTH-SETUP.md
-ENTRA_CLIENT_ID / ENTRA_CLIENT_SECRET            # Entra ID
-SAML_PRIVATE_KEY / SAML_CERT_SP / SAML_CERT      # SAML
+RAUTHY_CLIENT_ID / RAUTHY_CLIENT_SECRET          # rauthy (OIDC)
 
 # Database
 POSTGRES_PASSWORD                                # consumed by infra.config.json for self-host
@@ -90,7 +89,7 @@ deploys. For a self-hosted Postgres, run the standalone migration runner:
 cd apps/api && npm run db:migrate     # node scripts/migrate.mjs
 ```
 
-Provision a managed Postgres (e.g. Azure PostgreSQL Flexible Server) with TLS enforced and bind it through
+Provision a managed Postgres with TLS enforced and bind it through
 `infra.config.json` for self-hosted images.
 
 ## CD (Encore container path)
@@ -98,7 +97,7 @@ Provision a managed Postgres (e.g. Azure PostgreSQL Flexible Server) with TLS en
 An inert CD template ships at `.github/workflows/encore-cd.yml.example` (spec 011, dual-path context
 added by spec 012). It installs the Encore CLI, runs `npm ci` and `encore gen client`, builds the SPA, and
 runs the `encore-build` composite action to push the image to a registry. It now also carries a documented
-(commented) Azure Container Apps deploy step as a starting point. It is shipped as `.example` so it stays
+(commented) container-host deploy step as a starting point. It is shipped as `.example` so it stays
 inactive until a project:
 
 1. configures a container registry plus credentials,
@@ -115,11 +114,10 @@ OAuth client-credentials Bearer token (service-to-service). Configure:
 
 ```bash
 PRIVATE_API_BASE_URL=https://your-private-app.internal/api/v1/public   # full API path prefix
-GATEWAY_OAUTH_TENANT_ID=<azure-tenant-id>
-GATEWAY_OAUTH_SCOPE=api://<private-app-id>/.default
+GATEWAY_OAUTH_TOKEN_URL=https://your-oidc-provider.example.com/oauth2/token   # OAuth token endpoint
+GATEWAY_OAUTH_SCOPE=<private-api-scope>
 GATEWAY_OAUTH_CLIENT_ID=<public-app-client-id>          # secret
 GATEWAY_OAUTH_CLIENT_SECRET=<public-app-secret-VALUE>   # secret (the VALUE, not the secret ID)
-# GATEWAY_OAUTH_TOKEN_URL=                               # else derived from GATEWAY_OAUTH_TENANT_ID
 # GATEWAY_TIMEOUT_MS=30000
 ```
 
@@ -134,12 +132,12 @@ access. The built-in `/connectivity` page (authenticated) exercises `GET /api/v1
 curl https://your-app.example.com/health             # composite health
 curl https://your-app.example.com/health/readiness   # 200 / 503
 curl https://your-app.example.com/api/v1/auth/drivers
-curl -I https://your-app.example.com/api/v1/auth/login   # 302 to the IdP (saml/entra-id)
+curl -I https://your-app.example.com/api/v1/auth/login   # 302 to the OIDC provider (rauthy)
 ```
 
 ## Security considerations
 
-1. **Secrets**: Encore secret store / Azure Key Vault; never hardcode. `keys/` and `*.pem` are gitignored.
+1. **Secrets**: Encore secret store / your secrets manager; never hardcode. `keys/` and `*.pem` are gitignored.
 2. **TLS**: enforce HTTPS; cookies are `secure` in production.
 3. **Database**: TLS-enforced managed Postgres; least-privilege credentials.
 4. **Image scanning**: scan the built image (Trivy, the spine supply-chain workflow already runs Trivy).

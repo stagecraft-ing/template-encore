@@ -10,7 +10,7 @@
 > authoritative architecture is `CODEMAP.md` and specs 001 / 008.
 
 This template's API was converted from Express 5 to **Encore.ts**. The Vue
-frontends (`apps/web`, `apps/web-internal`) and the GoA Design System are
+frontends (`apps/web`, `apps/web-internal`) and the PrimeVue UI are
 unchanged except for the auth store. This note records the decisions and the
 new shape; the reference implementation that informed it lives in
 `<source-project>/public/server`.
@@ -35,8 +35,8 @@ scripts: `npm run dev:api` (Encore), `npm run express:dev` (legacy).
 - **Persistence: a minimal `SQLDatabase("app")`** was added (`user_account`,
   `refresh_token`, `audit_log`) — the Express template was deliberately DB-less.
   Multi-role is preserved (`user_roles TEXT[]`, any-of `requireRole`).
-- **Auth drivers: full parity** — `mock` (dev), `entra-id` (OIDC, single-tenant
-  + `tid` check), `saml` (SAML 2.0 via `@node-saml`, as `api.raw` handlers).
+- **Auth drivers: full parity:** `mock` (dev) and `rauthy` (OIDC via
+  `openid-client`, authorization-code + PKCE, as `api.raw` handlers).
 - **Middleware → Encore primitives:** helmet → `lib/security-headers` middleware;
   `express-rate-limit` → `rate-limiter-flexible` middleware (`lib/rate-limit`);
   CSRF double-submit → `lib/csrf` middleware; CORS → `encore.app` `global_cors`;
@@ -46,7 +46,7 @@ scripts: `npm run dev:api` (Encore), `npm run express:dev` (legacy).
   (the old `{ success, error }` envelope is gone). CSRF sub-codes land at
   `details.code` (`CSRF_MISSING` / `CSRF_MISMATCH`).
 - **Paths keep the `/api/v1` prefix** (unlike the reference, which dropped it) so
-  external SAML ACS URLs and the `/api/v1/data/*` gateway contract are stable and
+  the OIDC redirect URIs and the `/api/v1/data/*` gateway contract are stable and
   the frontend needs minimal change.
 - **BFF proxy preserved** as an `api.raw` catch-all (`gateway/`): path-traversal
   sanitisation, S2S OAuth token cache + Bearer injection, 5xx masking, timeout→504.
@@ -62,8 +62,7 @@ scripts: `npm run dev:api` (Encore), `npm run express:dev` (legacy).
 | `POST /api/v1/auth/refresh` | raw; rotates token pair |
 | `POST /api/v1/auth/logout` | raw; auth; revoke + clear cookies (+ optional IdP SLO) |
 | `GET /api/v1/auth/drivers` `\|` `/status` `\|` `/login` | discovery + default-driver redirect |
-| `GET /api/v1/auth/{mock,entra-id,saml}/login` (+ `/callback`) | per-driver SSO |
-| `GET /api/v1/auth/saml/metadata` | SP metadata XML |
+| `GET /api/v1/auth/{mock,rauthy}/login` (+ `/callback`) | per-driver SSO |
 | `* /api/v1/data/*` | BFF proxy to the private backend |
 | `GET /health` `\|` `/health/liveness` `\|` `/health/readiness` | probes |
 | `GET /api/v1/info`, `POST /api/v1/csp-report` | meta |

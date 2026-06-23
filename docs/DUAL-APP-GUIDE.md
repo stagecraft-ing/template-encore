@@ -1,16 +1,16 @@
 # Dual-App Setup Guide
 
-Generating two independent Encore.ts applications: one external-facing (SAML) and one staff-facing (Entra ID).
+Generating two independent Encore.ts applications: one external-facing (public) and one staff-facing (internal), both authenticating via rauthy (OIDC).
 
 ## When to Use This
 
 Use the dual-app setup when your project needs:
 
-- A **public website** for external users (SAML authentication via your SAML identity provider)
-- An **internal website** for staff (Entra ID / Azure AD authentication)
+- A **public website** for external users (rauthy OIDC authentication)
+- An **internal website** for staff (rauthy OIDC authentication)
 - A hard trust-zone boundary between the two: separate Gateways, separate auth handlers, separate secrets, independent deploy and scale
 
-If your project only needs one site, skip this entirely; the default template works as-is.
+Both variants use the same rauthy driver; isolate them by registering a separate rauthy client per variant (distinct `RAUTHY_CLIENT_ID` / `RAUTHY_CLIENT_SECRET` and redirect URI). If your project only needs one site, skip this entirely; the default template works as-is.
 
 ## The Encore Model: Two Independent Apps (Option A)
 
@@ -18,7 +18,7 @@ The dual-app generator produces **two complete, standalone Encore applications**
 
 ```
 <dest>/
-  public/                     complete Encore app; AUTH_DRIVER=saml
+  public/                     complete Encore app; AUTH_DRIVER=rauthy
     apps/
       api/                    encore.app, infra.config.json, all services
       web/                    external-facing Vue 3 SPA
@@ -26,7 +26,7 @@ The dual-app generator produces **two complete, standalone Encore applications**
     packages/
     package.json
     ...
-  internal/                   complete Encore app; AUTH_DRIVER=entra-id
+  internal/                   complete Encore app; AUTH_DRIVER=rauthy
     apps/
       api/                    encore.app, infra.config.json, all services
       web/                    (present but unused)
@@ -72,13 +72,13 @@ The destination directory must not exist or must be empty.
 ### For `<dest>/public`
 
 1. Copies the full template base (excludes generator/governance machinery: `modules/`, `scripts/`, `specs/`, `standards/`, `tools/`, `.derived/`, `.claude/`, `orchestration/`, `Cargo.*`, `Makefile`)
-2. Sets `AUTH_DRIVER=saml` in `apps/api/.env.example`
+2. Sets `AUTH_DRIVER=rauthy` in `apps/api/.env.example`
 3. The `apps/web` SPA already builds into `apps/api/web/build` (base config), so the `web` service serves the external-facing SPA at `/!path`
 
 ### For `<dest>/internal`
 
 1. Copies the full template base (same exclusions)
-2. Sets `AUTH_DRIVER=entra-id` in `apps/api/.env.example`
+2. Sets `AUTH_DRIVER=rauthy` in `apps/api/.env.example`
 3. `wireInternalSpa` patches the internal variant so the staff SPA is served:
    - Adds `build.outDir = ../api/web/build` to `apps/web-internal/vite.config.ts` so the staff bundle lands where `apps/api/web/static.ts` reads it (`api.static({ dir: "./build" })`)
    - Repoints `build:apps` in `package.json` to `npm run build --workspace=apps/web-internal` so only the staff SPA lands in `apps/api/web/build` (no double-build with `apps/web`)
@@ -87,8 +87,8 @@ The destination directory must not exist or must be empty.
 
 | Subdirectory | `AUTH_DRIVER` | SPA served | Audience |
 |-------------|--------------|-----------|----------|
-| `public/` | `saml` | `apps/web` | external-facing |
-| `internal/` | `entra-id` | `apps/web-internal` | staff-facing |
+| `public/` | `rauthy` | `apps/web` | external-facing |
+| `internal/` | `rauthy` | `apps/web-internal` | staff-facing |
 
 ## Resulting Structure
 
@@ -97,8 +97,8 @@ The destination directory must not exist or must be empty.
   apps/
     api/
       encore.app
-      infra.config.json          SAML secret bindings ($env references)
-      .env.example               AUTH_DRIVER=saml
+      infra.config.json          rauthy secret bindings ($env references)
+      .env.example               AUTH_DRIVER=rauthy
       lib/ db/ health/ auth/ gateway/ web/
     web/                         External-facing SPA (Vue 3 + PrimeVue)
       vite.config.ts             build.outDir -> ../api/web/build
@@ -111,8 +111,8 @@ The destination directory must not exist or must be empty.
   apps/
     api/
       encore.app
-      infra.config.json          Entra ID secret bindings ($env references)
-      .env.example               AUTH_DRIVER=entra-id
+      infra.config.json          rauthy secret bindings ($env references)
+      .env.example               AUTH_DRIVER=rauthy
       lib/ db/ health/ auth/ gateway/ web/
     web/                         (present; not served by the internal variant)
     web-internal/                Staff-facing SPA (Vue 3 + PrimeVue)
@@ -146,17 +146,18 @@ Each app runs on port 4000 independently. They never conflict because you run th
 
 After running the setup, configure each variant by editing its `apps/api/.env.example` (or `.env`) and `apps/api/infra.config.json`.
 
-### Public variant (SAML)
+### Public variant (rauthy)
 
-The `infra.config.json` in the public variant already has `$env` placeholder bindings for `SAML_*` secrets. Supply their values via Encore's secret management or, for local dev, add them to `apps/api/.env`:
+The `infra.config.json` in the public variant already has `$env` placeholder bindings for `RAUTHY_*` secrets. Supply their values via Encore's secret management or, for local dev, add them to `apps/api/.env`. Register a dedicated rauthy client for the public variant:
 
 ```bash
 # apps/api/.env in <dest>/public
-AUTH_DRIVER=saml
-SAML_ENTRY_POINT=https://idp.example.com/sso
-SAML_ISSUER=your-app-sp-entity-id
-SAML_CERT=<IdP X.509 certificate>
-SAML_CALLBACK_URL=https://your-app.example.com/api/v1/auth/saml/callback
+AUTH_DRIVER=rauthy
+RAUTHY_ISSUER=https://your-rauthy.example.com
+RAUTHY_CLIENT_ID=your-public-app-client-id
+RAUTHY_CLIENT_SECRET=your-public-app-client-secret
+RAUTHY_REDIRECT_URI=https://your-app.example.com/api/v1/auth/rauthy/callback
+RAUTHY_SCOPES=openid profile email groups
 # JWT keys: generate with: npm run generate-keys
 JWT_PRIVATE_KEY=<apps/api/keys/private.pem contents>
 JWT_PUBLIC_KEY=<apps/api/keys/public.pem contents>
@@ -164,20 +165,23 @@ JWT_REFRESH_PRIVATE_KEY=<apps/api/keys/refresh-private.pem contents>
 JWT_REFRESH_PUBLIC_KEY=<apps/api/keys/refresh-public.pem contents>
 ```
 
-### Internal variant (Entra ID)
+### Internal variant (rauthy)
+
+Register a separate rauthy client for the internal variant (distinct client ID/secret and redirect URI):
 
 ```bash
 # apps/api/.env in <dest>/internal
-AUTH_DRIVER=entra-id
-ENTRA_TENANT_ID=your-azure-tenant-id
-ENTRA_CLIENT_ID=your-app-client-id
-ENTRA_CLIENT_SECRET=your-client-secret
-ENTRA_REDIRECT_URI=https://your-app.example.com/api/v1/auth/entra-id/callback
+AUTH_DRIVER=rauthy
+RAUTHY_ISSUER=https://your-rauthy.example.com
+RAUTHY_CLIENT_ID=your-internal-app-client-id
+RAUTHY_CLIENT_SECRET=your-internal-app-client-secret
+RAUTHY_REDIRECT_URI=https://your-app.example.com/api/v1/auth/rauthy/callback
+RAUTHY_SCOPES=openid profile email groups
 # JWT keys: generate with: npm run generate-keys
 JWT_PRIVATE_KEY=...
 ```
 
-See `docs/AUTH-SETUP.md` for detailed driver configuration including SAML metadata exchange and Entra ID app registration.
+See `docs/AUTH-SETUP.md` for detailed driver configuration including rauthy client registration.
 
 ## Adding Domain Modules to Dual Apps
 

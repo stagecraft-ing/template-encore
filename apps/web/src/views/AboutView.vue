@@ -10,8 +10,8 @@
         </p>
         <p>
           Authentication is stateless RS256 JWT with a database-backed refresh-token rotation,
-          delivered over httpOnly cookies with CSRF double-submit protection. Three SSO drivers
-          (mock, Microsoft Entra ID, and SAML 2.0) coexist behind a uniform login surface.
+          delivered over httpOnly cookies with CSRF double-submit protection. Two SSO drivers
+          (mock and rauthy OIDC) coexist behind a uniform login surface.
         </p>
         <p>
           The backend exposes a backend-for-frontend gateway: the browser never reaches the

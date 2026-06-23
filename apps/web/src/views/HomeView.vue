@@ -72,7 +72,7 @@ const features = [
   {
     icon: 'pi pi-shield',
     title: 'Multi-driver auth',
-    body: 'Mock, Microsoft Entra ID, and SAML 2.0 SSO behind one uniform login surface, with RS256 JWT and refresh rotation.',
+    body: 'Mock and rauthy OIDC SSO behind one uniform login surface, with RS256 JWT and refresh rotation.',
   },
   {
     icon: 'pi pi-server',

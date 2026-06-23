@@ -126,10 +126,11 @@ workflow-pins lint. It documents:
 - `npm run build`
 - `encore-build` to GHCR
 
-It also carries a documented Azure Container Apps deploy step (`az containerapp
-update --image ...`) as a commented template. Activating it requires renaming
-to `encore-cd.yml`, provisioning a registry and secrets, and SHA-pinning every
-`uses:` reference (spec 015).
+It also carries a documented generic container deploy step (a
+`deploy --image ...` invocation against the target container host) as a
+commented template. Activating it requires renaming to `encore-cd.yml`,
+provisioning a registry and secrets, and SHA-pinning every `uses:` reference
+(spec 015).
 
 ### FR-006 — SHA-pinning
 
@@ -180,7 +181,7 @@ to fail when the committed `encore-client.ts` is not regenerated.
 
 - CD activation — `encore-cd.yml.example` stays inert until a downstream project
   provisions a registry and secrets, renames the file, and SHA-pins its `uses:`.
-- Azure App Service zip deployment — spec 012.
+- The container-host zip/artifact deployment path: spec 012.
 - The spec-spine governance workflow (`.github/workflows/spec-spine.yml`) —
   spec 000.
 - Supply-chain gates (`ci-supply-chain.yml`) — spec 014.

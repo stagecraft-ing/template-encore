@@ -1,6 +1,6 @@
 ---
 id: "010-dual-app-generator"
-title: "Dual-app generator: two independent Encore apps (external SAML + staff Entra)"
+title: "Dual-app generator: two independent Encore apps (external + staff, both rauthy OIDC)"
 status: approved
 created: "2026-06-10"
 owner: bart
@@ -15,10 +15,10 @@ depends_on:
 code_aliases: ["DUAL_APP_GENERATOR"]
 summary: >
   setup-dual-app.ts generates two independent Encore applications from one
-  invocation: <dest>/public (AUTH_DRIVER=saml, external-facing, apps/web)
-  and <dest>/internal (AUTH_DRIVER=entra-id, staff-facing,
+  invocation: <dest>/public (AUTH_DRIVER=rauthy, external-facing, apps/web)
+  and <dest>/internal (AUTH_DRIVER=rauthy, staff-facing,
   apps/web-internal wired into the internal app's web service). Independent
-  apps — separate encore.app files, databases, and deployments — are the
+  apps (separate encore.app files, databases, and deployments) are the
   locked isolation decision.
 establishes:
   - "scripts/setup-dual-app.ts"
@@ -30,7 +30,8 @@ establishes:
 ## 1. Purpose
 
 Some deployments require a hard trust-zone split between external-facing
-access (SAML SSO) and staff-facing access (Entra ID). `setup-dual-app.ts`
+access and staff-facing access. Both trust zones authenticate against the
+rauthy OIDC provider, but as fully isolated applications. `setup-dual-app.ts`
 generates both applications from a single invocation, each being a complete,
 independent copy of the template base with its own auth driver configured.
 
@@ -59,8 +60,8 @@ MUST produce:
 
 ```
 <d>/
-  public/     complete template base copy; AUTH_DRIVER=saml
-  internal/   complete template base copy; AUTH_DRIVER=entra-id
+  public/     complete template base copy; AUTH_DRIVER=rauthy
+  internal/   complete template base copy; AUTH_DRIVER=rauthy
 ```
 
 Each subdirectory is a **complete, standalone Encore app** with its own
@@ -73,12 +74,14 @@ directories; the generator produces a fresh destination tree.
 The generator MUST configure auth by setting the `AUTH_DRIVER` environment
 variable in `.env.example` for each variant:
 
-- `public` → `AUTH_DRIVER=saml`
-- `internal` → `AUTH_DRIVER=entra-id`
+- `public` → `AUTH_DRIVER=rauthy`
+- `internal` → `AUTH_DRIVER=rauthy`
 
 Selection is configuration over the in-app drivers (spec 003). No driver files
 are copied, moved, or deleted. The in-app `auth` service reads `AUTH_DRIVER`
-at startup to activate the appropriate driver.
+at startup to activate the appropriate driver. The two variants differ by
+trust zone and deployment, not by auth driver; both authenticate against the
+rauthy OIDC provider.
 
 ### FR-003 — Staff-SPA static-serving wiring
 
@@ -145,8 +148,8 @@ produces `<d>/public` and `<d>/internal`, each a standalone Encore app;
 `cd <d>/public/apps/api && encore check` exits 0; neither directory contains
 `apps/api/src` or any runtime module loader.
 
-**AC-2.** `<d>/public/apps/api/.env.example` contains `AUTH_DRIVER=saml`;
-`<d>/internal/apps/api/.env.example` contains `AUTH_DRIVER=entra-id`.
+**AC-2.** `<d>/public/apps/api/.env.example` contains `AUTH_DRIVER=rauthy`;
+`<d>/internal/apps/api/.env.example` contains `AUTH_DRIVER=rauthy`.
 
 **AC-3.** `<d>/internal/apps/web-internal/vite.config.ts` sets
 `build.outDir = ../api/web/build` and `<d>/internal/package.json`'s `build:apps`
@@ -167,4 +170,4 @@ couple --base origin/main` is clean.
 - The Encore container CD path for the internal SPA — the `encore-cd.yml.example`
   container path bundles whatever is in `apps/api/web/build`; redirecting the
   internal SPA's vite `outDir` for the container path is a downstream step.
-- The `web-app` input for SPA selection in the Azure zip deploy path — spec 012.
+- The `web-app` input for SPA selection in the container deploy path: spec 012.

@@ -137,14 +137,13 @@ best-effort (never blocking the user flow).
 
 #### INV-9: Multi-driver auth registry
 
-Three SSO drivers at full parity: `mock` (dev), `entra-id` (OIDC,
-single-tenant plus `tid` check), `saml` (SAML 2.0). Selectable by the
-`AUTH_DRIVER` configuration value; the discovery/login surface is uniform
-across drivers.
+Two SSO drivers at full parity: `mock` (dev) and `rauthy` (self-hosted OIDC
+provider). Selectable by the `AUTH_DRIVER` configuration value; the
+discovery/login surface is uniform across drivers.
 
 - **Enforcement**: driver secrets declared in `lib/secrets.ts`
-  (`ENTRA_*`, `SAML_*`); `auth/mock.ts`, `auth/entra-id.ts`,
-  `auth/saml.ts`, driver discovery in `auth/drivers.ts`.
+  (`RAUTHY_*`); `auth/mock.ts`, `auth/rauthy.ts`, driver discovery in
+  `auth/drivers.ts`.
 
 #### INV-10: BFF proxy contract
 
@@ -189,7 +188,7 @@ in code comments preserve the compliance trace.
 | INV-6 Rate limiting | `lib/rate-limit.ts` | `apiRateLimit` on `auth`; inline auth bucket on login/callback |
 | INV-7 JWT + refresh | `lib/jwt.ts`, `db/migrations/3_refresh_token.up.sql` | `auth/refresh.ts` rotation, `auth/handler.ts` verification |
 | INV-8 Audit | `lib/audit.ts`, `db/migrations/4_audit_log.up.sql` | auth mutations + gateway per-access audit |
-| INV-9 Multi-driver auth | `lib/secrets.ts` (driver secrets) | `auth/{mock,entra-id,saml}.ts`, `auth/drivers.ts` |
+| INV-9 Multi-driver auth | `lib/secrets.ts` (driver secrets) | `auth/{mock,rauthy}.ts`, `auth/drivers.ts` |
 | INV-10 BFF proxy | `lib/secrets.ts` (`GATEWAY_OAUTH_*`) | `gateway/proxy.ts`, `gateway/token-cache.ts` |
 | INV-11 Compliance tags | `lib/logger.ts` (`CC-006`) | carried in auth and gateway handlers |
 

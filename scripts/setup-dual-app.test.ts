@@ -98,11 +98,11 @@ describe('setupDualApp — real template, two independent Encore apps', () => {
     }
   })
 
-  it('sets AUTH_DRIVER=saml for public and AUTH_DRIVER=entra-id for internal', () => {
+  it('sets AUTH_DRIVER=rauthy for both the public and internal variants', () => {
     const pubEnv = fs.readFileSync(path.join(roots.public, 'apps', 'api', '.env.example'), 'utf-8')
     const intEnv = fs.readFileSync(path.join(roots.internal, 'apps', 'api', '.env.example'), 'utf-8')
-    expect(pubEnv).toMatch(/^AUTH_DRIVER=saml$/m)
-    expect(intEnv).toMatch(/^AUTH_DRIVER=entra-id$/m)
+    expect(pubEnv).toMatch(/^AUTH_DRIVER=rauthy$/m)
+    expect(intEnv).toMatch(/^AUTH_DRIVER=rauthy$/m)
   })
 
   it('wires the internal app to serve the staff SPA (apps/web-internal)', () => {

@@ -45,7 +45,7 @@ Auth uses httpOnly cookies (access + refresh + CSRF). Check:
 
 1. `API_BASE_URL` and `FRONTEND_URL` are correct and the SPA origin is in `encore.app` `global_cors`.
 2. In production, HTTPS is in use (cookies are `secure`).
-3. For cross-site IdP POST callbacks (SAML), cookies need `SameSite=None` + `Secure=true` (HTTPS).
+3. The OIDC round-trip returns via a top-level redirect, so auth cookies use `SameSite=Lax`; `secure` is automatic in production (`NODE_ENV=production`).
 4. The browser allows cookies (not blocked in private mode).
 
 #### Request returns 403 with `CSRF_MISSING` / `CSRF_MISMATCH`
@@ -61,25 +61,18 @@ Access tokens are short-lived (~15 min). The SPA calls `POST /api/v1/auth/refres
 token and mint a new access cookie. If refresh fails (revoked or expired refresh token), the user must log
 in again. `POST /api/v1/auth/logout` revokes the refresh token server-side.
 
-#### SAML assertion validation failed
+#### rauthy login fails / token validation failed
 
-1. Verify `SAML_CERT` is the correct IdP public certificate.
-2. Ensure the certificate has not expired.
-3. Confirm `SAML_ENTRY_POINT` and `SAML_ISSUER` match the IdP registration.
-4. The SP ACS URL the IdP posts to is `<API_BASE_URL>/api/v1/auth/saml/callback`.
+1. Verify `RAUTHY_ISSUER` points at the rauthy base URL and that `<RAUTHY_ISSUER>/.well-known/openid-configuration` is reachable from the backend (provider metadata and the JWKS are discovered from it).
+2. Confirm the redirect URI registered in rauthy matches `RAUTHY_REDIRECT_URI` (`<API_BASE_URL>/api/v1/auth/rauthy/callback`).
+3. Confirm `RAUTHY_CLIENT_ID` / `RAUTHY_CLIENT_SECRET` are set as secrets and match the rauthy client.
+4. Ensure the client secret has not been rotated out from under the app.
 
-#### SAML decryption failed (`DECODER routines::unsupported`)
+#### Roles or groups missing from the session
 
-`SAML_PRIVATE_KEY` is missing or malformed. Set it (base64 or PEM) as an Encore secret; the code wraps raw
-base64 at runtime, so do not include PEM headers when supplying raw base64. Verify it matches the cert
-registered with the IdP.
-
-#### Entra ID login rejected (tenant)
-
-`ENTRA_TENANT_ID` must be a single tenant GUID/domain (never `common` / `organizations` / `consumers`;
-IDPV-001). The `tid` claim is verified against it. Confirm the redirect URI registered in Azure is
-`<API_BASE_URL>/api/v1/auth/entra-id/callback` and `ENTRA_CLIENT_ID` / `ENTRA_CLIENT_SECRET` are set as
-secrets.
+rauthy always emits a `roles` claim; the `groups` claim is only emitted when the `groups` scope is requested.
+Confirm `RAUTHY_SCOPES` includes `groups` (default `openid profile email groups`). When no role claim is
+present, the user falls back to `RAUTHY_DEFAULT_ROLE`.
 
 ---
 
@@ -93,8 +86,8 @@ Gateway env vars are not configured. Set and restart:
 
 ```bash
 PRIVATE_API_BASE_URL=https://your-private-app.internal/api/v1/public
-GATEWAY_OAUTH_TENANT_ID=<tenant-id>
-GATEWAY_OAUTH_SCOPE=api://<private-app-id>/.default
+GATEWAY_OAUTH_TOKEN_URL=https://your-oidc-provider.example.com/oauth2/token
+GATEWAY_OAUTH_SCOPE=<private-api-scope>
 GATEWAY_OAUTH_CLIENT_ID=<public-app-client-id>          # secret
 GATEWAY_OAUTH_CLIENT_SECRET=<secret-VALUE>              # secret
 ```
@@ -108,7 +101,7 @@ The upstream call failed (network, OAuth, or a backend 5xx; upstream 5xx is mask
 curl -s https://your-private-app.internal/
 
 # 2. Acquire an OAuth token?
-curl -s -X POST "https://login.microsoftonline.com/${GATEWAY_OAUTH_TENANT_ID}/oauth2/v2.0/token" \
+curl -s -X POST "${GATEWAY_OAUTH_TOKEN_URL}" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=client_credentials&client_id=${GATEWAY_OAUTH_CLIENT_ID}&client_secret=${GATEWAY_OAUTH_CLIENT_SECRET}&scope=${GATEWAY_OAUTH_SCOPE}"
 
@@ -117,20 +110,20 @@ curl -s -X POST "https://login.microsoftonline.com/${GATEWAY_OAUTH_TENANT_ID}/oa
 curl -s -H "Authorization: Bearer $TOKEN" "${PRIVATE_API_BASE_URL}/info"
 ```
 
-| Step 1 fails | Network issue: VNet integration, private endpoints, DNS, access restrictions. |
+| Step 1 fails | Network issue: private networking, private endpoints, DNS, access restrictions. |
 |---|---|
-| Step 2 fails | OAuth issue: see AADSTS errors below. |
+| Step 2 fails | OAuth issue: see token-endpoint errors below. |
 | Step 3 fails | Private backend rejects the token: audience/version/validation config on the backend side. |
 
-#### `AADSTS7000215: Invalid client secret`
+#### Token endpoint returns "invalid client secret"
 
 `GATEWAY_OAUTH_CLIENT_SECRET` is set to the secret **ID** (a GUID) instead of the secret **value**. The value
 is only shown once at creation; create a new client secret if you cannot retrieve it.
 
-#### `AADSTS65001 / AADSTS700016` (consent / app not found)
+#### Token endpoint returns "consent required" / "app not found"
 
-The public app lacks permission for the private app's scope. In Azure: App registrations → public app → API
-permissions → add the private API's scope → Grant admin consent.
+The public app lacks permission for the private app's scope. In your OIDC provider, grant the public client
+access to the private API's scope (and admin consent if your provider requires it).
 
 #### 504 "backend timed out"
 

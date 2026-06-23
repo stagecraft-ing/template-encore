@@ -96,7 +96,7 @@ inside the tool).
 | 009-user-management-module | 061 + 063 (durable threads) | `modules/user-management/**` |
 | 010-dual-app-generator | 062 | `scripts/setup-dual-app.ts`, `scripts/setup-dual-app.test.ts` |
 | 011-encore-ci-cd | 054 | `.github/actions/encore-{install,build}/action.yml`, `encore-ci.yml`, `encore-cd.yml.example` |
-| 012-azure-webapp-deploy | 057 | the four `deploy-azure-webapp-*.yml` workflows |
+| 012-azure-webapp-deploy | 057 | the four `deploy-*.yml` workflows |
 | 013-repo-ci-orchestrator | 034 + 045 residue | `ci.yml`, `dependabot.yml`, `CODEOWNERS`, `pull_request_template.md` |
 | 014-supply-chain-gates | 030 (cargo-deny removed) | `.github/workflows/ci-supply-chain.yml` |
 | 015-workflow-pins-lint | 021 | `tools/lint/**` |

@@ -79,7 +79,7 @@ package trees.
 | `lib` | No-endpoint service; hosts `secret(...)` declarations, shared middleware, and utilities. Owned by spec `002-security-data-invariants`. |
 | `db` | No-endpoint service; owns the single `SQLDatabase("app")` and its schema scripts. Owned by spec `002-security-data-invariants`. |
 | `health` | Liveness/readiness probes (`/health`, `/health/liveness`, `/health/readiness`), `GET /api/v1/info`, `POST /api/v1/csp-report`. Only `securityHeaders` middleware is mounted (probes and CSP reports are unauthenticated). Owned by this spec. |
-| `auth` | `authHandler` plus `Gateway`, multi-driver SSO (`mock`, `entra-id`, `saml`), `/auth/me`, `/auth/refresh`, `/auth/logout`, `/auth/csrf-token`, driver discovery. Owned by spec `003-multi-driver-auth-service`. |
+| `auth` | `authHandler` plus `Gateway`, multi-driver SSO (`mock`, `rauthy`), `/auth/me`, `/auth/refresh`, `/auth/logout`, `/auth/csrf-token`, driver discovery. Owned by spec `003-multi-driver-auth-service`. |
 | `gateway` | BFF proxy: `api.raw` catch-all at `/api/v1/data/*` to the private backend. Owned by spec `004-bff-gateway-proxy`. |
 | `web` | Static SPA serving via `api.static`. Owned by spec `005-spa-static-serving`. |
 
@@ -96,8 +96,8 @@ These decisions are fixed for all applications built from this template:
   user record, refresh-token revocation, and a durable audit trail
   (`user_account`, `refresh_token`, `audit_log`).
 - **Path prefix `/api/v1`.**  Endpoints keep the `/api/v1` prefix so external
-  SAML ACS URLs and the `/api/v1/data/*` gateway contract stay stable and the
-  SPA requires minimal change.
+  OIDC callback URLs and the `/api/v1/data/*` gateway contract stay stable and
+  the SPA requires minimal change.
 - **CORS via `encore.app` `global_cors`.** Replaces per-request middleware;
   credentialed origins enumerate every SPA origin (Vite dev servers plus
   production hostnames).

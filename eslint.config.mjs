@@ -153,8 +153,8 @@ export default tseslint.config(
       // getAuthData()! is the documented accessor for the authenticated
       // principal inside an auth:true endpoint (see CODEMAP).
       '@typescript-eslint/no-non-null-assertion': 'off',
-      // openid-client v6 token claims, @node-saml profiles, and Node http header
-      // values surface `any` at their type boundaries; the no-unsafe-* family
+      // openid-client v6 token claims and Node http header values surface `any`
+      // at their type boundaries; the no-unsafe-* family
       // produces false positives there, exactly as for Vue SFCs above. Boundary
       // values are narrowed explicitly in code before use.
       '@typescript-eslint/no-unsafe-assignment': 'off',

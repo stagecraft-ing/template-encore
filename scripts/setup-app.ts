@@ -12,9 +12,9 @@
  *   npx tsx scripts/setup-app.ts --profile <name> --dest <path> [--yes] [--dry-run] [--clean] [--no-install] [--with <module>]...
  *
  * Profiles:
- *   minimal   — mock auth (local dev)
- *   public    SAML auth (external-facing)
- *   internal  — Entra ID auth (staff-facing)
+ *   minimal   mock auth (local dev)
+ *   public    rauthy OIDC (external-facing)
+ *   internal  rauthy OIDC (staff-facing)
  *
  * Flags:
  *   --yes        Skip confirmation prompts
@@ -41,7 +41,7 @@ export const TEMPLATE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta
 export interface Profile {
   name: string
   description: string
-  authDriver: 'mock' | 'saml' | 'entra-id'
+  authDriver: 'mock' | 'rauthy'
 }
 
 export const PROFILES: Record<string, Profile> = {
@@ -52,13 +52,13 @@ export const PROFILES: Record<string, Profile> = {
   },
   public: {
     name: 'Public-Facing App',
-    description: 'SAML auth (your SAML IdP), external-facing',
-    authDriver: 'saml',
+    description: 'rauthy OIDC, external-facing',
+    authDriver: 'rauthy',
   },
   internal: {
     name: 'Internal / Staff App',
-    description: 'Entra ID auth (Azure AD) — staff-facing',
-    authDriver: 'entra-id',
+    description: 'rauthy OIDC, staff-facing',
+    authDriver: 'rauthy',
   },
 }
 
@@ -119,8 +119,8 @@ export function copyTemplateBase(templateRoot: string, dest: string): void {
       // Top-level exclusions
       if (relParts.length === 0 && EXCLUDED_TOP_LEVEL.has(name)) continue
 
-      // Skip template-only docs/encore-ts/ (keep the rest of docs/)
-      if (rel.length === 2 && rel[0] === 'docs' && name === 'encore-ts') continue
+      // Skip template-only docs (development history; keep the rest of docs/)
+      if (rel.length === 2 && rel[0] === 'docs' && (name === 'encore-ts' || name === 'migration')) continue
 
       if (entry.isDirectory()) {
         // Normalize separators so the comparison is platform-independent.

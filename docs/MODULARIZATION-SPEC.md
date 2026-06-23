@@ -534,8 +534,7 @@ The 13 original Express modules have been reduced to 5 remaining modules with cl
 | `api-docs` | Encore generates OpenAPI from the app graph (`encore gen client --lang=openapi`) |
 | `auth-core` | Folded into `apps/api/auth/`; always-present Encore service |
 | `auth-mock` | Driver ships in `apps/api/auth/mock.ts`; selected by `AUTH_DRIVER=mock` |
-| `auth-entra-id` | Driver ships in `apps/api/auth/entra-id.ts`; selected by `AUTH_DRIVER=entra-id` |
-| `auth-saml` | Driver ships in `apps/api/auth/saml.ts`; selected by `AUTH_DRIVER=saml` |
+| `auth-rauthy` | Driver ships in `apps/api/auth/rauthy.ts`; selected by `AUTH_DRIVER=rauthy` |
 | `service-auth` | S2S OAuth lives in `apps/api/gateway/token-cache.ts` (spec 004) |
 
 ---

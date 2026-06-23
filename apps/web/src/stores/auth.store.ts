@@ -185,8 +185,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       user.value = null
 
-      // If the server returned a SLO redirect URL (SAML/Entra), navigate to it
-      // so the IdP session is also terminated. Only follow safe http(s) URLs.
+      // If the server returned a SLO redirect URL (OIDC end-session), navigate
+      // to it so the IdP session is also terminated. Only follow safe http(s) URLs.
       const redirectUrl = (response.data as { redirectUrl?: string })?.redirectUrl
       if (redirectUrl && isSafeRedirect(redirectUrl)) {
         window.location.href = redirectUrl

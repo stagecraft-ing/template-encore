@@ -1,7 +1,7 @@
 {
   "name": "vue-encore-enterprise-template",
   "version": "1.0.0",
-  "description": "Enterprise application template: Vue 3 SPA + Encore.ts backend with the GoA Design System, multi-driver authentication (SAML, Entra ID), TypeScript, and Docker",
+  "description": "Enterprise application template: Vue 3 (PrimeVue) SPA + Encore.ts backend with rauthy OIDC authentication, TypeScript, and Docker",
   "private": true,
   "author": "Stagecraft",
   "license": "Apache-2.0",
@@ -90,11 +90,11 @@
   },
   "keywords": [
     "enterprise-template",
-    "goa-design-system",
+    "primevue",
     "vue3",
     "typescript",
     "encore",
-    "saml",
+    "oidc",
     "authentication",
     "bff",
     "api-gateway",

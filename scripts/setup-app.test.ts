@@ -156,9 +156,9 @@ describe('setAuthDriver — append when absent', () => {
   })
 
   it('appends AUTH_DRIVER when the file has none', () => {
-    expect(setAuthDriver(dest, 'saml')).toBe(true)
+    expect(setAuthDriver(dest, 'rauthy')).toBe(true)
     const env = fs.readFileSync(path.join(dest, 'apps', 'api', '.env.example'), 'utf-8')
-    expect(env).toMatch(/^AUTH_DRIVER=saml$/m)
+    expect(env).toMatch(/^AUTH_DRIVER=rauthy$/m)
     expect(env).toContain('NODE_ENV=development')
   })
 
@@ -174,7 +174,7 @@ describe('setAuthDriver — append when absent', () => {
 describe('PROFILES', () => {
   it('defines minimal/public/internal with the expected drivers', () => {
     expect(PROFILES.minimal.authDriver).toBe('mock')
-    expect(PROFILES.public.authDriver).toBe('saml')
-    expect(PROFILES.internal.authDriver).toBe('entra-id')
+    expect(PROFILES.public.authDriver).toBe('rauthy')
+    expect(PROFILES.internal.authDriver).toBe('rauthy')
   })
 })

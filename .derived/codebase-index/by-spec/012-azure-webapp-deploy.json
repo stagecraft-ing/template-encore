@@ -7,19 +7,19 @@
     ],
     "implementingPaths": [
       {
-        "path": ".github/workflows/deploy-azure-webapp-dev.yml",
+        "path": ".github/workflows/deploy-dev.yml",
         "source": "spec-edge"
       },
       {
-        "path": ".github/workflows/deploy-azure-webapp-prod.yml",
+        "path": ".github/workflows/deploy-prod.yml",
         "source": "spec-edge"
       },
       {
-        "path": ".github/workflows/deploy-azure-webapp-reusable.yml",
+        "path": ".github/workflows/deploy-reusable.yml",
         "source": "spec-edge"
       },
       {
-        "path": ".github/workflows/deploy-azure-webapp-uat.yml",
+        "path": ".github/workflows/deploy-uat.yml",
         "source": "spec-edge"
       }
     ],
@@ -27,53 +27,53 @@
       {
         "locations": [
           {
-            "file": ".github/workflows/deploy-azure-webapp-dev.yml"
+            "file": ".github/workflows/deploy-dev.yml"
           }
         ],
         "ownership": true,
         "sourceField": "establishes",
         "unit": {
           "kind": "file",
-          "path": ".github/workflows/deploy-azure-webapp-dev.yml"
+          "path": ".github/workflows/deploy-dev.yml"
         }
       },
       {
         "locations": [
           {
-            "file": ".github/workflows/deploy-azure-webapp-prod.yml"
+            "file": ".github/workflows/deploy-prod.yml"
           }
         ],
         "ownership": true,
         "sourceField": "establishes",
         "unit": {
           "kind": "file",
-          "path": ".github/workflows/deploy-azure-webapp-prod.yml"
+          "path": ".github/workflows/deploy-prod.yml"
         }
       },
       {
         "locations": [
           {
-            "file": ".github/workflows/deploy-azure-webapp-reusable.yml"
+            "file": ".github/workflows/deploy-reusable.yml"
           }
         ],
         "ownership": true,
         "sourceField": "establishes",
         "unit": {
           "kind": "file",
-          "path": ".github/workflows/deploy-azure-webapp-reusable.yml"
+          "path": ".github/workflows/deploy-reusable.yml"
         }
       },
       {
         "locations": [
           {
-            "file": ".github/workflows/deploy-azure-webapp-uat.yml"
+            "file": ".github/workflows/deploy-uat.yml"
           }
         ],
         "ownership": true,
         "sourceField": "establishes",
         "unit": {
           "kind": "file",
-          "path": ".github/workflows/deploy-azure-webapp-uat.yml"
+          "path": ".github/workflows/deploy-uat.yml"
         }
       }
     ],
@@ -81,5 +81,5 @@
     "specStatus": "approved"
   },
   "schemaVersion": "1.1.0",
-  "shardHash": "ed46030ef0d4a8c05b3054265faec295117025eefbeb7f927ab8d3e5a10997f6"
+  "shardHash": "cbf00174383f8be763dde2d9a02797ff0c38749c448ace4ad0c21c34c1ca04b8"
 }

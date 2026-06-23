@@ -12,7 +12,7 @@ defers_to:
 
 Apply all configuration changes to make the template yours. Configuration is mechanical: value substitution, renaming, env var and secret setup. No logic changes, no new feature files.
 
-**Input** (pipeline mode): `variant`, `securityMethod`, and `templateOverrides` from the factory API Build Specification. App identity values come from `requirements/services/service-description.json` and `requirements/services/audience-identification.json`. `securityMethod` maps to the AUTH_DRIVER as: `saml` → `saml`, `entra-id` → `entra-id`, `mock` → `mock`.
+**Input** (pipeline mode): `variant`, `securityMethod`, and `templateOverrides` from the factory API Build Specification. App identity values come from `requirements/services/service-description.json` and `requirements/services/audience-identification.json`. `securityMethod` maps to the AUTH_DRIVER as: `oidc` → `rauthy`, `mock` → `mock`.
 
 **Input** (standalone mode): equivalent values supplied directly by the user: at minimum a variant, app name, and selected auth driver(s).
 
@@ -125,7 +125,7 @@ proxy: {
 
 ## Step 3: Auth Driver Configuration
 
-The Encore app ships three auth drivers in `apps/api/auth/`: `mock`, `entra-id`, and `saml`. Driver selection is controlled by the `AUTH_DRIVER` env var: no file copies or module registrations are needed.
+The Encore app ships two auth drivers in `apps/api/auth/`: `mock` and `rauthy`. Driver selection is controlled by the `AUTH_DRIVER` env var: no file copies or module registrations are needed.
 
 ### Step 3a. Generate JWT Keys (development)
 
@@ -136,41 +136,26 @@ npm run generate-keys      # writes apps/api/keys/*.pem (gitignored)
 
 The generated `.pem` files are read via `$env` references in `infra.config.json` in development. In production, the PEM content is stored as Encore secrets (`JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`, `JWT_REFRESH_PRIVATE_KEY`, `JWT_REFRESH_PUBLIC_KEY`) declared in `apps/api/lib/secrets.ts`.
 
-### Step 3b. Public variant (SAML driver)
+### Step 3b. rauthy OIDC driver (public or internal variant)
 
 In `apps/api/.env`:
 ```
-AUTH_DRIVER=saml
-SAML_ENTRY_POINT={IdP SSO URL}
-SAML_ISSUER={SP entity ID}
-SAML_CERT={IdP certificate, base64}
-SAML_PRIVATE_KEY={SP private key, base64}
-SAML_CERT_SP={SP certificate, base64}
-SAML_LOGOUT_URL={IdP SLO URL}
-SAML_CALLBACK_URL=http://localhost:4000/api/v1/auth/saml/callback
+AUTH_DRIVER=rauthy
+RAUTHY_ISSUER={rauthy issuer URL}
+RAUTHY_CLIENT_ID={OIDC client ID}
+RAUTHY_CLIENT_SECRET={OIDC client secret}
+RAUTHY_REDIRECT_URI=http://localhost:4000/api/v1/auth/rauthy/callback
+RAUTHY_SCOPES=openid profile email
+RAUTHY_DEFAULT_ROLE=user
 ```
 
-In `apps/api/infra.config.json`, bind the SAML secret env vars under `secrets`.
+In `apps/api/infra.config.json`, bind the rauthy secret env vars under `secrets`.
 
-### Step 3c. Internal variant (Entra ID driver)
+### Step 3c. Dual variant
 
-In `apps/api/.env`:
-```
-AUTH_DRIVER=entra-id
-ENTRA_TENANT_ID={Azure tenant ID}
-ENTRA_CLIENT_ID={App registration client ID}
-ENTRA_CLIENT_SECRET={Client secret}
-ENTRA_CALLBACK_URL=http://localhost:4000/api/v1/auth/entra-id/callback
-ENTRA_DEFAULT_ROLE=user
-```
+Configure a separate rauthy OIDC client for the public Encore app and another for the internal Encore app: each in its own `apps/api/.env` and `infra.config.json`. Neither app shares an `infra.config.json` with the other.
 
-In `apps/api/infra.config.json`, bind the Entra secret env vars under `secrets`.
-
-### Step 3d. Dual variant
-
-Configure SAML for the public Encore app and Entra ID for the internal Encore app: each in its own `apps/api/.env` and `infra.config.json`. Neither app shares an `infra.config.json` with the other.
-
-### Step 3e. Customize Mock Users (Required)
+### Step 3d. Customize Mock Users (Required)
 
 The template ships with generic mock users in `apps/api/auth/mock.ts` (`developer`, `admin`, `user`). Replace them with mock users whose roles match the business requirements.
 
@@ -204,7 +189,7 @@ const mockUsers = [
 **Rules:**
 - One mock user per distinct role combination the business requirements define
 - Use the exact role strings (case-sensitive) from the business requirements: these are the same strings used in `requireRole(getAuthData()!.roles, ...)` guards and `hasRole(role)` UI checks
-- Set `ENTRA_DEFAULT_ROLE` in `apps/api/.env` to the lowest-privilege role
+- Set `RAUTHY_DEFAULT_ROLE` in `apps/api/.env` to the lowest-privilege role
 - Document the `?user=N` mapping in the project README so developers know which index corresponds to each role
 
 ---
@@ -222,7 +207,7 @@ Review the existing bindings and extend them for any secrets the application req
     "JwtPublicKey": { "$env": "JWT_PUBLIC_KEY" },
     "JwtRefreshPrivateKey": { "$env": "JWT_REFRESH_PRIVATE_KEY" },
     "JwtRefreshPublicKey": { "$env": "JWT_REFRESH_PUBLIC_KEY" },
-    "SamlPrivateKey": { "$env": "SAML_PRIVATE_KEY" },
+    "RauthyClientSecret": { "$env": "RAUTHY_CLIENT_SECRET" },
     // ... add driver-specific and feature-specific secrets here
   },
   "sql_databases": [
@@ -370,7 +355,7 @@ import Badge from 'primevue/badge'
 </template>
 ```
 
-**CSS note**: `.app-layout` is a flex ROW (`display: flex; min-height: 100vh`). The sidebar uses `position: sticky; top: 0; height: 100vh`. Active link styling uses `--p-primary-50` and `--p-primary-700` from the Aura preset (no `--goa-*` vars).
+**CSS note**: `.app-layout` is a flex ROW (`display: flex; min-height: 100vh`). The sidebar uses `position: sticky; top: 0; height: 100vh`. Active link styling uses `--p-primary-50` and `--p-primary-700` from the Aura preset (no third-party design-system CSS vars).
 
 ```css
 <style scoped>
@@ -412,7 +397,7 @@ import Badge from 'primevue/badge'
 - PrimeVue `Avatar` shows user initials; `Badge` decorates secondary nav items with counts
 - **Flat flex row**: `<aside>` + `<main>` as direct children of `.app-layout`
 - **No footer**: internal apps do not use a page footer
-- CSS variables use `--p-primary-*` (PrimeVue Aura) and `--app-*` (application tokens in `main.css`), not `--goa-*`
+- CSS variables use `--p-primary-*` (PrimeVue Aura) and `--app-*` (application tokens in `main.css`), not a third-party design-system's CSS vars
 
 #### 6b-2. Verify No AppHeader in Internal Layout
 
@@ -446,12 +431,12 @@ Verify `App.vue` passes correct props to `AppLayout`:
 
 ---
 
-## Step 7: GitHub Actions (if Azure deployment)
+## Step 7: GitHub Actions (if deploying to a cloud provider)
 
 Update `.github/workflows/`:
-- Set `azure-webapp-name` to the actual Azure Web App name
-- Set `azure-webapp-rg` to the actual resource group
-- Flag required GitHub secrets: `AZURE_CREDENTIALS`, build-time `VITE_*` env vars
+- Set the deployment target name to the actual app/service name for your cloud provider
+- Set the deployment group/namespace to the actual resource group or project
+- Flag required GitHub secrets: deployment credentials for your cloud provider, build-time `VITE_*` env vars
 
 **Dual variant**: ensure separate workflows for the public and internal stacks, or use a parameterized reusable workflow.
 
@@ -466,7 +451,7 @@ Bulleted list of every file changed and what was changed.
 
 | Placeholder | Status | File | Notes |
 |-------------|--------|------|-------|
-| `SAML_ENTRY_POINT` | UNFILLED | `apps/api/.env` | Needs IdP URL from auth team |
+| `RAUTHY_ISSUER` | UNFILLED | `apps/api/.env` | Needs the rauthy issuer URL from the auth team |
 | JWT keys | GENERATED | `apps/api/keys/*.pem` | Run `npm run generate-keys` |
 | ... | ... | ... | ... |
 
@@ -474,7 +459,7 @@ Bulleted list of every file changed and what was changed.
 List each Encore secret declared in `lib/secrets.ts` and its `infra.config.json` `$env` mapping status.
 
 ### Required Actions Before Production
-Numbered list: provide Encore production secrets, register SAML/Entra ID app in IdP, update `encore.app` CORS origins, set up database, create GitHub secrets.
+Numbered list: provide Encore production secrets, register the OIDC client in rauthy, update `encore.app` CORS origins, set up database, create GitHub secrets.
 
 ---
 

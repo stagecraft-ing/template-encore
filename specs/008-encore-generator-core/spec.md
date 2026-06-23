@@ -78,18 +78,18 @@ generator tooling present.
 Auth-driver selection MUST be configuration only. A profile sets
 `AUTH_DRIVER` in the destination `apps/api/.env.example` and ensures the
 matching `secret()` bindings are present in `apps/api/infra.config.json`.
-All three drivers (`mock`, `entra-id`, `saml`) ship in-app (spec 003) and
-coexist; the active driver is determined by the `AUTH_DRIVER` environment
-variable at runtime, not by which files are present. No driver files are
-copied or deleted during generation.
+Both drivers (`mock`, `rauthy`) ship in-app (spec 003) and coexist; the
+active driver is determined by the `AUTH_DRIVER` environment variable at
+runtime, not by which files are present. No driver files are copied or
+deleted during generation.
 
 #### FR-003 — Three profiles
 
 | Profile | `AUTH_DRIVER` | Secrets bound | Intended use |
 |---------|---------------|---------------|--------------|
 | `minimal` | `mock` | none | Local development; mock login only |
-| `public` | `saml` | `SAML_*` | External-facing application |
-| `internal` | `entra-id` | `ENTRA_*` (+ `GATEWAY_OAUTH_*` when BFF is included) | Staff-facing application |
+| `public` | `rauthy` | `RAUTHY_*` | External-facing application |
+| `internal` | `rauthy` | `RAUTHY_*` (+ `GATEWAY_OAUTH_*` when BFF is included) | Staff-facing application |
 
 `SQLDatabase("app")` (the `db` service, spec 001) is always present in
 every profile. Redis is optional, rate-limit backing only (`REDIS_URL`).

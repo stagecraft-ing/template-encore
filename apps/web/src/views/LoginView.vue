@@ -37,16 +37,10 @@
           </div>
 
           <Button
-            v-if="drivers.includes('entra-id')"
-            label="Sign in with Microsoft Entra ID"
-            icon="pi pi-microsoft"
-            @click="signIn('entra-id')"
-          />
-          <Button
-            v-if="drivers.includes('saml')"
-            label="Sign in with SAML SSO"
-            icon="pi pi-id-card"
-            @click="signIn('saml')"
+            v-if="drivers.includes('rauthy')"
+            label="Sign in with SSO"
+            icon="pi pi-sign-in"
+            @click="signIn('rauthy')"
           />
 
           <Message

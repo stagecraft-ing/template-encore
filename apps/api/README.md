@@ -12,7 +12,7 @@ its own `package-lock.json`). Authoritative specs: `specs/001-encore-app-archite
 | `lib` | No endpoints; `secret()` declarations, shared middleware, security primitives. |
 | `db` | No endpoints; the single `SQLDatabase("app")` and its migrations. |
 | `health` | Liveness/readiness probes, `/api/v1/info`, `/api/v1/csp-report`. |
-| `auth` | `authHandler` + `Gateway`, multi-driver SSO (mock/entra-id/saml), JWT lifecycle. |
+| `auth` | `authHandler` + `Gateway`, multi-driver SSO (mock/rauthy), JWT lifecycle. |
 | `gateway` | BFF proxy: `api.raw` catch-all `/api/v1/data/*` to the private backend. |
 | `web` | Static SPA serving via `api.static`. |
 

@@ -1,13 +1,21 @@
 /**
- * Microsoft Entra ID (OIDC) driver, single-tenant with a tenant (tid) guard,
- * built on openid-client v6 (authorization code + PKCE). Stateless: the state,
- * PKCE verifier, and nonce ride a short-lived httpOnly cookie across the redirect.
- * Config-gated (INV-9): unavailable unless tenant, client id, and secret are set.
+ * rauthy (OIDC) driver built on openid-client v6 (authorization code + PKCE).
+ * rauthy is a self-hosted OpenID Connect provider; the issuer is discovered from
+ * RAUTHY_ISSUER (.well-known/openid-configuration), so no provider URLs are
+ * hard-coded. Stateless: the state, PKCE verifier, and nonce ride a short-lived
+ * httpOnly cookie across the redirect. Config-gated (INV-9): unavailable unless
+ * issuer, client id, and secret are set.
+ *
+ * rauthy emits `roles` on every token and `groups` when the `groups` scope is
+ * requested, so roles are taken first, then groups, then RAUTHY_DEFAULT_ROLE.
+ * rauthy signs tokens with EdDSA by default (RS256 is also selectable per
+ * client); openid-client negotiates the algorithm advertised by discovery, so
+ * either works without code changes.
  */
 import { api } from "encore.dev/api";
 import * as client from "openid-client";
 import { env } from "../lib/env";
-import { entraClientSecret } from "../lib/secrets";
+import { rauthyClientSecret } from "../lib/secrets";
 import { authCookieOptions } from "../lib/cookie-config";
 import { parseCookies, serializeCookie } from "../lib/cookies";
 import { finalizeLogin, frontendUrl } from "./service";
@@ -15,39 +23,33 @@ import { clientIp, redirect, requestUrl, userAgent } from "./http";
 import type { SSOProfile } from "./types";
 
 const OIDC_TX_COOKIE = "oidc_tx";
-const SCOPE = "openid profile email";
 
-export function isEntraConfigured(): boolean {
-  return Boolean(env.entraTenantId && env.entraClientId && entraClientSecret());
-}
-
-function issuerUrl(): URL {
-  return new URL(`https://login.microsoftonline.com/${env.entraTenantId}/v2.0`);
+export function isRauthyConfigured(): boolean {
+  return Boolean(env.rauthyIssuer && env.rauthyClientId && rauthyClientSecret());
 }
 
 function getConfig(): Promise<client.Configuration> {
-  return client.discovery(issuerUrl(), env.entraClientId!, entraClientSecret());
+  return client.discovery(new URL(env.rauthyIssuer!), env.rauthyClientId!, rauthyClientSecret());
 }
 
 function profileFromClaims(claims: Record<string, unknown>): SSOProfile {
   const rolesClaim = claims["roles"] ?? claims["groups"];
-  const roles = Array.isArray(rolesClaim) ? (rolesClaim as unknown[]).map(String) : [env.entraDefaultRole];
-  const email = (claims["preferred_username"] as string) ?? (claims["email"] as string) ?? "";
+  const roles = Array.isArray(rolesClaim) ? (rolesClaim as unknown[]).map(String) : [env.rauthyDefaultRole];
+  const email = (claims["email"] as string) ?? (claims["preferred_username"] as string) ?? "";
   const name = (claims["name"] as string) ?? email;
   return {
-    ssoProvider: "entra-id",
+    ssoProvider: "rauthy",
     ssoProviderId: (claims["sub"] as string) ?? "",
     email,
     name,
-    roles: roles.length ? roles : [env.entraDefaultRole],
-    attributes: { tid: claims["tid"] },
+    roles: roles.length ? roles : [env.rauthyDefaultRole],
   };
 }
 
-export const entraLogin = api.raw(
-  { expose: true, method: "GET", path: "/api/v1/auth/entra-id/login" },
+export const rauthyLogin = api.raw(
+  { expose: true, method: "GET", path: "/api/v1/auth/rauthy/login" },
   async (_req, res) => {
-    if (!isEntraConfigured()) {
+    if (!isRauthyConfigured()) {
       res.statusCode = 404;
       res.end();
       return;
@@ -59,8 +61,8 @@ export const entraLogin = api.raw(
     const nonce = client.randomNonce();
 
     const url = client.buildAuthorizationUrl(config, {
-      redirect_uri: env.entraRedirectUri,
-      scope: SCOPE,
+      redirect_uri: env.rauthyRedirectUri,
+      scope: env.rauthyScopes,
       response_type: "code",
       state,
       nonce,
@@ -74,10 +76,10 @@ export const entraLogin = api.raw(
   },
 );
 
-export const entraCallback = api.raw(
-  { expose: true, method: "GET", path: "/api/v1/auth/entra-id/callback" },
+export const rauthyCallback = api.raw(
+  { expose: true, method: "GET", path: "/api/v1/auth/rauthy/callback" },
   async (req, res) => {
-    if (!isEntraConfigured()) {
+    if (!isRauthyConfigured()) {
       res.statusCode = 404;
       res.end();
       return;
@@ -94,7 +96,7 @@ export const entraCallback = api.raw(
     ) as { state: string; verifier: string; nonce: string };
 
     const config = await getConfig();
-    const currentUrl = new URL(env.entraRedirectUri);
+    const currentUrl = new URL(env.rauthyRedirectUri);
     currentUrl.search = requestUrl(req).search;
 
     const tokens = await client.authorizationCodeGrant(config, currentUrl, {
@@ -106,11 +108,6 @@ export const entraCallback = api.raw(
     if (!claims) {
       res.statusCode = 401;
       res.end("no id token");
-      return;
-    }
-    if (typeof claims.tid === "string" && claims.tid !== env.entraTenantId) {
-      res.statusCode = 401;
-      res.end("tenant mismatch");
       return;
     }
 

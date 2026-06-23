@@ -13,8 +13,7 @@ describe("csrf double-submit (INV-4)", () => {
   });
 
   it("exempts SSO callbacks, refresh, and safe methods only", () => {
-    expect(isCsrfExempt("POST", "/api/v1/auth/saml/callback")).toBe(true);
-    expect(isCsrfExempt("GET", "/api/v1/auth/entra-id/callback")).toBe(true);
+    expect(isCsrfExempt("GET", "/api/v1/auth/rauthy/callback")).toBe(true);
     expect(isCsrfExempt("POST", "/api/v1/auth/refresh")).toBe(true);
     expect(isCsrfExempt("GET", "/api/v1/auth/me")).toBe(true);
     expect(isCsrfExempt("POST", "/api/v1/auth/logout")).toBe(false);

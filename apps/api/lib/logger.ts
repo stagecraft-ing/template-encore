@@ -29,7 +29,6 @@ const PII_KEYS = new Set([
   "useragent",
   "attributes",
   "assertion",
-  "samlresponse",
   "code",
 ]);
 

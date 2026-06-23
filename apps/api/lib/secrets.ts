@@ -15,8 +15,7 @@ const jwtRefreshPrivateKey = secret("JWT_REFRESH_PRIVATE_KEY");
 const jwtRefreshPublicKey = secret("JWT_REFRESH_PUBLIC_KEY");
 
 // Driver and gateway secrets (read directly where needed).
-export const entraClientSecret = secret("ENTRA_CLIENT_SECRET");
-export const samlIdpCert = secret("SAML_IDP_CERT");
+export const rauthyClientSecret = secret("RAUTHY_CLIENT_SECRET");
 export const gatewayOAuthClientSecret = secret("GATEWAY_OAUTH_CLIENT_SECRET");
 
 const keysDir = join(dirname(fileURLToPath(import.meta.url)), "..", "keys");

@@ -9,14 +9,12 @@ import { parseCookies } from "../lib/cookies";
 import { verifyAccessToken } from "../lib/jwt";
 import { redirect, writeJson } from "./http";
 import { isMockEnabled } from "./mock";
-import { isEntraConfigured } from "./entra-id";
-import { isSamlConfigured } from "./saml";
+import { isRauthyConfigured } from "./rauthy";
 
 export function configuredDrivers(): string[] {
   const drivers: string[] = [];
   if (isMockEnabled()) drivers.push("mock");
-  if (isEntraConfigured()) drivers.push("entra-id");
-  if (isSamlConfigured()) drivers.push("saml");
+  if (isRauthyConfigured()) drivers.push("rauthy");
   return drivers;
 }
 

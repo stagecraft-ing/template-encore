@@ -121,16 +121,13 @@ export namespace auth {
             this.baseClient = baseClient
             this.csrfToken = this.csrfToken.bind(this)
             this.drivers = this.drivers.bind(this)
-            this.entraCallback = this.entraCallback.bind(this)
-            this.entraLogin = this.entraLogin.bind(this)
             this.login = this.login.bind(this)
             this.logout = this.logout.bind(this)
             this.me = this.me.bind(this)
             this.mockLogin = this.mockLogin.bind(this)
+            this.rauthyCallback = this.rauthyCallback.bind(this)
+            this.rauthyLogin = this.rauthyLogin.bind(this)
             this.refresh = this.refresh.bind(this)
-            this.samlCallback = this.samlCallback.bind(this)
-            this.samlLogin = this.samlLogin.bind(this)
-            this.samlMetadata = this.samlMetadata.bind(this)
             this.status = this.status.bind(this)
         }
 
@@ -146,14 +143,6 @@ export namespace auth {
             return await resp.json() as {
     drivers: string[]
 }
-        }
-
-        public async entraCallback(method: "GET", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
-            return this.baseClient.callAPI(method, `/api/v1/auth/entra-id/callback`, body, options)
-        }
-
-        public async entraLogin(method: "GET", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
-            return this.baseClient.callAPI(method, `/api/v1/auth/entra-id/login`, body, options)
         }
 
         /**
@@ -177,20 +166,16 @@ export namespace auth {
             return this.baseClient.callAPI(method, `/api/v1/auth/mock/login`, body, options)
         }
 
+        public async rauthyCallback(method: "GET", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
+            return this.baseClient.callAPI(method, `/api/v1/auth/rauthy/callback`, body, options)
+        }
+
+        public async rauthyLogin(method: "GET", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
+            return this.baseClient.callAPI(method, `/api/v1/auth/rauthy/login`, body, options)
+        }
+
         public async refresh(method: "POST", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
             return this.baseClient.callAPI(method, `/api/v1/auth/refresh`, body, options)
-        }
-
-        public async samlCallback(method: "POST", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
-            return this.baseClient.callAPI(method, `/api/v1/auth/saml/callback`, body, options)
-        }
-
-        public async samlLogin(method: "GET", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
-            return this.baseClient.callAPI(method, `/api/v1/auth/saml/login`, body, options)
-        }
-
-        public async samlMetadata(method: "GET", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
-            return this.baseClient.callAPI(method, `/api/v1/auth/saml/metadata`, body, options)
         }
 
         /**

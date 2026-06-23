@@ -14,7 +14,8 @@ summary: >
   An App-free Claude review of every PR, dispatched from ci.yml and
   required by ci-gate: subscription OAuth token, pinned CLI version, diff
   over stdin, no ANTHROPIC_API_KEY, no exit-code swallowing, and a visible
-  skip comment when the diff exceeds the size budget.
+  skip comment when the diff exceeds the size budget. A Claude API outage
+  passes ci-gate with a visible notice while an auth failure still hard-fails.
 establishes:
   - ".github/workflows/ai-pr-review.yml"
 ---
@@ -103,6 +104,26 @@ responder is the GitHub App's responsibility and has no clean App-free CLI
 equivalent. PR review is the portable subset that runs without any org-admin
 action.
 
+### FR-06: API-failure resilience (pass visibly, never silently)
+
+A Claude API outage MUST NOT red-gate merges, but a pass MUST NEVER be silent.
+The review step MUST classify a non-zero `claude` exit rather than fail blindly:
+
+- An unset `CLAUDE_CODE_OAUTH_TOKEN` (FR-01) remains a hard failure.
+- An auth or permission error (`authentication_error`, `permission_error`,
+  401/403, an invalid/expired/revoked token) MUST hard-fail: a broken token
+  must be fixed, not masked. This preserves the FR-01 anti-silent-green guard.
+- Any other failure (`overloaded_error`, `rate_limit_error`, 5xx, timeout,
+  network, unclassified) MUST pass `ci-gate` with a loud `::warning::` AND a
+  visible PR comment stating the review could not run and why. The pass is
+  visible (a comment is posted), never silent, the same posture as the
+  oversized-diff skip (FR-02).
+
+The step writes `review_status` (`ok` / `api_failure`) to `$GITHUB_OUTPUT`. The
+"Post review comment" step runs only when `review_status == 'ok'`; a dedicated
+"Post API-failure notice" step posts the visible-skip comment when
+`review_status == 'api_failure'`.
+
 ## 4. Acceptance criteria
 
 - **AC-1:** `.github/workflows/ai-pr-review.yml` exists, declares
@@ -121,6 +142,10 @@ action.
   `ci-gate` can proceed while leaving a visible audit trail.
 - **AC-6:** `npx spec-spine couple --base origin/main` exits 0 with this spec
   and the updated `ci.yml` in the same diff.
+- **AC-7:** A non-auth `claude` failure (e.g. `overloaded_error`) leaves
+  `ci-gate` green and posts an API-failure notice comment; an
+  `authentication_error` exits non-zero (red). The "Post review comment" step
+  is gated on `review_status == 'ok'`.
 
 ## 5. Out of scope
 

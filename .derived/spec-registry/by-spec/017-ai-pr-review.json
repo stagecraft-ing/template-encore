@@ -30,15 +30,16 @@
       "FR-03: ci-gate membership",
       "FR-04: SHA-pinned action references",
       "FR-05: No interactive mention bot",
+      "FR-06: API-failure resilience (pass visibly, never silently)",
       "4. Acceptance criteria",
       "5. Out of scope",
       "6. Design notes"
     ],
     "specPath": "specs/017-ai-pr-review/spec.md",
     "status": "approved",
-    "summary": "An App-free Claude review of every PR, dispatched from ci.yml and required by ci-gate: subscription OAuth token, pinned CLI version, diff over stdin, no ANTHROPIC_API_KEY, no exit-code swallowing, and a visible skip comment when the diff exceeds the size budget.\n",
+    "summary": "An App-free Claude review of every PR, dispatched from ci.yml and required by ci-gate: subscription OAuth token, pinned CLI version, diff over stdin, no ANTHROPIC_API_KEY, no exit-code swallowing, and a visible skip comment when the diff exceeds the size budget. A Claude API outage passes ci-gate with a visible notice while an auth failure still hard-fails.\n",
     "title": "AI PR review folded into ci-gate"
   },
-  "shardHash": "512e5ac4ff2c6f317c07c3415a9eed3f8f2bb72b2430fe2bc808d1da934336f0",
+  "shardHash": "71ac4820fcc7f2b57fe17a251f026de35948a8e57bcc86228261dc80f4037cab",
   "specVersion": "1.1.0"
 }

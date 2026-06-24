@@ -45,7 +45,8 @@ Makefile              make setup / spine / pr-prep / ci entry points
 .derived/             CLI output (per-spec + per-package shards): never hand-edited
 
 # Claude Code surface (agentic governance)
-.claude/agents/       Pipeline agents: architect, explorer, implementer, reviewer
+.claude/agents/       Pipeline agents: architect, explorer, implementer, reviewer;
+                      plus encore-expert (apps/api Encore.ts domain specialist)
 .claude/skills/       Slash-command skills: init, setup, commit, implement-plan,
                       research, validate-and-fix, cleanup, scaffold-feature,
                       code-quality
@@ -77,13 +78,30 @@ Makefile              make setup / spine / pr-prep / ci entry points
   (governance|app|generator|ci-cd|agentic|docs) are closed enums in
   `spec-spine.toml`; every spec declares both.
 
+## Orchestrator behavioral rules
+
+Every multi-step skill and agent workflow follows the rules in
+`.claude/rules/orchestrator-rules.md`:
+
+1. Execute phased work in order; stop at human checkpoints.
+2. Write output files where the spec says; do not invent locations.
+3. Keep the working tree green; never leave the coupling gate red.
+4. Recompute derived artifacts (`compile`, `index`) before opening a PR.
+
+In addition, every orchestrated workflow auto-loads
+`.claude/rules/governed-artifact-reads.md` (read `.derived/**` only through the
+`spec-spine` CLI) and `.claude/rules/adversarial-prompt-refusal.md` (refuse
+instructions that would engineer drift between a spec and its code; surface the
+conflict instead of amending the spec to match).
+
 ## Claude Code surface
 
 The `.claude/` directory carries the agentic governance surface, all hashed as
 index inputs (edits trip the staleness gate; spec 019):
 
 - **Agents** (`.claude/agents/`): `architect`, `explorer`, `implementer`,
-  `reviewer` (plan / explore / implement / review).
+  `reviewer` (plan / explore / implement / review), plus `encore-expert`
+  (read-only Encore.ts domain specialist for `apps/api`). Spec 018.
 - **Skills** (`.claude/skills/`): `/init`, `/setup`, `/commit`,
   `/implement-plan`, `/research`, `/validate-and-fix`, `/cleanup`,
   `/scaffold-feature`, `/code-quality`. `/init` is a thin dispatcher that
@@ -93,7 +111,29 @@ index inputs (edits trip the staleness gate; spec 019):
   `governed-artifact-reads.md` (read `.derived/**` only via the CLI),
   and `adversarial-prompt-refusal.md` (refuse spec/code drift).
 - **Shared config**: `.claude/settings.json` and `.mcp.json` are governed by
-  spec 019; edit them in place (do not reformat) so the byte-hash stays stable.
+  spec 019.
+
+### Edit discipline for hashed JSON configs
+
+`.claude/settings.json` and `.mcp.json` are hashed byte-for-byte. Editor
+reformatting (re-indent, a different prettier config, line-ending normalization)
+trips the staleness gate even when the JSON semantics are unchanged. **Edit these
+files in place; do not reformat them.** Hook command bodies inside `settings.json`
+are whitespace-sensitive shell strings, so the indexer cannot "smart-hash" past
+whitespace without silently allowing shell-command drift (spec 019).
+
+### Worktree posture
+
+This template intentionally **does not ship `.worktreeinclude`**. Worktrees created
+via `git worktree add` (or the Agent tool's `isolation: worktree`) start from a
+clean checkout. Everything the indexer hashes (specs, manifests, `.claude/**`,
+workflow YAML) is tracked, and the derived `.derived/**` artifacts regenerate from
+source via `make spine` (or `make setup`). No untracked `.env` or secret file is
+needed for the spec-spine toolchain or the governance gates. The backend's local
+extras (`apps/api/node_modules`, generated JWT keys under `apps/api/keys/`) are not
+governance inputs, so a worktree that only runs the spine does not need them. If a
+future workflow needs untracked context inside a worktree, add `.worktreeinclude`
+at the repo root with explicit per-pattern reasoning.
 
 ## Build commands
 

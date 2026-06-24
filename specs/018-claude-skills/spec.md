@@ -15,7 +15,8 @@ summary: >
   commit, implement-plan, research, validate-and-fix, cleanup,
   scaffold-feature, code-quality), four
   pipeline agents under .claude/agents/ (architect, explorer, implementer,
-  reviewer), and the frontmatter schemas that govern their shape. Skills
+  reviewer) plus the encore-expert domain specialist, and the frontmatter
+  schemas that govern their shape. Skills
   perform all governed reads through the spec-spine CLI; the whole surface
   is a hashed index input, so quiet edits trip the staleness gate.
 establishes:
@@ -31,7 +32,7 @@ establishes:
 
 The agentic surface of this template is the set of Claude Code skills and
 pipeline agents that automate governed development workflows. Nine skills
-under `.claude/skills/` and four agents under `.claude/agents/` form the
+under `.claude/skills/` and five agents under `.claude/agents/` form the
 primary interaction layer for humans and automated pipelines alike. Their
 shape is governed by two JSON Schema files. Because `.claude/**` is listed
 in `spec-spine.toml`'s `[index] extra_hashed_inputs`, any quiet edit to a
@@ -78,8 +79,8 @@ MUST return at least one match.
 
 ### 3.2 Agent surface
 
-**FR-04**: Four pipeline agents MUST exist under `.claude/agents/`, each as a
-`<name>.md` file:
+**FR-04**: Five agents MUST exist under `.claude/agents/`, each as a
+`<name>.md` file: four pipeline agents plus one domain specialist.
 
 | Agent | Role |
 |-------|------|
@@ -87,6 +88,7 @@ MUST return at least one match.
 | `explorer` | Reads and summarises repository structure, spec coverage, and test surfaces without making changes. |
 | `implementer` | Applies a plan produced by the architect agent, making minimal, correct code changes and verifying each step. |
 | `reviewer` | Reviews changes for spec fidelity, security invariant compliance, and coupling-gate cleanliness. |
+| `encore-expert` | Read-only Encore.ts domain specialist for `apps/api`: grounds endpoint, service, auth, and migration work in the security invariants (spec 002) and the auth/BFF contracts (specs 003 and 004). |
 
 **FR-05**: Agent bodies MUST declare their role, input contract, output
 contract, and any tool restrictions in their frontmatter or opening section.
@@ -119,8 +121,9 @@ block the PR.
 - **AC-1:** `ls .claude/skills/` lists exactly the nine skill directories:
   `init`, `setup`, `commit`, `implement-plan`, `research`, `validate-and-fix`,
   `cleanup`, `scaffold-feature`, `code-quality`. Each contains a `SKILL.md`.
-- **AC-2:** `ls .claude/agents/` lists exactly the four agent files:
-  `architect.md`, `explorer.md`, `implementer.md`, `reviewer.md`.
+- **AC-2:** `ls .claude/agents/` lists exactly the five agent files:
+  `architect.md`, `explorer.md`, `implementer.md`, `reviewer.md`,
+  `encore-expert.md`.
 - **AC-3:** `wc -l .claude/skills/init/SKILL.md` returns a count under 30.
   `grep -F "AGENTS.md" .claude/skills/init/SKILL.md` returns at least one match.
 - **AC-4:** `grep -rEl "jq |python3? " .claude/skills/ | xargs -r grep -l ".derived/"`

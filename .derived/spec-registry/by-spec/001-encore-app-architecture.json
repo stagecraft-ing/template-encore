@@ -75,6 +75,6 @@
     "summary": "The backend is a standalone Encore.ts application at apps/api — deliberately outside the npm workspace — decomposed into lib, db, health, auth, gateway, and web services. Locked decisions: stateless RS256 JWT, a single SQLDatabase(\"app\"), /api/v1 path prefix, port 4000, global_cors, and `encore build docker --base` for container images.\n",
     "title": "Encore.ts application architecture: standalone apps/api and service decomposition"
   },
-  "shardHash": "56c2b826ae11559a614ac31a4bd2e1e22d31daeaf32645a062f7d0fb1d1a54f5",
+  "shardHash": "a4e8c53d8b3ece58d2383311d3ec38542eace6408031aeeb7ed5a03177965f53",
   "specVersion": "1.1.0"
 }

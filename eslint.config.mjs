@@ -13,7 +13,6 @@ export default tseslint.config(
       '**/*.config.js',
       '**/*.config.ts',
       '**/*.config.mjs',
-      'modules/**',
       'artifacts/**', // business input artifacts used by AI skills in consuming projects — not lintable source
       '**/*.min.js',
       '**/*.min.css',
@@ -36,7 +35,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['scripts/*.ts', 'scripts/lib/*.ts', 'scripts/lib/__fixtures__/*.ts', 'scripts/integration/*.ts'],
+          allowDefaultProject: [],
           maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 30,
         },
         tsconfigRootDir: import.meta.dirname,
@@ -100,7 +99,7 @@ export default tseslint.config(
 
   // CLI scripts (.ts) — allow console.log, relax type-checked rules for JSON parsing
   {
-    files: ['scripts/**/*.ts', 'apps/api/scripts/**/*.ts'],
+    files: ['apps/api/scripts/**/*.ts'],
     rules: {
       'no-console': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -120,7 +119,7 @@ export default tseslint.config(
   // which is only configured for .ts and .vue files.  Without this override,
   // ESLint errors with "requires type information" on CI (Linux) even though
   // the rule cannot meaningfully apply to plain JS files.
-  // Node globals declared for scripts/ which run in Node.js.
+  // Node globals declared for apps/api/scripts/ which run in Node.js.
   {
     files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
     ...tseslint.configs.disableTypeChecked,

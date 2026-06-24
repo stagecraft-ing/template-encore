@@ -1,13 +1,11 @@
 ---
-id: template-code-quality
-name: Template Code Quality: ESLint & TypeScript Rules
-description: Human-readable translation of eslint.config.mjs and tsconfig strict rules into generation-time constraints. Load this skill before writing any code in Phase 4a or 4b.
-type: skill
+name: code-quality
+description: Human-readable translation of eslint.config.mjs and tsconfig strict rules into generation-time constraints for Vue + Encore code. Read before writing any feature code.
 ---
 
-# Template Skill: Code Quality (Lint & TypeScript)
+# Skill: Code Quality (Lint & TypeScript)
 
-> **When to load**: Before writing any code in Phase 4a (API) or Phase 4b (UI). This skill is a mandatory pre-read: not a post-hoc validation reference.
+> **When to load**: before writing any feature code (API or UI). This skill is a mandatory pre-read: not a post-hoc validation reference.
 >
 > **Also read the live config**: Open `eslint.config.mjs` (project root) alongside this skill. This document is a curated summary of the rules that most frequently break AI-generated code; the live config is the authoritative source of truth. If a rule exists in the config but is not listed here, the config wins.
 
@@ -29,8 +27,8 @@ The project uses ESLint 9 flat config (`eslint.config.mjs`) with `typescript-esl
 | `await-thenable` | `await` on a non-Promise value | Only `await` actual Promises. Check return types before adding `await` |
 | `no-useless-escape` | Escaping a character that has no special meaning in context: most commonly `\[` inside a regex character class `[...]` | Inside `[...]`, only `]`, `\`, `^` (at start), and `-` (between chars) are special. Write `/[[\]]/` not `/[\[\]]/` |
 | `no-irregular-whitespace` | A literal invisible Unicode character (U+FEFF BOM, U+200B zero-width space, etc.) embedded directly in regex source, template literals, or comments | Use `\uXXXX` escape sequences. Literal invisible bytes are silently stripped by editors on save: the fix disappears with no visible diff |
-| `no-misleading-character-class` | A regex character class `[...]` containing an invisible, zero-width, or multi-code-unit character written as a literal byte | Same fix: use `\uXXXX` inside character classes. `/[\uFEFF]/` is correct; a literal BOM byte inside `[...]` is both misleading and editor-fragile |
-| `no-console` | `console.log()` in source files | Use `logger` from `encore.dev/log` in Encore services, or the project logger in SPA code. `console.log` is only allowed in `scripts/` and test files |
+| `no-misleading-character-class` | A regex character class `[...]` containing an invisible, zero-width, or multi-code-unit character written as a literal byte | Same fix: use `\uXXXX` inside character classes. `/[﻿]/` is correct; a literal BOM byte inside `[...]` is both misleading and editor-fragile |
+| `no-console` | `console.log()` in source files | Use `logger` from `encore.dev/log` in Encore services, or the project logger in SPA code. `console.log` is only allowed in `apps/api/scripts/` and test files |
 | `no-empty-object-type` | `interface Foo extends Bar {}` with no new members | Use `type Foo = Bar` (type alias) when extending without adding fields. Only use `interface extends` when the derived type introduces new properties |
 | `no-unsafe-assignment` / `no-unsafe-member-access` / `no-unsafe-argument` | Propagating `any` through assignments, property access, or function args | Cast to `unknown` at the boundary and narrow explicitly before use (see Section 3) |
 | `no-base-to-string` | `String(x)` or `${x}` where `x: unknown`: runtime may produce `[object Object]` | Use `safeToString(x)` or narrow by type before converting. Never call `String()` on `unknown` directly |
@@ -165,7 +163,7 @@ if (err instanceof APIError) {
 export const listUsers = api(
   { expose: true, auth: true, method: 'GET', path: '/api/v1/users' },
   async (): Promise<ListResponse> => {
-    const auth = getAuthData()!   // ← ! is correct; not a lint violation here
+    const auth = getAuthData()!   // <- ! is correct; not a lint violation here
     requireRole(auth.roles, 'admin')
     // ...
   },
@@ -206,8 +204,8 @@ const stripped = csv.replace(/^<invisible>/, '')      // no-irregular-whitespace
 const noBom    = text.replace(/[<invisible>]/, '')    // no-misleading-character-class fires too
 
 // DO: use the \uXXXX escape sequence: always visible, never stripped by editors
-const stripped = csv.replace(/^\uFEFF/, '')           // BOM strip: correct
-const noBom    = text.replace(/[\uFEFF\uFFFE]/, '')   // character class form: also correct
+const stripped = csv.replace(/^﻿/, '')           // BOM strip: correct
+const noBom    = text.replace(/[﻿￾]/, '')   // character class form: also correct
 ```
 
 > **Rule of thumb**: any regex that matches an invisible or control character must use `\uXXXX`.
@@ -217,13 +215,13 @@ const noBom    = text.replace(/[\uFEFF\uFFFE]/, '')   // character class form: a
 
 ## 4. Incremental Lint Checks
 
-Do not wait until Phase 6 validation to discover lint errors. Run lint checks incrementally during feature development:
+Do not wait until the final validation pass to discover lint errors. Run lint checks incrementally during feature development:
 
 ```bash
-# After completing each feature's Encore service code (Phase 4a):
+# After completing each feature's Encore service code:
 npx eslint apps/api/<service-name>/ --max-warnings 0
 
-# After completing each feature's UI code (Phase 4b):
+# After completing each feature's UI code:
 npx eslint apps/web/src/views/{Feature}View.vue apps/web/src/stores/{feature}.store.ts --max-warnings 0
 
 # Full lint check at phase boundaries:

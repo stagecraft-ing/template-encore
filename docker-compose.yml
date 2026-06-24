@@ -44,7 +44,7 @@ services:
   # Image built by `npm run build:api` (encore build docker --base apps/api/Dockerfile.base).
   # The single image serves both the Encore API (port 4000) and the built SPA (web service / api.static).
   api:
-    image: ${API_IMAGE:-template-api:latest}
+    image: ${API_IMAGE:-acme-vue-encore-api:latest}
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       AUTH_DRIVER: ${AUTH_DRIVER:-mock}

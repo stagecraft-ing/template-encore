@@ -31,7 +31,7 @@ memory: project
 | Spec Spine | `specs/` | Frontmatter grammar, ownership edges, cross-spec references |
 | Standards | `standards/` | Constitution/contract fidelity, template stability |
 | Application | `apps/api/`, `apps/web/`, `apps/web-internal/` | Correctness, security (INV-1 – INV-11, spec 002), API contracts |
-| Generator + modules | `scripts/`, `modules/`, `packages/` | Manifest schema conformance, composition correctness |
+| Libraries | `packages/` | Shared library API stability, type-contract correctness |
 | Compiled artifacts | `.derived/` | Must not be hand-edited — only CLI-generated |
 
 ## Process

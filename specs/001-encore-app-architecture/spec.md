@@ -43,8 +43,8 @@ decomposition, and locked decisions that every downstream spec builds against.
 ## 2. Territory
 
 This spec owns the root application scaffold — the Encore manifest, build
-configuration, environment template, Docker files, generator scripts, and
-the `health` service. The security primitives and persistence schema are
+configuration, environment template, Docker files, the app's helper
+scripts (`apps/api/scripts/`), and the `health` service. The security primitives and persistence schema are
 owned by spec `002-security-data-invariants`. The `auth` and `gateway`
 services are owned by specs `003-multi-driver-auth-service` and
 `004-bff-gateway-proxy` respectively.
@@ -158,4 +158,3 @@ couple --base origin/main`).
 - The security primitives (`lib/`) and persistence schema (`db/`) — see spec `002`.
 - CI/CD workflows — see specs `011`, `013`, `014`.
 - The SPA applications (`apps/web`, `apps/web-internal`) — unchanged by this spec.
-- Generator scripts (`scripts/setup-app.ts`) — see spec `008`.

@@ -1,7 +1,7 @@
 {
-  "name": "vue-encore-enterprise-template",
+  "name": "acme-vue-encore",
   "version": "1.0.0",
-  "description": "Enterprise application template: Vue 3 (PrimeVue) SPA + Encore.ts backend with rauthy OIDC authentication, TypeScript, and Docker",
+  "description": "acme-vue-encore: a runnable Vue 3 (PrimeVue) SPA + Encore.ts backend reference app with rauthy OIDC authentication, TypeScript, and Docker",
   "private": true,
   "author": "Stagecraft",
   "license": "Apache-2.0",
@@ -26,10 +26,7 @@
     "pretest": "npm run clean:build && npm run build:packages",
     "test": "npm run test --workspaces --if-present",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test",
-    "test:integration": "vitest run --config tests/integration/vitest.config.ts",
-    "test:modules": "vitest run --config scripts/vitest.config.ts",
-    "lint": "eslint . --max-warnings 0",
+    "test:e2e": "playwright test",    "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,tsx,vue,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,vue,json,md,yml,yaml}\"",
@@ -89,7 +86,7 @@
     "npm": ">=10.0.0"
   },
   "keywords": [
-    "enterprise-template",
+    "reference-app",
     "primevue",
     "vue3",
     "typescript",

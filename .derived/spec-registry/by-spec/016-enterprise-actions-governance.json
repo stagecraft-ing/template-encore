@@ -47,6 +47,6 @@
     "summary": "The enterprise (EMU) constraint set for GitHub Actions: only allow-listed publishers may execute, so workflows route changes with inline git diff instead of third-party filter actions; every permitted third-party ref is SHA-pinned; the merge_group trigger ships inert until a repo admin enables the merge queue.\n",
     "title": "Enterprise Actions governance: the GitHub Actions allow-list, inline change-routing, and the merge queue"
   },
-  "shardHash": "76b54f7ff5802272fbfd7200d087ead07b5b053729a25100bf58d61037f717ed",
+  "shardHash": "70e5c7933c3cffb3b78515de2e407f8fcdf59feb6ea2dde8d2440f139defe63e",
   "specVersion": "1.1.0"
 }

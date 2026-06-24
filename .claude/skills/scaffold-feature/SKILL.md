@@ -1,64 +1,46 @@
 ---
-id: template-scaffold-feature
-name: Template Scaffold Feature: Build a New Feature
-description: Builds one new API and/or Vue feature into the template following established Encore patterns, variant-aware for public, internal, or dual stack
-type: skill
-variant_parameter: public | internal | dual
-defers_to:
-  - template-orchestrator (implementation patterns, code examples)
-  - api-web-standards (enterprise web API standards: read for compliance)
-  - api-rest-standards (REST design standards: read for compliance)
-  - api-security (API security standards: read for compliance)
-  - ci-design-system (PrimeVue design system guidance: read for UI compliance)
-  - ci-page-form (form page UX rules: pageType: form, form-section)
-  - ci-page-list (list page UX rules: pageType: list, admin queues, report tables)
-  - ci-page-detail (detail page UX rules: pageType: detail, admin detail records)
-  - ci-page-dashboard (dashboard page UX rules: pageType: dashboard, report summaries)
-  - ci-page-landing (landing page UX rules: pageType: landing)
-  - ci-page-content (content page UX rules: pageType: content, informational, document)
-  - ci-page-help (help page UX rules: pageType: help)
+name: scaffold-feature
+description: Build one new Vue + Encore feature (API service and/or Vue view) following the template's established Encore.ts, Pinia, and PrimeVue patterns, with tests written alongside.
 ---
 
-# Template Skill: Scaffold Feature
+# Skill: Scaffold Feature
 
-Build one new feature following established Encore template patterns. This skill is invoked once per feature, in one of two modes:
+Build one new feature following established Encore template patterns. This skill covers:
 
-- **API mode** (Phase 4a): invoked for API work only: execute Sections A and F1/F2. Skip Sections B/C/D.
-- **UI mode** (Phase 4b): invoked for UI work only: execute Sections B, C, F3, F4. Skip Section A.
+- **API side**: Encore service directory (Section A + F1/F2)
+- **UI side**: Vue view, Pinia store, router, and nav (Sections B/C + F3/F4)
+- **Both**: execute all sections that apply
 
-The orchestrator always separates API work (Phase 4a) from UI work (Phase 4b).
+You can build the API side, the UI side, or both in a single invocation. Identify the sections to execute based on what is needed.
 
-**Input**: Feature name + mode (`api` | `ui`) + variant + feature spec from the Phase 4a Feature Plan.
+**Input**: Feature name, which targets to build (api | ui | both), and any relevant requirements.
 
 ---
 
 ## Before You Start
 
-1. Confirm the **mode** for this invocation (api or ui).
+1. Confirm which targets this feature touches:
+   - Backend code goes in `apps/api/<service>/`
+   - Public SPA code goes in `apps/web/src/`
+   - Staff SPA code goes in `apps/web-internal/src/`
 
-2. Confirm the variant and which app(s) this feature targets:
+   The repository has three targets: `apps/api` (Encore backend), `apps/web` (public SPA), and `apps/web-internal` (staff SPA). A feature may touch one, two, or all three.
 
-| Variant | Encore App | Web App(s) |
-|---------|-----------|------------|
-| public | `apps/api` | `apps/web` |
-| internal | `apps/api` | `apps/web` |
-| dual | Two independent Encore apps | `apps/web` (public) and/or `apps/web-internal` (staff) |
+2. Read `CODEMAP.md` to confirm current patterns.
 
-3. Read `CODEMAP.md` to confirm current patterns.
-
-4. Identify the section to execute based on mode:
-   - **api mode** → Section A (service directory), then F1/F2 (tests)
-   - **ui mode** → Section B (view), C (shared types), then F3/F4 (tests)
-   - **Shared type or schema only** → Section C
-   - **Composable or utility** → Section D
+3. Identify the sections to execute:
+   - **API work** -> Section A (service directory), then F1/F2 (tests)
+   - **UI work** -> Section B (view), C (shared types), then F3/F4 (tests)
+   - **Shared type or schema only** -> Section C
+   - **Composable or utility** -> Section D
 
 ---
 
 ## Section A: API Feature (Backend: Encore service directory)
 
-**Target**: `apps/api/<service-name>/` (single-stack) or the correct dual-stack Encore app's service directory
+**Target**: `apps/api/<service-name>/`
 
-> **Pre-generation quality gate**: before writing any code, load `ref:template-code-quality` if not already loaded. Key rules for Encore service code: `await` every async call (`no-floating-promises`), no `any` types, use `logger` not `console.log`, guard array access with `?.` or null checks.
+> **Pre-generation quality gate**: before writing any code, follow the code-quality skill if not already read. Key rules for Encore service code: `await` every async call (`no-floating-promises`), no `any` types, use `logger` not `console.log`, guard array access with `?.` or null checks.
 
 **The unit of composition in Encore is a service directory.** A new feature = a new directory containing `encore.service.ts` (service declaration + middleware) + endpoint files (`api()` / `api.raw()`) + `model.ts` (tagged-template queries) + `types.ts`. Encore discovers it automatically; register nothing in `app.ts` (there is no `app.ts`).
 
@@ -322,9 +304,9 @@ If the project maintains an OpenAPI spec (`apps/api/openapi.yaml`), update it fo
 
 ## Section B: Vue Feature (Frontend)
 
-**Target**: `apps/web/src/` (single-stack) or `apps/web/src/` (public dual) / `apps/web-internal/src/` (staff dual)
+**Target**: `apps/web/src/` (public SPA) or `apps/web-internal/src/` (staff SPA), or both.
 
-> **Pre-generation quality gate**: load `ref:template-code-quality` before writing any Vue or store code. Key rules: no `any` in stores, `await` every async action, use named slot syntax (`<template #slotName>`) for PrimeVue components such as `Card` (`#title`, `#content`).
+> **Pre-generation quality gate**: follow the code-quality skill before writing any Vue or store code. Key rules: no `any` in stores, `await` every async action, use named slot syntax (`<template #slotName>`) for PrimeVue components such as `Card` (`#title`, `#content`).
 
 ### B1. Create View
 
@@ -363,32 +345,7 @@ onMounted(async () => {
 </template>
 ```
 
-**Page-type UX guidance**: read the content-spec file for this page, then read the matching CI skill. The `viewType` field selects which table below applies. All page implementations use PrimeVue components (per-SFC imports).
-
-**Public-facing pages** (`apps/web` or `apps/web` public dual):
-
-| `pageType` | CI skill |
-|-----------|---------|
-| `form`, `form-section` | `ref:ci-page-form` |
-| `list` | `ref:ci-page-list` |
-| `detail` | `ref:ci-page-detail` |
-| `dashboard` | `ref:ci-page-dashboard` |
-| `landing` | `ref:ci-page-landing` |
-| `content`, `informational` | `ref:ci-page-content` |
-| `help` | `ref:ci-page-help` |
-
-**Internal/authenticated pages** (`apps/web-internal`):
-
-| `pageType` | Spec file |
-|-----------|---------|
-| `dashboard` | `page-type-dashboard.md` |
-| `list` | `page-type-list-index.md` |
-| `detail` | `page-type-detail-view.md` |
-| `form`, `form-section` | `page-type-edit-form.md` |
-| `user-management` | `page-type-user-management.md` |
-| `wizard` | `page-type-wizard.md` |
-
-All internal views render inside the PrimeVue sidebar layout (`AppLayout.vue`). Do NOT add a sidebar or navigation chrome inside individual views: `AppLayout.vue` provides that. Views provide only their page content.
+**Page UX guidance**: views should follow the relevant page's UX conventions and use PrimeVue components (per-SFC imports from `primevue/<component>`). All internal views render inside the PrimeVue sidebar layout (`AppLayout.vue`). Do NOT add a sidebar or navigation chrome inside individual views: `AppLayout.vue` provides that. Views provide only their page content.
 
 **View rules:**
 - `<script setup lang="ts">`: no Options API
@@ -498,11 +455,7 @@ Composables: `use` prefix. Utilities (non-reactive): `src/utils/`.
 
 Tests are written **alongside** the code: not after. A function is not done until its test is written and passing.
 
-**TC-nnn annotation rule**: Annotate each test with the corresponding TC-nnn ID from the Build Specification:
-
-```typescript
-it('returns the feature item list', async () => { // TC-003
-```
+If your project tracks requirement IDs, annotate each test with a stable identifier for that requirement (one line per test is sufficient).
 
 ### F1. Service Tests (Encore endpoints)
 
@@ -535,7 +488,7 @@ beforeEach(() => {
 })
 
 describe('listFeatureNames', () => {
-  it('returns mapped items for admin caller', async () => { // TC-nnn
+  it('returns mapped items for admin caller', async () => {
     vi.mocked(model.listFeatureNames).mockResolvedValueOnce({
       rows: [{ id: 'abc-123', name: 'Test Feature', createdBy: 'user-1', createdAt: '2026-01-01T00:00:00Z' }],
       total: 1,
@@ -634,7 +587,7 @@ vi.mock('axios')
 beforeEach(() => { setActivePinia(createPinia()) })
 
 describe('useFeatureNameStore', () => {
-  it('loads items on fetchAll', async () => { // TC-nnn
+  it('loads items on fetchAll', async () => {
     vi.mocked(axios.get).mockResolvedValueOnce({
       data: { items: [{ id: '1', name: 'Test' }], total: 1 }
     })
@@ -665,7 +618,7 @@ import { createTestingPinia } from '@pinia/testing'
 import FeatureNameView from './FeatureNameView.vue'
 
 describe('FeatureNameView', () => {
-  it('renders the page heading', () => { // TC-nnn
+  it('renders the page heading', () => {
     const wrapper = mount(FeatureNameView, {
       global: { plugins: [createTestingPinia()] },
     })
@@ -690,7 +643,7 @@ describe('FeatureNameView', () => {
 import { test, expect } from '@playwright/test'
 
 test.describe('Feature Use Case Flow', () => {
-  test('user completes the flow', async ({ page }) => { // UC-nnn
+  test('user completes the flow', async ({ page }) => {
     await page.goto('/')
     await page.click('[data-testid="nav-feature-name"]')
     await expect(page).toHaveURL('/feature-path')
@@ -825,4 +778,4 @@ All three MUST pass before moving to the next feature.
 
 ---
 
-**Report**: "Feature '{name}' scaffolded for {variant} variant. Files created: [list]. Checklist: [status]."
+**Report**: "Feature '{name}' scaffolded. Files created: [list]. Checklist: [status]."

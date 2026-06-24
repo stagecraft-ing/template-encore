@@ -1,13 +1,12 @@
-# CLAUDE.md: Vue + Encore Enterprise Template (spec-governed)
+# CLAUDE.md: acme-vue-encore (spec-governed)
 
 ## Project Overview
 
-This repository is the **Stagecraft enterprise application template**
-(`vue-encore-enterprise-template`): a Vue 3 SPA + Encore.ts backend for
-enterprise web applications, external- and staff-facing. It is a
-**pristine, spec-governed template**: every substantive change begins as a
-markdown spec, compiles into a deterministic JSON registry, and is mechanically
-reconciled against the code that claims to implement it.
+This repository is **`acme-vue-encore`**: a lean, runnable Vue 3 (PrimeVue)
+SPA + Encore.ts backend reference app, external- and staff-facing, plus a
+born-with spec-spine dev harness. It is **spec-governed**: every substantive
+change begins as a markdown spec, compiles into a deterministic JSON registry,
+and is mechanically reconciled against the code that claims to implement it.
 
 Governance is provided by the published
 [`spec-spine`](https://www.npmjs.com/package/spec-spine) npm package (root
@@ -28,16 +27,12 @@ things together make the spine:
 ## Repository Structure
 
 ```
-# Application (the template: the product being scaffolded)
+# Application (the runnable reference app)
 apps/                 Deployable apps: api (Encore.ts), web, web-internal
 packages/             Reusable libraries: @template/shared
-modules/              Template feature units (manifest + files/, copied on install)
-orchestration/        Template orchestrator + skill docs (markdown)
-scripts/              Template tooling (setup, add/remove-module, generators)
 docker/               Docker compose for local infrastructure
-docs/                 Application + template documentation
+docs/                 Application documentation
 CODEMAP.md            Authoritative architectural blueprint for the app
-template.json         Template state (installed modules, file ownership)
 
 # Spec spine (governance via the spec-spine npm package)
 specs/                Feature specifications, the authoritative design record
@@ -52,7 +47,8 @@ Makefile              make setup / spine / pr-prep / ci entry points
 # Claude Code surface (agentic governance)
 .claude/agents/       Pipeline agents: architect, explorer, implementer, reviewer
 .claude/skills/       Slash-command skills: init, setup, commit, implement-plan,
-                      research, validate-and-fix, cleanup
+                      research, validate-and-fix, cleanup, scaffold-feature,
+                      code-quality
 .claude/rules/        Auto-loaded rules: orchestrator, governed-reads, adversarial-refusal
 .claude/settings.json Shared permissions (hashed index input; spec 019)
 .mcp.json             Team-shared MCP server config (hashed index input; spec 019)
@@ -89,8 +85,9 @@ index inputs (edits trip the staleness gate; spec 019):
 - **Agents** (`.claude/agents/`): `architect`, `explorer`, `implementer`,
   `reviewer` (plan / explore / implement / review).
 - **Skills** (`.claude/skills/`): `/init`, `/setup`, `/commit`,
-  `/implement-plan`, `/research`, `/validate-and-fix`, `/cleanup`. `/init` is a
-  thin dispatcher that executes `AGENTS.md` New Sessions. Spec 018.
+  `/implement-plan`, `/research`, `/validate-and-fix`, `/cleanup`,
+  `/scaffold-feature`, `/code-quality`. `/init` is a thin dispatcher that
+  executes `AGENTS.md` New Sessions. Spec 018.
 - **Rules** (`.claude/rules/`): three files loaded automatically by every
   orchestrated workflow: `orchestrator-rules.md` (execution discipline),
   `governed-artifact-reads.md` (read `.derived/**` only via the CLI),
@@ -149,5 +146,5 @@ gate: spec_code_coherence
 The application layer's hard invariants are owned by the spec corpus: the
 architecture (spec 001), the eleven security/data invariants INV-1 – INV-11
 (spec 002), multi-driver auth (spec 003), the BFF proxy contract (spec 004),
-and the generator system (specs 007–010). `CODEMAP.md` is the human-shaped
-blueprint derived from those specs (spec 020 governs doc fidelity).
+and SPA static serving (spec 005). `CODEMAP.md` is the human-shaped blueprint
+derived from those specs.

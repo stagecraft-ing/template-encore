@@ -34,7 +34,7 @@ This is a governed monorepo built on the spec spine substrate:
 | Governance CLI | npm `spec-spine` | `npx spec-spine compile/lint/index/couple/registry` |
 | Standards | `standards/` | Constitution, contract, templates, frontmatter schemas |
 | Application | `apps/api/`, `apps/web/`, `apps/web-internal/` | Encore.ts backend + Vue SPAs |
-| Generator | `scripts/`, `modules/`, `packages/` | App generator, feature modules, shared libs |
+| Libraries | `packages/` | Shared TypeScript libraries (`@template/shared`) |
 
 Orchestrator rules are in `.claude/rules/orchestrator-rules.md`. Specs are the source of truth — every feature starts as a spec.
 
@@ -92,7 +92,7 @@ Look for:
 - [ ] Spec Spine — [which specs]
 - [ ] Application client — [which packages/components]
 - [ ] Application server — [which Encore services]
-- [ ] Generator — [scripts / modules / packages]
+- [ ] Libraries: [packages]
 - [ ] Governance — [spec-spine.toml, workflows, Makefile, .claude]
 
 ### Steps

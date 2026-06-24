@@ -11,8 +11,9 @@ implementation: complete
 depends_on: ["000-bootstrap", "019-claude-config-governance"]
 code_aliases: ["CLAUDE_SKILLS"]
 summary: >
-  The agentic surface: seven skills under .claude/skills/ (init, setup,
-  commit, implement-plan, research, validate-and-fix, cleanup), four
+  The agentic surface: nine skills under .claude/skills/ (init, setup,
+  commit, implement-plan, research, validate-and-fix, cleanup,
+  scaffold-feature, code-quality), four
   pipeline agents under .claude/agents/ (architect, explorer, implementer,
   reviewer), and the frontmatter schemas that govern their shape. Skills
   perform all governed reads through the spec-spine CLI; the whole surface
@@ -29,7 +30,7 @@ establishes:
 ## 1. Purpose
 
 The agentic surface of this template is the set of Claude Code skills and
-pipeline agents that automate governed development workflows. Seven skills
+pipeline agents that automate governed development workflows. Nine skills
 under `.claude/skills/` and four agents under `.claude/agents/` form the
 primary interaction layer for humans and automated pipelines alike. Their
 shape is governed by two JSON Schema files. Because `.claude/**` is listed
@@ -50,7 +51,7 @@ agent that opens this repository.
 
 ### 3.1 Skill surface
 
-**FR-01**: Seven skills MUST exist under `.claude/skills/`, each as a
+**FR-01**: Nine skills MUST exist under `.claude/skills/`, each as a
 `<name>/SKILL.md` file:
 
 | Skill | Contract |
@@ -60,8 +61,10 @@ agent that opens this repository.
 | `commit` | Prepares a governed commit: stages changes, runs the pre-commit checks, generates a conventional commit message, and confirms with the user before executing. |
 | `implement-plan` | Generic plan-file executor: reads a plan document, executes each step in order with checkpoint confirmations, and writes a structured completion report. |
 | `research` | Parallel-research orchestrator: dispatches concurrent sub-agent reads via the Task tool, collects results into a filesystem artifact, and surfaces a structured findings report. |
-| `validate-and-fix` | Operates on the npm/TypeScript surface: runs `npm test`, `npm run typecheck`, `encore check`, and `npx spec-spine couple --base origin/main` in sequence, surfaces every failure, and iterates fixes until the suite is green or a human decision is required. |
+| `validate-and-fix` | Operates on the npm/TypeScript surface: runs `npm test`, `npm run typecheck`, `encore check`, and `npx spec-spine couple --base origin/main` in sequence, surfaces every failure, and iterates fixes until the suite is green or a human decision is required. It also carries the product's born-with quality checklist (checks 0–15). |
 | `cleanup` | Dead-code and dependency hygiene over the npm/TypeScript surface: detects unused exports, stale dependencies, and duplicate code across `apps/web`, `apps/web-internal`, `apps/api`, and `packages/`; degrades gracefully when optional detectors (`knip`, `jscpd`) are absent. |
+| `scaffold-feature` | Build-time guide: scaffolds one new Vue + Encore feature (Encore service directory, endpoints, tagged-template model, migration, Vue view, Pinia store, PrimeVue components, tests written alongside) following the template's established patterns. |
+| `code-quality` | Authoring-time constraints: translates `eslint.config.mjs` and tsconfig strict rules into generation-time guidance so generated code passes `npm run lint --max-warnings 0` and strict typecheck on the first pass. |
 
 **FR-02**: Skills MUST perform all governed reads through the spec-spine CLI.
 Direct parsing of `.derived/**/*.json` with `jq`, `python`, `awk`, or similar
@@ -113,9 +116,9 @@ block the PR.
 
 ## 4. Acceptance criteria
 
-- **AC-1:** `ls .claude/skills/` lists exactly the seven skill directories:
+- **AC-1:** `ls .claude/skills/` lists exactly the nine skill directories:
   `init`, `setup`, `commit`, `implement-plan`, `research`, `validate-and-fix`,
-  `cleanup`. Each contains a `SKILL.md`.
+  `cleanup`, `scaffold-feature`, `code-quality`. Each contains a `SKILL.md`.
 - **AC-2:** `ls .claude/agents/` lists exactly the four agent files:
   `architect.md`, `explorer.md`, `implementer.md`, `reviewer.md`.
 - **AC-3:** `wc -l .claude/skills/init/SKILL.md` returns a count under 30.
@@ -138,7 +141,7 @@ block the PR.
   bootstrap scaffold.
 - **`.claude/settings.json` and `.mcp.json`** — owned by spec
   `019-claude-config-governance`.
-- **Adding new skills beyond the seven** — each addition is a change to the
+- **Adding new skills beyond the nine** — each addition is a change to the
   agentic surface and requires touching this spec.
 - **User-scope skill files** (`~/.claude/skills/`) — outside the project surface
   and not governed by this spec.

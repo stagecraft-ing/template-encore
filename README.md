@@ -1,4 +1,4 @@
-# Vue.js + Encore.ts Enterprise Application Template
+# acme-vue-encore
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
 [![Vue 3](https://img.shields.io/badge/Vue-3.5-green)](https://vuejs.org/)
@@ -6,11 +6,12 @@
 [![Node 24](https://img.shields.io/badge/Node-24.x-green)](https://nodejs.org/)
 [![PrimeVue](https://img.shields.io/badge/PrimeVue-4-blue)](https://primevue.org/)
 
-Monorepo template for enterprise applications: public-facing (external user) and internal (staff). An
-**Encore.ts** backend (BFF API gateway, stateless RS256 JWT auth, Postgres) plus two Vue 3 SPAs built on
-PrimeVue, with pluggable authentication (rauthy OIDC, Mock) and TypeScript throughout.
+Runnable reference application: a public-facing SPA and a staff-facing SPA, both backed by a single
+**Encore.ts** service cluster. The backend provides a BFF API gateway, stateless RS256 JWT auth, and
+Postgres persistence. Both Vue 3 frontends are built on PrimeVue with pluggable authentication
+(rauthy OIDC or Mock). TypeScript throughout.
 
-> **Backend = Encore.ts.** The original Express 5 BFF was retired in the Encore migration (specs 001 to 006).
+> **Backend = Encore.ts.** The original Express 5 BFF was retired in the Encore migration (specs 001–006).
 > See [`CODEMAP.md`](CODEMAP.md) for the architectural blueprint and `specs/001-encore-app-architecture` /
 > `specs/002-security-data-invariants` for the authoritative backend specs.
 
@@ -45,27 +46,8 @@ npm run dev
 - **Health**: http://localhost:4000/health
 
 `npm run dev` builds the shared packages, then runs the Encore API (`encore run --port=4000`) and both Vue
-dev servers concurrently. The Vite dev servers proxy `/api/*` to the API on port 4000. Docker must be running
-so Encore can start the local Postgres database.
-
-## Generate a New App
-
-> The app generator (`scripts/setup-app.ts`, `scripts/setup-dual-app.ts`) and the module system now emit
-> **Encore.ts** apps. The generator reconciliation completed in specs 007-010. The commands below produce
-> an Encore-based app.
-
-```bash
-# Public-facing (rauthy OIDC)
-npx tsx scripts/setup-app.ts --profile public --dest ../my-public-app
-
-# Internal/staff (rauthy OIDC)
-npx tsx scripts/setup-app.ts --profile internal --dest ../my-internal-app
-
-# Minimal (mock auth: local dev only)
-npx tsx scripts/setup-app.ts --profile minimal --dest ../my-dev-app
-```
-
-Flags: `--yes` skip prompts · `--dry-run` preview · `--clean` remove template artifacts after setup.
+dev servers concurrently. The Vite dev servers proxy `/api/*` to the API on port 4000. Docker must be
+running so Encore can start the local Postgres database.
 
 ## Commands
 
@@ -74,6 +56,11 @@ Flags: `--yes` skip prompts · `--dry-run` preview · `--clean` remove template 
 npm run dev              # api (Encore :4000) + web + web-internal, concurrently
 npm run dev:api          # Encore API only (encore run --port=4000)
 npm run dev:web          # public SPA only
+
+# Local infrastructure (docker-compose.yml at repo root)
+npm run docker:up        # docker compose up -d
+npm run docker:down      # docker compose down
+npm run docker:logs      # docker compose logs -f
 
 # Build
 npm run build            # shared packages + both SPAs (build:web emits into apps/api/web/build)
@@ -95,13 +82,46 @@ npm run generate-keys    # RSA-2048 JWT signing keys → apps/api/keys/*.pem
 npm run gen:client       # regenerate the typed client → apps/web/src/lib/encore-client.ts
 ```
 
+## Workspace Layout
+
+```
+acme-vue-encore/
+├── apps/api/            Encore.ts backend (auth, db, gateway, health, lib, web services)
+├── apps/web/            Vue 3 + PrimeVue SPA: public/external users
+├── apps/web-internal/   Vue 3 + PrimeVue SPA: internal/staff users
+├── packages/shared/     Types, Zod schemas, constants shared between the SPAs
+├── docker/              Self-host docker-compose + container guide
+├── docs/                Auth, deployment, development, testing, troubleshooting
+└── specs/               Spec spine: design record (000–006, 011–019)
+```
+
+`apps/api` has its own `package-lock.json` and `node_modules`; it is excluded from npm workspaces. The
+SPAs and `packages/shared` are the npm workspace members.
+
+## Spec-Spine Governance
+
+The repo is governed by the [`spec-spine`](https://www.npmjs.com/package/spec-spine) CLI. Every
+substantive change begins as a spec in `specs/NNN-slug/spec.md`, compiled into a deterministic registry
+and reconciled against the code that claims to implement it.
+
+```bash
+make setup        # npm install (pulls the CLI), compile registry + index
+make spine        # all four governance verbs: compile, lint, index check, couple
+make pr-prep      # pre-commit gate: refresh index, run coupling check
+make ci           # local CI loop (spine + lint + typecheck + tests + pins)
+```
+
+Active specs: 000 (bootstrap/governance), 001–006 (architecture, security invariants, auth, BFF, SPA
+serving, client integration), 011–019 (CI/CD, deployment, repo orchestration, supply-chain, workflow
+pins, enterprise actions, AI PR review, Claude skills, Claude config governance).
+
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
 | [CODEMAP.md](CODEMAP.md) | Architecture overview, service graph, security model (start here) |
 | [specs/001-encore-app-architecture](specs/001-encore-app-architecture/spec.md) | Authoritative backend layout + service decomposition |
-| [specs/002-security-data-invariants](specs/002-security-data-invariants/spec.md) | Security/data invariant freeze (INV-1 to INV-11) |
+| [specs/002-security-data-invariants](specs/002-security-data-invariants/spec.md) | Security/data invariant freeze (INV-1 – INV-11) |
 | [docs/AUTH-SETUP.md](docs/AUTH-SETUP.md) | rauthy OIDC and Mock driver configuration |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Building and deploying the Encore app |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Development workflow and conventions |
@@ -109,12 +129,8 @@ npm run gen:client       # regenerate the typed client → apps/web/src/lib/enco
 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common issues and solutions |
 | [PrimeVue documentation](https://primevue.org/) | UI component library (Aura theme) used by both SPAs |
 
-> The generator/module docs ([docs/TEMPLATE-USER-GUIDE.md](docs/TEMPLATE-USER-GUIDE.md),
-> [docs/DUAL-APP-GUIDE.md](docs/DUAL-APP-GUIDE.md), the `MODULARIZATION-*` and `MODULE-DEVELOPMENT-GUIDE`
-> docs) now describe the Encore generator and module system (reconciled in specs 007-010; governed by spec 020).
-
 ## Disclaimer
 
-This template is a foundational framework for accelerating project setup. It has not undergone full
-integration testing or hardening for production deployment. Complete identity provider integration and a
-security review before deploying to production.
+This is a foundational reference application for building enterprise web apps on the Vue 3 + Encore.ts
+stack. It has not undergone full integration testing or hardening for production deployment. Complete
+identity provider integration and a security review before deploying to production.

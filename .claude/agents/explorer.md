@@ -32,7 +32,7 @@ mutation: read-only
 | Governance CLI | npm `spec-spine` | `npx spec-spine compile/lint/index/couple/registry` |
 | Standards | `standards/` | Constitution, contract, templates, frontmatter schemas |
 | Application | `apps/api/`, `apps/web/`, `apps/web-internal/` | Encore.ts backend + Vue SPAs |
-| Generator | `scripts/`, `modules/`, `packages/` | App generator, feature modules, shared libs |
+| Libraries | `packages/` | Shared TypeScript libraries (`@template/shared`) |
 | Compiled artifacts | `.derived/` | per-spec + per-package shards (CLI-emitted; read via `npx spec-spine`) |
 
 Key files: `CLAUDE.md` (conventions), `AGENTS.md` (session protocol), `.claude/rules/orchestrator-rules.md` (behavioral rules).
@@ -97,7 +97,7 @@ Produce a clear, structured answer. Include:
 
 ## Guidelines
 
-- **DO:** Search multiple locations — code may live in apps, packages, scripts, modules, or specs
+- **DO:** Search multiple locations — code may live in apps, packages, or specs
 - **DO:** Check both `package.json` and actual import statements — declared deps may differ from usage
 - **DO:** Include file paths in every finding so the caller can navigate directly
 - **DO:** Note when something is missing or inconsistent (e.g., spec exists but no implementation)

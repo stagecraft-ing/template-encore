@@ -38,6 +38,6 @@
     "summary": "The web service serves the built Vue SPA via api.static at /!path over ./build with history-API fallback to index.html and no auth middleware (static assets must cache normally). apps/web builds into apps/api/web/build; in the dual-app layout the staff SPA (apps/web-internal) builds into the internal app's web service the same way.\n",
     "title": "SPA static serving: Encore api.static serves the Vue bundles with history fallback"
   },
-  "shardHash": "e13fddea1cf26ff9ae820c368f62e8df306fb771cfdf559abbaa282723e2a97c",
+  "shardHash": "5337a5f7daaba4b761a351b7152fc0ce14dd015a4cd3c026ee558693e7a0253d",
   "specVersion": "1.1.0"
 }

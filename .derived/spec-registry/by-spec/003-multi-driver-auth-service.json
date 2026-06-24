@@ -22,7 +22,7 @@
     "owner": "bart",
     "risk": "high",
     "sectionHeadings": [
-      "003 — Multi-driver auth service: Encore authHandler/Gateway, mock/entra-id/saml SSO, JWT issuance and refresh rotation",
+      "003 - Multi-driver auth service: Encore authHandler/Gateway, mock/rauthy OIDC SSO, JWT issuance and refresh rotation",
       "1. Purpose",
       "2. Territory",
       "3. Behavior",
@@ -36,9 +36,9 @@
     ],
     "specPath": "specs/003-multi-driver-auth-service/spec.md",
     "status": "approved",
-    "summary": "The auth service: a dual-mode Encore authHandler (httpOnly session cookie + Bearer), a Gateway binding it, three SSO drivers (mock, entra-id, saml) selected by AUTH_DRIVER, RS256 JWT issuance, refresh-token rotation and revocation, CSRF protection, rate limiting, and auth-event audit.\n",
-    "title": "Multi-driver auth service: Encore authHandler/Gateway, mock/entra-id/saml SSO, JWT issuance and refresh rotation"
+    "summary": "The auth service: a dual-mode Encore authHandler (httpOnly session cookie + Bearer), a Gateway binding it, two SSO drivers (mock, rauthy OIDC) selected by AUTH_DRIVER, RS256 JWT issuance, refresh-token rotation and revocation, CSRF protection, rate limiting, and auth-event audit.\n",
+    "title": "Multi-driver auth service: Encore authHandler/Gateway, mock/rauthy OIDC SSO, JWT issuance and refresh rotation"
   },
-  "shardHash": "4ffb7f63fbd0baafa9ac27b9b58ddf5fe9f81928f4fcc2d084247cf306f0ea3b",
+  "shardHash": "87f967b9868d666431b31353ffd31f2f285e75f5d063427b359c245cd71ba08a",
   "specVersion": "1.1.0"
 }

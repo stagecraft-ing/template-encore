@@ -201,5 +201,5 @@ views of that binding.
 
 - The CLI's own semantics (grammar, lint codes, gate algorithm) — owned by
   the spec-spine project's corpus, versioned by the pinned npm dependency.
-- Application architecture (specs 001–010), delivery pipelines (011–017),
-  the agentic surface (018–019), and doc governance (020).
+- Application architecture and behavior (specs 001–006), delivery pipelines
+  (011–017), and the agentic surface (018–019).

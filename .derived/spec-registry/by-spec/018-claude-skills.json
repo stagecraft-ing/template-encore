@@ -46,9 +46,9 @@
     ],
     "specPath": "specs/018-claude-skills/spec.md",
     "status": "approved",
-    "summary": "The agentic surface: seven skills under .claude/skills/ (init, setup, commit, implement-plan, research, validate-and-fix, cleanup), four pipeline agents under .claude/agents/ (architect, explorer, implementer, reviewer), and the frontmatter schemas that govern their shape. Skills perform all governed reads through the spec-spine CLI; the whole surface is a hashed index input, so quiet edits trip the staleness gate.\n",
+    "summary": "The agentic surface: nine skills under .claude/skills/ (init, setup, commit, implement-plan, research, validate-and-fix, cleanup, scaffold-feature, code-quality), four pipeline agents under .claude/agents/ (architect, explorer, implementer, reviewer), and the frontmatter schemas that govern their shape. Skills perform all governed reads through the spec-spine CLI; the whole surface is a hashed index input, so quiet edits trip the staleness gate.\n",
     "title": "Claude Code skills and agents: the agentic surface"
   },
-  "shardHash": "7ad022277bf4f4de203dead15263ce66629c88a79ab37a93ca7e94dc7da383ae",
+  "shardHash": "f439628f869bb2542b95bf760d6e7e3d85811c3a743fcf5895bf4ca6be62edf5",
   "specVersion": "1.1.0"
 }

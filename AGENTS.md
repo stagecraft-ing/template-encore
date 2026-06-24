@@ -1,4 +1,4 @@
-# AGENTS.md: Vue + Encore Enterprise Template (spec-governed)
+# AGENTS.md: acme-vue-encore (spec-governed)
 
 This file is the cross-agent session-init protocol authority (read by Claude
 Code, Codex CLI, Cursor, GitHub Copilot via the AAIF/Linux Foundation AGENTS.md
@@ -38,7 +38,7 @@ automatically picked up on the next init.
    - `npx spec-spine index check`: staleness gate for the codebase index (non-fatal)
    - `npx spec-spine registry status-report --json`: lifecycle counts per spec status
    - `npx spec-spine registry list --json`: spec inventory (for latest-spec detection)
-   - `ls apps/ packages/ modules/`: application + module surface discovery
+   - `ls apps/ packages/`: application surface discovery
    - `ls docs/`: docs surface
    - `git log --oneline -10`: recent history
    - `git diff --stat HEAD~1`: last change summary
@@ -82,6 +82,8 @@ Skills live in `.claude/skills/` (governed by spec 018):
 - `/research`: deep research with parallel sub-agents.
 - `/validate-and-fix`: run the local CI loop (`make ci`) and fix discovered issues.
 - `/cleanup`: dead code and duplicate detection with categorized recommendations.
+- `/scaffold-feature`: build one new Vue + Encore feature following established patterns.
+- `/code-quality`: ESLint and TypeScript strict-mode rules as generation-time constraints.
 
 ## Conventions
 

@@ -1,4 +1,4 @@
-# Codemap: Vue + Encore Enterprise Template
+# Codemap: acme-vue-encore
 
 > Architectural blueprint: execution flows, service graph, API surfaces, and component relationships.
 > For developer onboarding and AI agent context. Reduces codebase to ~5% of tokens, ~90% of understanding.
@@ -6,31 +6,31 @@
 > **Backend = Encore.ts.** The Express 5 BFF was retired in the Encore migration (specs 001 to 006).
 > The authoritative backend specs are `specs/001-encore-app-architecture` (layout + service decomposition)
 > and `specs/002-security-data-invariants` (the security/data invariant freeze). This document is a
-> governed view of those specs; spec 020 activates the doc/spec coupling that keeps it from drifting.
+> governed view of those specs.
 
 ---
 
 ## Project Tree
 
 ```
-vue-encore-enterprise-template/
+acme-vue-encore/
 ├── apps/
 │   ├── api/                       Encore.ts application (standalone; excluded from npm workspaces)
-│   │   ├── encore.app             ← App manifest (global_cors, build.docker.bundle_source)
+│   │   ├── encore.app             App manifest (global_cors, build.docker.bundle_source)
 │   │   ├── infra.config.json      Secret + SQL bindings ($env); no secret values committed
 │   │   ├── Dockerfile.base        OS + helper binaries for the image base
 │   │   ├── Dockerfile.hotfix      Source-only fast-path image
 │   │   ├── scripts/               generate-keys.ts (RSA JWT keys), migrate.mjs, docker-build.sh
-│   │   ├── lib/                   ← `lib` service: shared security primitives (no endpoints)
-│   │   ├── db/                    ← `db` service: SQLDatabase("app") + migrations (no endpoints)
-│   │   ├── health/                ← `health` service: probes + /api/v1/info + /api/v1/csp-report
-│   │   ├── auth/                  ← `auth` service: authHandler + Gateway, multi-driver SSO, JWT
-│   │   ├── gateway/               ← `gateway` service: BFF api.raw proxy /api/v1/data/*
-│   │   └── web/                   ← `web` service: api.static serving the built SPA
+│   │   ├── lib/                   `lib` service: shared security primitives (no endpoints)
+│   │   ├── db/                    `db` service: SQLDatabase("app") + migrations (no endpoints)
+│   │   ├── health/                `health` service: probes + /api/v1/info + /api/v1/csp-report
+│   │   ├── auth/                  `auth` service: authHandler + Gateway, multi-driver SSO, JWT
+│   │   ├── gateway/               `gateway` service: BFF api.raw proxy /api/v1/data/*
+│   │   └── web/                   `web` service: api.static serving the built SPA
 │   │
 │   ├── web/                       Vue 3 SPA: public/external user (PrimeVue)
 │   │   └── src/
-│   │       ├── main.ts            ← ENTRY POINT (frontend)
+│   │       ├── main.ts            ENTRY POINT (frontend)
 │   │       ├── router/            Routes + nav guards
 │   │       ├── stores/            Pinia auth state (Encore-adapted; spec 006)
 │   │       ├── views/             Page components
@@ -42,10 +42,9 @@ vue-encore-enterprise-template/
 ├── packages/                      Reusable libraries (NOT consumed by the Encore backend)
 │   └── shared/                    Types, Zod schemas, constants (declared by the SPAs)
 │
-├── orchestration/, scripts/, modules/   App generator + module system (Encore; reconciled in specs 007-010)
 ├── docker/                        Encore self-host docker-compose + container guide (README)
 ├── docs/                          Auth, deployment, development, testing, troubleshooting
-└── specs/                         Spec spine: authoritative design record (000 to 020)
+└── specs/                         Spec spine: authoritative design record (000–006, 011–019)
 ```
 
 > Dev/runtime config lives in `apps/api/.env.example` (the Encore app's env template); there is no
@@ -53,15 +52,14 @@ vue-encore-enterprise-template/
 
 > **Standalone backend.** `apps/api` has its own `package-lock.json` and `node_modules` and is
 > **excluded** from the root npm workspaces (`apps/web`, `apps/web-internal`, `packages/*`). It imports
-> no `@template/*` package; the security primitives it needs live in `apps/api/lib`. `packages/` now holds
-> only `shared` (config and auth packages were retired in spec 008). The `orchestration/`/`scripts/`/`modules/`
-> generator and module system were reconciled to Encore in specs 007-010 and are governed by spec 020.
+> no `@template/*` package; the security primitives it needs live in `apps/api/lib`. `packages/` holds
+> only `shared` (types, Zod schemas, constants shared between the two SPAs).
 
 ---
 
 ## Tech Stack (Required)
 
-All code added to this template **must** use these technologies. Do not introduce alternatives.
+All code added to this app **must** use these technologies. Do not introduce alternatives.
 
 | Layer | Technology | Notes |
 |-------|-----------|-------|
@@ -107,7 +105,7 @@ Frontend (apps/web, apps/web-internal) ═════════════�
   Vue 3 SPA ──► axios (+ encore-client.ts typed reference) ──► /api/v1/* (Vite proxy → :4000)
 
 Packages (reusable libs; NOT imported by apps/api) ════════════════════════
-  shared   types, Zod schemas, constants (config + auth packages retired in spec 008)
+  shared   types, Zod schemas, constants
 ```
 
 **Service discovery**: each directory exporting `Service(...)` via `encore.service.ts` is a service.
@@ -334,7 +332,7 @@ Audit:    lib/audit.ts → audit_log, best-effort, never blocks the user flow (I
 
 Security/data invariants are frozen by **spec 002** (`security-data-invariants`); `lib/` holds the
 primitives, the services enforce them. AUTH-007 role-scoped **data** endpoints (INV-1) are a downstream
-obligation: this template ships no domain data services to scope.
+obligation: this app ships no domain data services to scope.
 
 ---
 
@@ -347,7 +345,7 @@ obligation: this template ships no domain data services to scope.
 | **Mock** | Hardcoded in `apps/api/auth/mock.ts` | n/a |
 | **rauthy** | OIDC token/userinfo claims: `roles` → `role` → `groups` (priority order) | `RAUTHY_DEFAULT_ROLE` env (default: `user`) |
 
-### Template default roles
+### Default roles
 
 ```
 'user'       → every authenticated user (baseline access)
@@ -387,7 +385,7 @@ if (hasRole('admin')) { /* show admin UI */ }
 3. Set `RAUTHY_DEFAULT_ROLE` to the lowest-privilege role in `apps/api/.env` (template: `apps/api/.env.example`).
 4. Apply `requireRole(auth, ...)` to every protected endpoint using the spec's role strings, and scope
    data queries to `auth.roles` in the service layer (AUTH-007 / INV-1).
-5. Replace the "Template default roles" table above with the application's actual roles.
+5. Replace the "Default roles" table above with the application's actual roles.
 
 **If no roles defined:** keep the 3 default mock users. Use `auth: true` alone on protected endpoints.
 
@@ -465,7 +463,7 @@ colocate `foo.test.ts` next to `foo.ts`; run `encore check` for the backend grap
 |-----|-------------|
 | `CODEMAP.md` | Architectural overview, security model, and customization map (start here) |
 | `specs/001-encore-app-architecture/spec.md` | Authoritative backend layout + service decomposition |
-| `specs/002-security-data-invariants/spec.md` | The security/data invariant freeze (INV-1 to INV-11) |
+| `specs/002-security-data-invariants/spec.md` | The security/data invariant freeze (INV-1 – INV-11) |
 | `README.md` | First-time project setup and quick start |
 | `docs/AUTH-SETUP.md` | Configuring auth drivers (rauthy OIDC, Mock) on Encore |
 | `docs/DEPLOYMENT.md` | Building and deploying the Encore app |
@@ -473,7 +471,3 @@ colocate `foo.test.ts` next to `foo.ts`; run `encore check` for the backend grap
 | [PrimeVue docs](https://primevue.org/) | UI component library (Aura theme) used by both SPAs |
 | `docs/TESTING.md` | Writing and running unit and E2E tests |
 | `docs/TROUBLESHOOTING.md` | Diagnosing common errors and issues |
-
-> The app generator (`orchestration/`, `scripts/`), module system (`modules/`), and their docs
-> (`docs/TEMPLATE-USER-GUIDE.md`, `docs/MODULARIZATION-*.md`, `docs/MODULE-DEVELOPMENT-GUIDE.md`,
-> `docs/DUAL-APP-GUIDE.md`) were reconciled to Encore in specs 007-010 and are governed by spec 020.

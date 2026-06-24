@@ -31,7 +31,7 @@ The `web` service uses `api.static` to expose the pre-built bundle at the
 `/!path` catch-all, with a history-API fallback so Vue Router's HTML5
 history mode handles client-side routes without server round-trips.
 
-In the dual-app layout (spec 010) the same mechanism applies to the staff
+In the dual-app layout the same mechanism applies to the staff
 SPA: `apps/web-internal` builds into the internal app's `web` service at
 `apps/api/web/build`, keeping the serving contract identical across both
 variants.
@@ -93,7 +93,7 @@ real build exists.
 
 ### FR-004 — dual-app layout wiring
 
-In the internal variant of the dual-app layout (spec 010):
+In the internal variant of the dual-app layout:
 
 - `apps/web-internal/vite.config.ts` MUST set `build.outDir` to
   `../api/web/build` (with `emptyOutDir: true`), mirroring `apps/web`.
@@ -140,5 +140,3 @@ origin/main` exits 0 for changes under `apps/api/web/` owned here.
   spec's.
 - **CI build-web step**: wiring `build:web` into the Encore CI workflow is
   owned by spec 011.
-- **Dual-app generator orchestration**: the dual-app generator that applies
-  FR-004's wiring is owned by spec 010.

@@ -1,11 +1,11 @@
 {
   "package": {
     "kind": "npm-workspace",
-    "name": "vue-encore-enterprise-template",
+    "name": "acme-vue-encore",
     "path": "",
     "specRef": "000-bootstrap",
     "version": "1.0.0"
   },
   "schemaVersion": "1.1.0",
-  "shardHash": "1124983bf3e55921ce5a8f62673f24663316223007170cdb125ea4bd19f4d8cd"
+  "shardHash": "23ed1ee2f5b1374430d16c8413ca64b7281d946b060299f59cc02c8af4b8fbb2"
 }

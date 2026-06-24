@@ -1,6 +1,6 @@
 ---
-id: "012-azure-webapp-deploy"
-title: "Container-host deploy: zip/artifact path for dev/uat/prod plus the container-image path example"
+id: "012-container-host-deploy"
+title: "Container-host deploy: zip/artifact path for dev/staging/prod plus the container-image path example"
 status: approved
 created: "2026-06-10"
 owner: bart
@@ -16,7 +16,7 @@ code_aliases: ["DEPLOY_HOST_ZIP", "DEPLOY_ENCORE_CONTAINER"]
 summary: >
   Two cloud-agnostic deployment paths for a generic container host: (1) the
   zip/artifact path, the compiled Encore artifact (main.mjs + runtime)
-  deployed per environment by the dev/uat/prod workflows over a shared
+  deployed per environment by the dev/staging/prod workflows over a shared
   reusable workflow, started with `node main.mjs`; (2) the container-image
   path, kept as the inert encore-cd.yml.example with a generic container
   deploy step. All third-party actions SHA-pinned and within the enterprise
@@ -24,16 +24,11 @@ summary: >
 establishes:
   - ".github/workflows/deploy-reusable.yml"
   - ".github/workflows/deploy-dev.yml"
-  - ".github/workflows/deploy-uat.yml"
+  - ".github/workflows/deploy-staging.yml"
   - ".github/workflows/deploy-prod.yml"
 ---
 
-> **Directory-name note.** This spec lives under `specs/012-azure-webapp-deploy/`
-> for spec-spine registry and cross-reference stability; the directory name is
-> retained even though the spec content is now a vendor-neutral, cloud-agnostic
-> container deploy. Do not rename the directory.
-
-# 012 - Container-host deploy: zip/artifact path for dev/uat/prod plus the container-image path example
+# 012 - Container-host deploy: zip/artifact path for dev/staging/prod plus the container-image path example
 
 ## 1. Purpose
 
@@ -43,7 +38,7 @@ Encore backend on a generic container host:
 1. **Host zip/artifact** : the compiled Encore artifact packaged as a
    deployment zip/artifact and started with `node main.mjs`. This path uses a
    standard Linux container-host model and is the active, environment-gated
-   deploy route for dev, uat, and production.
+   deploy route for dev, staging, and production.
 
 2. **Encore container image** : `encore build docker` produces an OCI image.
    This path stays the inert `encore-cd.yml.example` (spec 011) with a
@@ -122,11 +117,11 @@ fixed, standalone `apps/api`.
 
 ### FR-005 — Environment-specific callers
 
-`deploy-{dev,uat,prod}.yml` are thin callers of the reusable
+`deploy-{dev,staging,prod}.yml` are thin callers of the reusable
 workflow, one per GitHub environment. Their trigger shapes:
 
-- `dev` — `workflow_dispatch` + push to `develop` branch
-- `uat` — `workflow_dispatch` + push to `uat` branch
+- `dev` — `workflow_dispatch` + push to `dev` branch
+- `staging` — `workflow_dispatch` + push to `staging` branch
 - `prod` — `workflow_dispatch` only
 
 Each caller passes only `environment`; the `node-version`, `web-app`, and

@@ -106,7 +106,7 @@ views of that binding.
   of the corpus; downstream forks may add them.
 - **FR-04** `kind` and `domain` are closed taxonomies declared in
   `spec-spine.toml` (`architecture|feature|governance` ×
-  `governance|app|generator|ci-cd|agentic|docs`). Every spec declares both;
+  `governance|app|ci-cd|agentic`). Every spec declares both;
   the lint enforces this at `--fail-on-warn`.
 
 ### 3.3 Determinism <a name="determinism-requirement"></a>

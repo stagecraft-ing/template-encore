@@ -75,7 +75,7 @@ Makefile              make setup / spine / pr-prep / ci entry points
   `npx spec-spine registry …` / `npx spec-spine index check`, never via ad-hoc
   `jq`/`python`/`awk`/`sed` in a repeatable workflow.
 - **Closed taxonomies.** `kind` (architecture|feature|governance) and `domain`
-  (governance|app|generator|ci-cd|agentic|docs) are closed enums in
+  (governance|app|ci-cd|agentic) are closed enums in
   `spec-spine.toml`; every spec declares both.
 
 ## Orchestrator behavioral rules

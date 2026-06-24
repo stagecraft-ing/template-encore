@@ -13,7 +13,7 @@ The template ships two spec-governed deploy paths. Pick the one that matches you
 
 | Path | Workflow | Unit | When to use |
 |------|----------|------|-------------|
-| **Node zip** (Node continuity) | `deploy-{dev,uat,prod}.yml` calling `deploy-reusable.yml` | A Node zip carrying the scraped Encore artifact (`main.mjs` + `encore-runtime.node`), the built SPA, and production `node_modules`, started with `node main.mjs` | You deploy to a Node-based app host and want to keep the familiar zip/Node idiom. |
+| **Node zip** (Node continuity) | `deploy-{dev,staging,prod}.yml` calling `deploy-reusable.yml` | A Node zip carrying the scraped Encore artifact (`main.mjs` + `encore-runtime.node`), the built SPA, and production `node_modules`, started with `node main.mjs` | You deploy to a Node-based app host and want to keep the familiar zip/Node idiom. |
 | **Encore container** (alignment) | `encore-cd.yml.example` (inert; spec 011) | An OCI image from `encore build docker` | You deploy to a container runtime (your container host, OpenShift, Encore Cloud). This is the Encore-supported, robust unit. |
 
 > **Zip path caveat.** The zip is assembled by the OPTIONAL cancel-then-scrape build (the
@@ -147,7 +147,7 @@ curl -I https://your-app.example.com/api/v1/auth/login   # 302 to the OIDC provi
 
 - [Encore.ts: build a Docker image](https://encore.dev/docs/ts/deploy/docker)
 - [Encore.ts: self-hosting](https://encore.dev/docs/ts/self-host/build)
-- `specs/012-deploy-reconciliation/spec.md`: the dual deploy strategy (zip + container)
+- `specs/012-container-host-deploy/spec.md`: the dual deploy strategy (zip + container)
 - `specs/011-encore-ci-cd/spec.md`: Encore CI/CD actions and the CD example
 - [CODEMAP.md](../CODEMAP.md): service graph and security model
 

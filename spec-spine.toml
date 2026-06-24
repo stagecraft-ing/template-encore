@@ -12,7 +12,7 @@ metadata_namespace = "spec-spine"
 
 [domains]
 # Closed taxonomy: every spec declares one (L-002 enforced via --fail-on-warn).
-allowed = ["governance", "app", "generator", "ci-cd", "agentic", "docs"]
+allowed = ["governance", "app", "ci-cd", "agentic"]
 
 [kind]
 # Closed taxonomy: every spec declares one (L-003 enforced via --fail-on-warn).

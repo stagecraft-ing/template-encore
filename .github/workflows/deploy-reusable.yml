@@ -18,7 +18,7 @@ on:
   workflow_call:
     inputs:
       environment:
-        description: 'GitHub environment name (e.g. production, uat, dev)'
+        description: 'GitHub environment name (e.g. production, staging, dev)'
         required: true
         type: string
       node-version:

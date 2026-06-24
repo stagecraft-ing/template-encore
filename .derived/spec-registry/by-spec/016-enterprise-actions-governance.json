@@ -8,7 +8,7 @@
         "note": "every `uses:` ref must be an allow-listed publisher and SHA-pinned; no third-party change-filter actions",
         "target_specs": [
           "011-encore-ci-cd",
-          "012-azure-webapp-deploy",
+          "012-container-host-deploy",
           "013-repo-ci-orchestrator",
           "014-supply-chain-gates",
           "017-ai-pr-review"
@@ -47,6 +47,6 @@
     "summary": "The enterprise (EMU) constraint set for GitHub Actions: only allow-listed publishers may execute, so workflows route changes with inline git diff instead of third-party filter actions; every permitted third-party ref is SHA-pinned; the merge_group trigger ships inert until a repo admin enables the merge queue.\n",
     "title": "Enterprise Actions governance: the GitHub Actions allow-list, inline change-routing, and the merge queue"
   },
-  "shardHash": "70e5c7933c3cffb3b78515de2e407f8fcdf59feb6ea2dde8d2440f139defe63e",
+  "shardHash": "75903b09bd1f87b226e8e340638d713dd1ae70d6b59fc6c4edc894c0c6d52ac1",
   "specVersion": "1.1.0"
 }

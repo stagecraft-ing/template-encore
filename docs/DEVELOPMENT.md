@@ -15,7 +15,7 @@
 
 ```bash
 git clone <repository-url>
-cd template
+cd acme-vue-encore
 
 # SPAs + shared packages (npm workspaces)
 npm install
@@ -68,7 +68,7 @@ Docker must be running so Encore can start the local Postgres. The Vite dev serv
 ### Project Structure
 
 ```
-template/
+acme-vue-encore/
 ├── apps/
 │   ├── api/                  # Encore.ts app (standalone; not in npm workspaces)
 │   │   ├── encore.app        # app manifest (global_cors, build.docker)
@@ -202,20 +202,6 @@ Node inspector to the `encore run` process.
 To add a config variable: add it to `apps/api/.env.example`, read it where needed (or add a `secret()` to
 `lib/secrets.ts` if it is sensitive), and document it.
 
-## Module Management
-
-> The module system (`scripts/add-module.ts`, `scripts/remove-module.ts`, `modules/`) is Encore-native
-> (reconciled in specs 007-010). Modules copy complete Encore service directories and merge declarative
-> config (env vars, secret bindings, CORS) into `apps/api`; there is no Express loader or runtime registry.
-> The commands below operate on the generator surface, not the running Encore app.
-
-```bash
-npx tsx scripts/add-module.ts --list
-npx tsx scripts/validate-modules.ts
-```
-
-See [MODULE-DEVELOPMENT-GUIDE.md](MODULE-DEVELOPMENT-GUIDE.md).
-
 ## Common Tasks
 
 ```bash
@@ -251,4 +237,4 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md). Quick fixes:
 
 ---
 
-**Last Updated**: 2026-06-05
+**Last Updated**: 2026-06-24

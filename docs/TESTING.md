@@ -13,7 +13,6 @@ graph, and a few end-to-end browser tests.
 | Unit (backend) | Vitest | Test `lib/` primitives and endpoint logic | `apps/api/**/*.test.ts` |
 | Unit (frontend) | Vitest + happy-dom + @vue/test-utils | Components, stores | `apps/web*/src/**/*.test.ts` |
 | E2E | Playwright | User flows in a real browser | `e2e/` |
-| Generator CLI (Tier B) | Vitest + `spawnSync` | Module-management scripts end-to-end | `scripts/integration/` |
 | Type Checking | TypeScript / `vue-tsc` | Compile-time safety | all `.ts`/`.vue` |
 | Linting / Formatting | ESLint / Prettier | Code quality and style | all files |
 
@@ -132,17 +131,6 @@ test("completes the mock auth flow", async ({ page }) => {
 Playwright's `webServer` runs `npm run dev` and waits on http://localhost:5173. E2E exercises the real
 Encore API on port 4000 through the Vite proxy.
 
-## Generator CLI Tests
-
-> The `scripts/integration/` suites (`cli.test.ts`, `profiles.test.ts`) test the **module-management
-> generator** (`add-module.ts` / `remove-module.ts` / `validate-modules.ts`), which is Encore-native
-> (reconciled in specs 007-010). They spawn the scripts as subprocesses against a temporary sandbox and
-> exercise the generated Encore composition, not the running Encore app.
-
-```bash
-npm run test:integration        # or: npm test --workspace=scripts
-```
-
 ## Continuous Integration
 
 CI is provided by the spec spine and the Encore app workflows; there is no hand-maintained `test.yml`:
@@ -184,4 +172,4 @@ If `encore check` cannot start a database, ensure Docker is running.
 
 ---
 
-**Last Updated**: 2026-06-05
+**Last Updated**: 2026-06-24

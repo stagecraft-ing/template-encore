@@ -19,7 +19,7 @@
         "source": "spec-edge"
       },
       {
-        "path": ".github/workflows/deploy-uat.yml",
+        "path": ".github/workflows/deploy-staging.yml",
         "source": "spec-edge"
       }
     ],
@@ -66,20 +66,20 @@
       {
         "locations": [
           {
-            "file": ".github/workflows/deploy-uat.yml"
+            "file": ".github/workflows/deploy-staging.yml"
           }
         ],
         "ownership": true,
         "sourceField": "establishes",
         "unit": {
           "kind": "file",
-          "path": ".github/workflows/deploy-uat.yml"
+          "path": ".github/workflows/deploy-staging.yml"
         }
       }
     ],
-    "specId": "012-azure-webapp-deploy",
+    "specId": "012-container-host-deploy",
     "specStatus": "approved"
   },
   "schemaVersion": "1.1.0",
-  "shardHash": "cbf00174383f8be763dde2d9a02797ff0c38749c448ace4ad0c21c34c1ca04b8"
+  "shardHash": "70c0d2065f40f250d3dbbeae592b9723b54ab00d64e9b24185cb9bd0ec8efc02"
 }

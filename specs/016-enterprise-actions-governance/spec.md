@@ -19,7 +19,7 @@ summary: >
 constrains:
   - unit: { kind: file, path: ".github/workflows/" }
     note: "every `uses:` ref must be an allow-listed publisher and SHA-pinned; no third-party change-filter actions"
-    target_specs: ["011-encore-ci-cd", "012-azure-webapp-deploy", "013-repo-ci-orchestrator", "014-supply-chain-gates", "017-ai-pr-review"]
+    target_specs: ["011-encore-ci-cd", "012-container-host-deploy", "013-repo-ci-orchestrator", "014-supply-chain-gates", "017-ai-pr-review"]
 ---
 
 # 016 — Enterprise Actions governance

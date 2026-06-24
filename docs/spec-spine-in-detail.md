@@ -18,9 +18,9 @@ markdown file at `specs/NNN-kebab-slug/spec.md` with YAML frontmatter:
 ```
 specs/
   000-bootstrap/spec.md   # the constitutional root
-  001-app-architecture/spec.md
+  001-encore-app-architecture/spec.md
   ...
-  020-doc-governance/spec.md
+  019-claude-config-governance/spec.md
 ```
 
 The `spec-spine` CLI compiles this corpus into two deterministic derived
@@ -145,7 +145,7 @@ includes these annotations in the traceability map.
 metadata_namespace = "spec-spine"    # key name in package.json
 
 [domains]
-allowed = ["governance", "app", "generator", "ci-cd", "agentic", "docs"]
+allowed = ["governance", "app", "ci-cd", "agentic"]
 
 [kind]
 allowed = ["architecture", "feature", "governance"]

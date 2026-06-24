@@ -3,13 +3,13 @@
 # This is the container half of the deploy strategy: the Encore-supported,
 # robust deploy unit is an OCI image (`encore build docker`). The active
 # pipeline that tests, scans, builds, pushes, and deploys per environment is
-# deploy-reusable.yml (called by deploy-dev/uat/prod.yml); this standalone
+# deploy-reusable.yml (called by deploy-dev/staging/prod.yml); this standalone
 # example shows the minimal build-and-push shape for adapting to your own CD.
 #
 # Rename to `encore-cd.yml` (strip `.example`) and wire the deploy step to your
-# target once chosen (Kubernetes, App Service for Containers, Container Apps,
-# OpenShift, Encore Cloud, a Docker host, etc.). On activation, SHA-pin every
-# third-party `uses:` (spec 021); this `.example` keeps version tags for
+# target once chosen (Kubernetes, a managed container service, OpenShift,
+# Encore Cloud, a Docker host, etc.). On activation, SHA-pin every
+# third-party `uses:` (spec 015); this `.example` keeps version tags for
 # readability and is not linted.
 #
 # Pipeline:

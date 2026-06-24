@@ -64,12 +64,13 @@ If any file is missing: log "not found" and continue.
 ## Available Agents
 
 Agents live in `.claude/agents/`. Four pipeline agents handle the
-plan/explore/implement/review cycle:
+plan/explore/implement/review cycle, plus a domain specialist:
 
 - `architect`: plans and decomposes tasks, validates approaches against specs. Read-only.
 - `explorer`: searches the codebase, traces dependencies, gathers context. Read-only.
 - `implementer`: executes focused changes from an existing plan. Minimal diffs.
 - `reviewer`: post-change review for bugs, security, performance, and spec compliance. Read-only.
+- `encore-expert`: Encore.ts framework specialist for the `apps/api` backend. Read-only.
 
 ## Available Commands
 

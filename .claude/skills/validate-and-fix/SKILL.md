@@ -25,7 +25,7 @@ Invoke `make ci` from the repo root. The `Makefile` is the **single source of tr
 - **`npm run lint`** — TypeScript/Vue linter across the workspace.
 - **`npm run typecheck`** — TypeScript type-check across apps and packages.
 - **`npm test`** — Vitest suite across workspaces.
-- **`tools/lint/workflow-pins-test.sh`** — validates GitHub Actions workflow steps are SHA-pinned (spec 015).
+- **`tools/lint/workflow-pins-test.sh`** — validates GitHub Actions workflow steps are SHA-pinned (spec 011).
 
 Pre-commit gate (separate from `make ci`):
 

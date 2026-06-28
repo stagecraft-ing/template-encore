@@ -1,4 +1,4 @@
-# Spec: 017-ai-pr-review
+# Spec: 013-ai-pr-review
 #
 # AI-Powered PR Review. Uses the Claude Code CLI (subscription-OAuth,
 # App-free) to review the PR diff for bugs, security issues, and
@@ -20,7 +20,7 @@
 name: AI PR Review
 
 on:
-  # Spec 017: dispatched as a reusable workflow from ci.yml so the AI
+  # Spec 013: dispatched as a reusable workflow from ci.yml so the AI
   # review is part of the orchestrated PR-gate suite and the terminal
   # `ci-gate` `needs:` it (a failed or absent review blocks merge; green
   # ci-gate ⇒ actually reviewed or visibly skipped). It does NOT trigger
@@ -95,7 +95,7 @@ jobs:
           4. Performance concerns
 
           Be concise. Focus on issues, not praise. Format as markdown with ## sections.'
-          # API-failure resilience (spec 017 / OAP spec 177, 2026-06-23): a
+          # API-failure resilience (spec 013 / OAP spec 177, 2026-06-23): a
           # Claude API outage must not block merges, but a pass must never be
           # silent. Capture claude's exit + output, then classify the failure:
           #   - secret unset (handled above) -> hard fail (config bug).

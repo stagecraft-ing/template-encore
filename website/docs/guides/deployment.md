@@ -1,6 +1,6 @@
 # Deployment
 
-**acme-vue-encore** supports a dual-path deployment strategy, detailed in spec 012. You can deploy using a Node zip artifact or a custom Docker container image.
+**acme-vue-encore** supports a dual-path deployment strategy, detailed in spec 008. You can deploy using a Node zip artifact or a custom Docker container image.
 
 ## Dual Deploy Paths
 
@@ -13,7 +13,7 @@ This is the supported path. An inert Continuous Deployment (CD) template is prov
 To activate this path:
 1. Configure your container registry and credentials.
 2. Rename the file to `encore-cd.yml`.
-3. SHA-pin the third-party GitHub Actions (as required by the spec 015 workflow-pins policy).
+3. SHA-pin the third-party GitHub Actions (as required by the spec 011 workflow-pins policy).
 
 This workflow installs the Encore CLI, runs `npm ci` and `encore gen client`, builds the SPA, and uses the `encore-build` composite action to push the resulting image to your registry.
 

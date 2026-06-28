@@ -16,7 +16,7 @@ summary: >
   endpoint body, and target the API on port 4000 via the Vite dev proxy. A
   generated typed Encore client is committed at
   apps/web/src/lib/encore-client.ts and kept fresh by the client-staleness
-  CI job (spec 011).
+  CI job (spec 007).
 establishes:
   - "apps/web/src/stores/auth.store.ts"
   - "apps/web-internal/src/stores/auth.store.ts"
@@ -115,7 +115,7 @@ The file carries a `DO NOT EDIT` banner. It is regenerated via
 `npm --prefix apps/api run gen:client`. It is **not** coupling-claimed by
 any spec (like a lockfile, claiming it would couple every backend API
 change to this spec); its freshness is enforced by the CI staleness gate
-in spec 011.
+in spec 007.
 
 `apps/web/tsconfig.json` targets ES2022 or later (the generated client
 emits `String.replaceAll`).
@@ -162,4 +162,4 @@ CSRF dedup, logout token-clear, and SLO redirect validation are covered.
   require a CSRF-aware wrapper; that is a deliberate future enhancement,
   most valuable once typed domain endpoints exist.
 - **CI client-staleness gate**: the regeneration and diff-check automation
-  is owned by spec 011.
+  is owned by spec 007.

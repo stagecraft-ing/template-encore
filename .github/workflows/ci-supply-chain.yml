@@ -1,6 +1,6 @@
-# Spec: 014-supply-chain-gates
-# Spec: 015-workflow-pins-lint (jobs.workflow-pins)
-# Spec: 013-repo-ci-orchestrator
+# Spec: 010-supply-chain-gates
+# Spec: 011-workflow-pins-lint (jobs.workflow-pins)
+# Spec: 009-repo-ci-orchestrator
 #
 # Supply-chain gates for the template:
 #   - npm audit across both npm surfaces (root workspace + the standalone
@@ -11,7 +11,7 @@
 # Posture: blocking from day 0. Severity bar: --audit-level=high. The
 # weekly cron surfaces new advisories even on a quiet week.
 #
-# Dispatched unconditionally from `.github/workflows/ci.yml` (spec 013
+# Dispatched unconditionally from `.github/workflows/ci.yml` (spec 009
 # constitutional carve-out).
 
 name: CI supply-chain
@@ -43,7 +43,7 @@ jobs:
       - name: npm audit (apps/api)
         run: npm --prefix apps/api audit --audit-level=high
 
-  # workflow-pins — spec 015's lint.
+  # workflow-pins — spec 011's lint.
   # The lint script is shipped at tools/lint/workflow-pins.sh and runs in
   # both this CI job AND the opt-in pre-commit hook (.githooks/pre-commit).
   workflow-pins:

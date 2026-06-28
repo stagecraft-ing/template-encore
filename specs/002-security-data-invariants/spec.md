@@ -232,4 +232,4 @@ is clean for every path claimed by this spec.
   application obligation, not part of this template's API surface.
 - The auth service endpoints — see spec `003-multi-driver-auth-service`.
 - The BFF gateway service — see spec `004-bff-gateway-proxy`.
-- CI/CD validation — see spec `011-encore-ci-cd`.
+- CI/CD validation — see spec `007-encore-ci-cd`.

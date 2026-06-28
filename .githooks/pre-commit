@@ -47,6 +47,6 @@ EOF
   exit 1
 fi
 
-# Workflow-ref SHA-pinning lint (spec 015) — every `uses:` in .github/**
+# Workflow-ref SHA-pinning lint (spec 011) — every `uses:` in .github/**
 # must be pinned to a full commit SHA.
 bash tools/lint/workflow-pins.sh

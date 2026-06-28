@@ -144,10 +144,10 @@ views of that binding.
     spine` runs all four).
   - **Pre-commit (opt-in)**: `git config core.hooksPath .githooks` enables
     `.githooks/pre-commit`, which runs the index staleness check and the
-    workflow-pins lint (spec 015) before every commit.
+    workflow-pins lint (spec 011) before every commit.
   - **CI (constitutional)**: `.github/workflows/spec-spine.yml` runs
     compile → lint `--fail-on-warn` → index check → couple on every PR,
-    always-on via the orchestrator (spec 013). For a produced app it then
+    always-on via the orchestrator (spec 009). For a produced app it then
     runs the tenant-tail run-side verifiers (the born-with toolchain pin
     check, `verify-provenance --fail-on-rejected`, and
     `verify-certificate`), each gated on `.kernel-version` with a visible
@@ -202,4 +202,4 @@ views of that binding.
 - The CLI's own semantics (grammar, lint codes, gate algorithm) — owned by
   the spec-spine project's corpus, versioned by the pinned npm dependency.
 - Application architecture and behavior (specs 001–006), delivery pipelines
-  (011–017), and the agentic surface (018–019).
+  (007–013), and the agentic surface (014–015).

@@ -139,4 +139,4 @@ origin/main` exits 0 for changes under `apps/api/web/` owned here.
   service middleware; the shell CSP is an ingress or CDN concern, not this
   spec's.
 - **CI build-web step**: wiring `build:web` into the Encore CI workflow is
-  owned by spec 011.
+  owned by spec 007.

@@ -92,7 +92,7 @@ acme-vue-encore/
 ├── packages/shared/     Types, Zod schemas, constants shared between the SPAs
 ├── docker/              Self-host docker-compose + container guide
 ├── docs/                Auth, deployment, development, testing, troubleshooting
-└── specs/               Spec spine: design record (000–006, 011–019)
+└── specs/               Spec spine: design record (000–016)
 ```
 
 `apps/api` has its own `package-lock.json` and `node_modules`; it is excluded from npm workspaces. The
@@ -112,8 +112,8 @@ make ci           # local CI loop (spine + lint + typecheck + tests + pins)
 ```
 
 Active specs: 000 (bootstrap/governance), 001–006 (architecture, security invariants, auth, BFF, SPA
-serving, client integration), 011–019 (CI/CD, deployment, repo orchestration, supply-chain, workflow
-pins, enterprise actions, AI PR review, Claude skills, Claude config governance).
+serving, client integration), 007–016 (CI/CD, deployment, repo orchestration, supply-chain, workflow
+pins, enterprise actions, AI PR review, Claude skills, Claude config governance, documentation website).
 
 ## Documentation
 

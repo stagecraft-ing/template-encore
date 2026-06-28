@@ -137,7 +137,7 @@ CI is provided by the spec spine and the Encore app workflows; there is no hand-
 
 - **`.github/workflows/ci.yml`** (spine orchestrator): Rust build/clippy/test, spec-lint, codebase-index
   staleness, spec/code coupling, supply-chain, AI PR review. Aggregated into the required `ci-gate`.
-- **`.github/workflows/encore-ci.yml`** (spec 011): `web` (type-check both SPAs + `build:web`), `api`
+- **`.github/workflows/encore-ci.yml`** (spec 007): `web` (type-check both SPAs + `build:web`), `api`
   (`encore check`), `client-staleness` (regenerate the typed client and fail on drift). Currently advisory;
   promotion to a required gate is tracked separately.
 

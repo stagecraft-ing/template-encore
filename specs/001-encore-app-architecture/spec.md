@@ -156,5 +156,5 @@ couple --base origin/main`).
 
 - The `auth`, `gateway`, and `web` services — see specs `003`, `004`, `005`.
 - The security primitives (`lib/`) and persistence schema (`db/`) — see spec `002`.
-- CI/CD workflows — see specs `011`, `013`, `014`.
+- CI/CD workflows — see specs `007`, `009`, `010`.
 - The SPA applications (`apps/web`, `apps/web-internal`) — unchanged by this spec.

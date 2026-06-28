@@ -74,7 +74,7 @@ plan/explore/implement/review cycle, plus a domain specialist:
 
 ## Available Commands
 
-Skills live in `.claude/skills/` (governed by spec 018):
+Skills live in `.claude/skills/` (governed by spec 014):
 
 - `/init`: initialize a session (this protocol).
 - `/setup`: one-time contributor setup; runs `make setup` and verifies governed reads.

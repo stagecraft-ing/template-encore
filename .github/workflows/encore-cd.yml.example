@@ -9,7 +9,7 @@
 # Rename to `encore-cd.yml` (strip `.example`) and wire the deploy step to your
 # target once chosen (Kubernetes, a managed container service, OpenShift,
 # Encore Cloud, a Docker host, etc.). On activation, SHA-pin every
-# third-party `uses:` (spec 015); this `.example` keeps version tags for
+# third-party `uses:` (spec 011); this `.example` keeps version tags for
 # readability and is not linted.
 #
 # Pipeline:
@@ -75,7 +75,7 @@ jobs:
       #   - kubectl set image deployment/api api=ghcr.io/${{ github.repository }}:${{ github.sha }}
       #   - a Container Apps / App Service for Containers "update image" call
       #   - an OpenShift `oc set image`, or a Docker host `docker pull` + restart
-      # On activation, SHA-pin any third-party action you add (spec 021).
+      # On activation, SHA-pin any third-party action you add (spec 016).
       # ---------------------------------------------------------------------
       # - name: Deploy
       #   run: echo "wire your runtime deploy here"

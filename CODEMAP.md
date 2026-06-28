@@ -44,7 +44,7 @@ acme-vue-encore/
 │
 ├── docker/                        Encore self-host docker-compose + container guide (README)
 ├── docs/                          Auth, deployment, development, testing, troubleshooting
-└── specs/                         Spec spine: authoritative design record (000–006, 011–019)
+└── specs/                         Spec spine: authoritative design record (000–016)
 ```
 
 > Dev/runtime config lives in `apps/api/.env.example` (the Encore app's env template); there is no

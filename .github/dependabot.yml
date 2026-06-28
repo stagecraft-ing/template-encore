@@ -1,4 +1,4 @@
-# Spec: 013-repo-ci-orchestrator
+# Spec: 009-repo-ci-orchestrator
 #
 # Dependabot configuration for the template. Bumps the template's
 # dependency surfaces:
@@ -13,7 +13,7 @@ version: 2
 updates:
   # GitHub Actions — every workflow + composite action pins to a full
   # commit SHA. Dependabot rewrites the SHA + version comment in lockstep
-  # so spec 015's workflow-pins lint stays happy.
+  # so spec 011's workflow-pins lint stays happy.
   - package-ecosystem: github-actions
     directory: /
     schedule:

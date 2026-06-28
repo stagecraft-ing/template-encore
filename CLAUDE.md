@@ -40,7 +40,7 @@ standards/
   spec/               constitution, contract, templates/
   schemas/frontmatter/JSON Schemas for agent + skill frontmatter
 spec-spine.toml       Governance config (taxonomies, layout, hashed inputs)
-tools/lint/           Workflow-ref SHA-pinning lint (spec 015)
+tools/lint/           Workflow-ref SHA-pinning lint (spec 011)
 Makefile              make setup / spine / pr-prep / ci entry points
 .derived/             CLI output (per-spec + per-package shards): never hand-edited
 
@@ -51,8 +51,8 @@ Makefile              make setup / spine / pr-prep / ci entry points
                       research, validate-and-fix, cleanup, scaffold-feature,
                       code-quality
 .claude/rules/        Auto-loaded rules: orchestrator, governed-reads, adversarial-refusal
-.claude/settings.json Shared permissions (hashed index input; spec 019)
-.mcp.json             Team-shared MCP server config (hashed index input; spec 019)
+.claude/settings.json Shared permissions (hashed index input; spec 015)
+.mcp.json             Team-shared MCP server config (hashed index input; spec 015)
 ```
 
 ## Governance model
@@ -97,21 +97,21 @@ conflict instead of amending the spec to match).
 ## Claude Code surface
 
 The `.claude/` directory carries the agentic governance surface, all hashed as
-index inputs (edits trip the staleness gate; spec 019):
+index inputs (edits trip the staleness gate; spec 015):
 
 - **Agents** (`.claude/agents/`): `architect`, `explorer`, `implementer`,
   `reviewer` (plan / explore / implement / review), plus `encore-expert`
-  (read-only Encore.ts domain specialist for `apps/api`). Spec 018.
+  (read-only Encore.ts domain specialist for `apps/api`). Spec 014.
 - **Skills** (`.claude/skills/`): `/init`, `/setup`, `/commit`,
   `/implement-plan`, `/research`, `/validate-and-fix`, `/cleanup`,
   `/scaffold-feature`, `/code-quality`. `/init` is a thin dispatcher that
-  executes `AGENTS.md` New Sessions. Spec 018.
+  executes `AGENTS.md` New Sessions. Spec 014.
 - **Rules** (`.claude/rules/`): three files loaded automatically by every
   orchestrated workflow: `orchestrator-rules.md` (execution discipline),
   `governed-artifact-reads.md` (read `.derived/**` only via the CLI),
   and `adversarial-prompt-refusal.md` (refuse spec/code drift).
 - **Shared config**: `.claude/settings.json` and `.mcp.json` are governed by
-  spec 019.
+  spec 015.
 
 ### Edit discipline for hashed JSON configs
 
@@ -120,7 +120,7 @@ reformatting (re-indent, a different prettier config, line-ending normalization)
 trips the staleness gate even when the JSON semantics are unchanged. **Edit these
 files in place; do not reformat them.** Hook command bodies inside `settings.json`
 are whitespace-sensitive shell strings, so the indexer cannot "smart-hash" past
-whitespace without silently allowing shell-command drift (spec 019).
+whitespace without silently allowing shell-command drift (spec 015).
 
 ### Worktree posture
 

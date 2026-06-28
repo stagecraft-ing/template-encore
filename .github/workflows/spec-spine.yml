@@ -13,7 +13,7 @@
 # FR-004), claim provenance (OAP spec 121), and the governance certificate
 # (OAP spec 168), via the vended `tenant-tail` npm pin (OAP spec 219).
 #
-# Dispatched unconditionally from `.github/workflows/ci.yml` (spec 013):
+# Dispatched unconditionally from `.github/workflows/ci.yml` (spec 009):
 # governance is always-on, never path-filtered. The CLIs come from the
 # `spec-spine` and `tenant-tail` npm devDependencies (prebuilt binaries;
 # no extra toolchain).

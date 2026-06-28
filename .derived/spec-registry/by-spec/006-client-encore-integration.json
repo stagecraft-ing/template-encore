@@ -50,9 +50,9 @@
     ],
     "specPath": "specs/006-client-encore-integration/spec.md",
     "status": "approved",
-    "summary": "Both Vue Pinia auth stores consume Encore-native response payloads directly (no envelope unwrapping), obtain the CSRF token from the endpoint body, and target the API on port 4000 via the Vite dev proxy. A generated typed Encore client is committed at apps/web/src/lib/encore-client.ts and kept fresh by the client-staleness CI job (spec 011).\n",
+    "summary": "Both Vue Pinia auth stores consume Encore-native response payloads directly (no envelope unwrapping), obtain the CSRF token from the endpoint body, and target the API on port 4000 via the Vite dev proxy. A generated typed Encore client is committed at apps/web/src/lib/encore-client.ts and kept fresh by the client-staleness CI job (spec 007).\n",
     "title": "Client Encore integration: SPA auth stores and the committed typed client"
   },
-  "shardHash": "c44730a774c724dba137e66c35760115889585f59cd2647b14d83add61ad3223",
+  "shardHash": "9f573707291df5b0b8323087c348f7c89a1ec672213722b745634ec8a8b33734",
   "specVersion": "1.1.0"
 }

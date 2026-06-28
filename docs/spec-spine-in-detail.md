@@ -20,7 +20,7 @@ specs/
   000-bootstrap/spec.md   # the constitutional root
   001-encore-app-architecture/spec.md
   ...
-  019-claude-config-governance/spec.md
+  015-claude-config-governance/spec.md
 ```
 
 The `spec-spine` CLI compiles this corpus into two deterministic derived
@@ -217,7 +217,7 @@ The four governance verbs run identically in three places:
 | **Local (daily)** | `make spine` | Runs all four verbs in gate order. `make ci` runs `make spine` + npm lint/typecheck/test + workflow-pins lint. |
 | **Pre-commit (opt-in)** | `.githooks/pre-commit` | Enable: `git config core.hooksPath .githooks`. Runs index check and workflow-pins lint before every commit. Disable: `git config --unset core.hooksPath`. |
 | **Pre-PR** | `make pr-prep` | Regenerates the index (`make spine-index`) and runs the coupling gate (`make spine-couple`). Stage the `.derived/codebase-index/` shards if they drifted. |
-| **CI (constitutional)** | `.github/workflows/spec-spine.yml` | Always-on. Compile → lint `--fail-on-warn` → index check → couple (PR-only). Dispatched from the CI orchestrator (spec 013). |
+| **CI (constitutional)** | `.github/workflows/spec-spine.yml` | Always-on. Compile → lint `--fail-on-warn` → index check → couple (PR-only). Dispatched from the CI orchestrator (spec 009). |
 
 **`make pr-prep` is the command to run before `git commit` on a PR.** It
 catches the two checks that fail first in CI when forgotten.

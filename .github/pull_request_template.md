@@ -1,4 +1,4 @@
-<!-- Spec: 013-repo-ci-orchestrator -->
+<!-- Spec: 009-repo-ci-orchestrator -->
 
 ## Summary
 

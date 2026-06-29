@@ -19,14 +19,14 @@
     "migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
-    "encore.dev": "^1.57.8",
+    "encore.dev": "^1.57.9",
     "jsonwebtoken": "^9.0.2",
     "openid-client": "^6.1.7",
     "pg": "^8.22.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/node": "^26.0.0",
+    "@types/node": "^26.0.1",
     "@types/pg": "^8.11.10",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",

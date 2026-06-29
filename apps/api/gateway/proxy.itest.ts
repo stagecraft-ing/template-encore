@@ -135,17 +135,20 @@ describe("handleProxy masking and availability (spec 004, INV-10)", () => {
   });
 
   it("passes a 2xx through, injects only the S2S Bearer token, and writes one audit record", async () => {
-    const fetchSpy = vi.fn(async () => upstream(200, '{"data":1}'));
+    const fetchSpy = vi.fn<(input: unknown, init?: { headers: Record<string, string> }) => Promise<unknown>>(
+      async () => upstream(200, '{"data":1}'),
+    );
     vi.stubGlobal("fetch", fetchSpy);
     const res = makeRes();
     await handleProxy(makeReq({ headers: { authorization: "Bearer caller-token" } }), res as never);
     expect(res.statusCode).toBe(200);
     expect(res.body).toBe('{"data":1}');
-    const init = fetchSpy.mock.calls[0][1] as { headers: Record<string, string> };
-    expect(init.headers.Authorization).toBe("Bearer s2s-token");
-    expect(JSON.stringify(init.headers)).not.toContain("caller-token");
+    const init = fetchSpy.mock.calls[0]?.[1];
+    expect(init).toBeDefined();
+    expect(init!.headers.Authorization).toBe("Bearer s2s-token");
+    expect(JSON.stringify(init!.headers)).not.toContain("caller-token");
     expect(vi.mocked(writeAudit)).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(writeAudit).mock.calls[0][0].action).toBe("gateway.access");
+    expect(vi.mocked(writeAudit).mock.calls[0]?.[0].action).toBe("gateway.access");
     vi.unstubAllGlobals();
   });
 });

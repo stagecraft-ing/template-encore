@@ -143,8 +143,12 @@ and its five `api.raw` `/api/v1/data/*` handlers resolving behind the Gateway
 authHandler from spec `003`.
 
 **AC-2**: `cd apps/api && npm test` passes; unit tests cover `sanitizePath` (at
-minimum: double-encoded traversal, control characters, clean paths), the 5xx
-masking, and the availability gate.
+minimum: double-encoded traversal, control characters, clean paths) in
+`gateway/path.test.ts`, the masking decisions (5xx to 502, timeout to 504, 4xx
+stack stripping) in `gateway/masking.test.ts`, and the availability gate in
+`gateway/token-cache.test.ts`. The full proxy handler (503/502/504 masking, 4xx
+stack stripping, S2S token injection, and the per-access audit) is covered by
+`gateway/proxy.itest.ts`, run via `npm run test:integration` (`encore test`).
 
 **AC-3**: An unconfigured gateway (no `PRIVATE_API_BASE_URL` or OAuth secrets)
 returns 503 on any data request; an unauthenticated caller returns 401; a path

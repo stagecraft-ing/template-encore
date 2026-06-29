@@ -19,10 +19,10 @@ memory: project
 
 ## When to Use
 
-- Before implementing a complex feature or multi-crate change
+- Before implementing a complex feature or multi-service change
 - When asked to "plan", "design", "decompose", or "think through" an approach
 - To validate a proposed change against spec contracts and existing patterns
-- When a task touches multiple layers (specs, Rust crates, desktop app, tooling)
+- When a task touches multiple layers (specs, Encore services, Vue SPAs, tooling)
 
 ## Repository Context
 
@@ -76,7 +76,7 @@ Break the work into ordered, atomic steps. For each step specify:
 Look for:
 
 - **Spec violations** — approaches that contradict documented contracts
-- **Cross-crate coupling** — changes that would tighten coupling between crates
+- **Cross-service coupling**: changes that would tighten coupling between services
 - **Missing specs** — work that has no backing spec (should be flagged)
 - **Build-order issues** — steps that depend on uncommitted intermediate state
 

@@ -268,6 +268,40 @@ describe('logout', () => {
     )
     expect(csrfGets).toHaveLength(2)
   })
+
+  it('rejects a javascript: redirect URL from the logout response (open-redirect guard)', async () => {
+    vi.mocked(axios.get).mockResolvedValue({ data: { token: 'csrf-1' } })
+    vi.mocked(axios.post).mockResolvedValue({ data: { redirectUrl: 'javascript:alert(1)' } })
+
+    const hrefSetter = vi.fn()
+    vi.stubGlobal('location', {
+      origin: 'http://localhost',
+      set href(v: string) { hrefSetter(v) },
+    })
+
+    const store = useAuthStore()
+    await store.logout()
+
+    expect(hrefSetter).not.toHaveBeenCalledWith('javascript:alert(1)')
+    vi.unstubAllGlobals()
+  })
+
+  it('follows a safe https: redirect URL from the logout response', async () => {
+    vi.mocked(axios.get).mockResolvedValue({ data: { token: 'csrf-1' } })
+    vi.mocked(axios.post).mockResolvedValue({ data: { redirectUrl: 'https://idp.example.com/logout' } })
+
+    const hrefSetter = vi.fn()
+    vi.stubGlobal('location', {
+      origin: 'http://localhost',
+      set href(v: string) { hrefSetter(v) },
+    })
+
+    const store = useAuthStore()
+    await store.logout()
+
+    expect(hrefSetter).toHaveBeenCalledWith('https://idp.example.com/logout')
+    vi.unstubAllGlobals()
+  })
 })
 
 // ─── checkStatus ───────────────────────────────────────────────────────
@@ -292,5 +326,25 @@ describe('checkStatus', () => {
     const status = await store.checkStatus()
 
     expect(status).toEqual({ authenticated: false, drivers: [] })
+  })
+})
+
+// ─── ensureCsrfToken concurrent dedup ──────────────────────────────────
+
+describe('ensureCsrfToken', () => {
+  it('deduplicates concurrent callers: two simultaneous logout calls trigger only one GET /auth/csrf-token', async () => {
+    let csrfGetCount = 0
+    vi.mocked(axios.get).mockImplementation((url) => {
+      if (url === '/api/v1/auth/csrf-token') csrfGetCount++
+      return Promise.resolve({ data: { token: 'csrf-1' } })
+    })
+    vi.mocked(axios.post).mockResolvedValue({ data: { success: true } })
+
+    const store = useAuthStore()
+    // Fire two concurrent logouts; both reach ensureCsrfToken before either resolves.
+    await Promise.all([store.logout(), store.logout()])
+
+    // The second caller must have reused the in-flight promise, not issued a new GET.
+    expect(csrfGetCount).toBe(1)
   })
 })

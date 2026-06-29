@@ -52,6 +52,6 @@
     "summary": "Eleven non-negotiable security and data guarantees (INV-1 - INV-11) that every build of the template enforces: role-scoped data access, parameterized SQL, httpOnly cookies, CSRF, security headers, rate limiting, RS256 JWT with refresh rotation, audit trail, multi-driver auth, the BFF proxy contract, and compliance tags. apps/api/lib and apps/api/db are the enforcement substrate.\n",
     "title": "Security and data invariants: the API's non-negotiable guarantees (INV-1 - INV-11)"
   },
-  "shardHash": "70308b4d62d83341925a1b422a4aed413e218833c98962e3ff87d531bedc97d0",
+  "shardHash": "56c278e7086931b985bad65b8e28c78a13af2c9f5a33c52524276ecc8537b32e",
   "specVersion": "1.1.0"
 }

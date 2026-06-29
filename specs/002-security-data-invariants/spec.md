@@ -108,11 +108,15 @@ CSP, HSTS, and Permissions-Policy are applied as an Encore middleware.
 
 #### INV-6: Rate limiting
 
-`rate-limiter-flexible` middleware (in-memory by default, Redis swap when
-`REDIS_URL` is set). Two tiers: a general API tier and a tighter auth tier.
+Postgres-backed fixed-window rate limiting over the application
+`SQLDatabase("app")`: no Redis and no separate cache. The counter is an
+UNLOGGED `rate_limit_counter` row per bucket, incremented with a lock-free
+`ON CONFLICT DO UPDATE` upsert that resets per window and fails open on any
+backend error. Two tiers: a general API tier and a tighter auth tier.
 
-- **Enforcement**: `lib/rate-limit.ts`; `apiRateLimit` mounted on the `auth`
-  service plus an inline auth rate bucket on login/callback endpoints.
+- **Enforcement**: `lib/rate-limit.ts` plus `db/migrations/5_rate_limit.up.sql`;
+  `apiRateLimit` middleware mounted on the `auth` and `gateway` services, plus
+  the tighter auth bucket consumed inline by the login/callback endpoints.
 
 #### INV-7: Stateless RS256 JWT plus DB-backed refresh rotation
 
@@ -168,13 +172,17 @@ in code comments preserve the compliance trace.
 ### 3.2 Key entities
 
 - **`user_account`**: one row per authenticated principal across drivers.
-  `user_roles TEXT[]` (multi-role, INV-1), email-keyed, `sso_provider_*`,
-  `attributes JSONB`.
+  `user_roles TEXT[]` (multi-role, INV-1), email-keyed (`text` with a
+  case-insensitive `lower(email)` unique index; citext is unsupported by the
+  Encore binding, see `db/migrations/6_user_account_email_text.up.sql`),
+  `sso_provider_*`, `attributes JSONB`.
 - **`refresh_token`**: hash-only refresh-token store (INV-7), with rotation
   plus server-side revocation via `revoked_at`; `ON DELETE CASCADE` to
   `user_account`.
 - **`audit_log`**: durable audit trail (INV-8), with table/record/action plus
   old/new JSONB plus actor plus IP/UA.
+- **`rate_limit_counter`**: ephemeral UNLOGGED fixed-window counter (INV-6),
+  one row per `tier:client` bucket; loss-tolerant (the limiter fails open).
 
 ### 3.3 Enforcement table
 
@@ -185,7 +193,7 @@ in code comments preserve the compliance trace.
 | INV-3 httpOnly cookies | `lib/cookie-config.ts`, `lib/cookies.ts` | `auth/service.ts` issues, `auth/handler.ts` reads |
 | INV-4 CSRF | `lib/csrf.ts` factory | `csrfMiddleware` on `auth/encore.service.ts`; callbacks + `/auth/refresh` exempt |
 | INV-5 Security headers | `lib/security-headers.ts` | `securityHeaders` on `health` + `auth` |
-| INV-6 Rate limiting | `lib/rate-limit.ts` | `apiRateLimit` on `auth`; inline auth bucket on login/callback |
+| INV-6 Rate limiting | `lib/rate-limit.ts`, `db/migrations/5_rate_limit.up.sql` | `apiRateLimit` on `auth` + `gateway`; inline auth bucket on login/callback |
 | INV-7 JWT + refresh | `lib/jwt.ts`, `db/migrations/3_refresh_token.up.sql` | `auth/refresh.ts` rotation, `auth/handler.ts` verification |
 | INV-8 Audit | `lib/audit.ts`, `db/migrations/4_audit_log.up.sql` | auth mutations + gateway per-access audit |
 | INV-9 Multi-driver auth | `lib/secrets.ts` (driver secrets) | `auth/{mock,rauthy}.ts`, `auth/drivers.ts` |

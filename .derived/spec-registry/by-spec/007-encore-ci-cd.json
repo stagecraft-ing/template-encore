@@ -54,6 +54,6 @@
     "summary": "Encore delivery plumbing: encore-install and encore-build composite actions, the reusable encore-ci.yml workflow (web type-check/build, encore check, typed-client staleness diff with volatile-prefix normalisation), and the inert encore-cd.yml.example deployment recipe. Encore CI is dispatched from ci.yml's encore route and required by ci-gate.\n",
     "title": "Encore CI/CD: composite actions, CI workflow, CD example, typed-client staleness gate"
   },
-  "shardHash": "80e3e2bda422a6e29e0ae2a2de556235f9a5582a0076fbdf920180272ac34a00",
+  "shardHash": "309a89e443c845d853a43659e651e3f3a7c158ccce2a966ba0045d2c125c0fd9",
   "specVersion": "1.1.0"
 }

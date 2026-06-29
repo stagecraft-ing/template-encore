@@ -41,6 +41,7 @@
       "3.2 Agent surface",
       "3.3 Frontmatter schemas",
       "3.4 Staleness gate",
+      "3.5 Feature-spec materialization",
       "4. Acceptance criteria",
       "5. Out of scope"
     ],
@@ -49,6 +50,6 @@
     "summary": "The agentic surface: nine skills under .claude/skills/ (init, setup, commit, implement-plan, research, validate-and-fix, cleanup, scaffold-feature, code-quality), four pipeline agents under .claude/agents/ (architect, explorer, implementer, reviewer) plus the encore-expert domain specialist, and the frontmatter schemas that govern their shape. Skills perform all governed reads through the spec-spine CLI; the whole surface is a hashed index input, so quiet edits trip the staleness gate.\n",
     "title": "Claude Code skills and agents: the agentic surface"
   },
-  "shardHash": "6f33d63120b7580b7df66cdfe4ce2de9f6215454b3d667f49f6b05b434b2dfc2",
+  "shardHash": "8475e689f4466f18fe3fcc7d6766c0f7c1dbaf507fb05bb92112f8e325edf77b",
   "specVersion": "1.1.0"
 }

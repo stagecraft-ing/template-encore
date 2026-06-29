@@ -143,6 +143,70 @@ await db.exec`INSERT INTO items (title) VALUES (${title})`;
 
 **Advanced:** Share databases via `SQLDatabase.named("name")`. Extensions: pgvector, PostGIS. ORM support: Prisma, Drizzle.
 
+## Rate Limiting (Postgres-native, no Redis)
+
+This template rate-limits with Postgres only: it reuses `SQLDatabase("app")`
+instead of adding Redis or an Encore cache cluster (which is itself Redis-backed).
+Encore Cache (`encore.dev/storage/cache`) is the documented Redis-backed option;
+this project deliberately avoids it (spec 002 INV-6).
+
+**Counter table** (UNLOGGED: skips the write-ahead log because rate-limit state is
+ephemeral and the limiter fails open). One row per `tier:client` bucket:
+
+```sql
+CREATE UNLOGGED TABLE rate_limit_counter (
+  bucket       TEXT PRIMARY KEY,
+  count        INTEGER NOT NULL,
+  window_start TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at   TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX rate_limit_counter_expires_at_idx ON rate_limit_counter (expires_at);
+```
+
+**Fixed-window increment** is one lock-free upsert (no `SELECT ... FOR UPDATE`, so
+no serialization bottleneck): `ON CONFLICT DO UPDATE` serialises concurrent
+increments on the single bucket row, and a window-expiry `CASE` resets the count
+rather than letting it grow:
+
+```ts
+const row = await db.queryRow<{ count: number }>`
+  INSERT INTO rate_limit_counter (bucket, count, window_start, expires_at)
+  VALUES (${bucket}, 1, now(), now() + ${windowSeconds} * interval '1 second')
+  ON CONFLICT (bucket) DO UPDATE SET
+    count = CASE WHEN rate_limit_counter.expires_at < now()
+                 THEN 1 ELSE rate_limit_counter.count + 1 END,
+    window_start = CASE WHEN rate_limit_counter.expires_at < now()
+                        THEN now() ELSE rate_limit_counter.window_start END,
+    expires_at = CASE WHEN rate_limit_counter.expires_at < now()
+                      THEN now() + ${windowSeconds} * interval '1 second'
+                      ELSE rate_limit_counter.expires_at END
+  RETURNING count
+`;
+```
+
+**Two consumption shapes** (`apps/api/lib/rate-limit.ts`):
+- A general API tier as Encore service middleware (`apiRateLimit`), mounted on the
+  `auth` and `gateway` services; it throws `APIError.resourceExhausted` past the limit.
+- A tighter auth tier consumed inline in the login/callback raw handlers
+  (`withinAuthRateLimit(clientIp)`), which answer 429 directly. This mirrors
+  Encore's own rate-limit example shape (an inline check inside the endpoint).
+
+**Fail open:** any database error returns "allowed" and logs `ratelimit.backend_error`,
+so a storage outage never blocks legitimate traffic; only a real breach is rejected.
+
+**Cleanup (optional):** the row is reused per bucket, so the table is bounded by
+distinct active clients and a prune is not required for correctness. For long-lived
+deployments, prune silent buckets periodically (a `CronJob` is a good fit):
+
+```sql
+DELETE FROM rate_limit_counter WHERE expires_at < now();
+```
+
+**Why Postgres over Redis here:** one fewer service to run and secure, and the
+counter shares the connection the app already has. A single Postgres op is
+marginally slower than Redis (both sub-millisecond), which is irrelevant at this
+template's scale and removes a dependency we were not otherwise using.
+
 ## Cron Jobs
 
 ```ts

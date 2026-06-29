@@ -116,6 +116,17 @@ Any edit to a skill or agent body MUST be accompanied by regenerated
 `npx spec-spine index check` will exit non-zero and the staleness gate will
 block the PR.
 
+### 3.5 Feature-spec materialization
+
+**FR-09**: New application features MUST begin as a spec. Before feature code is
+written, a `specs/NNN-slug/spec.md` is authored from
+`standards/spec/templates/spec-template.md` (with `kind` and `domain` from the
+closed taxonomies and ownership edges declared), and the `architect` agent's
+planning pass MUST flag any proposed change with no backing spec as a missing
+spec rather than proceed. The `scaffold-feature` skill generates feature code
+only; it does not author the spec, so the spec-first step is a precondition, not
+a byproduct, of scaffolding.
+
 ## 4. Acceptance criteria
 
 - **AC-1:** `ls .claude/skills/` lists exactly the nine skill directories:
@@ -134,6 +145,10 @@ block the PR.
   to the `.claude/**` inputs).
 - **AC-7:** `npx spec-spine couple --base origin/main` exits 0 with this spec
   and all four skill/agent directory additions in the same diff.
+- **AC-8:** `.claude/agents/architect.md` instructs the planner to flag work with
+  no backing spec (a "missing specs" check), and
+  `standards/spec/templates/spec-template.md` exists as the authoring source for a
+  new `specs/NNN-slug/spec.md` (FR-09).
 
 ## 5. Out of scope
 

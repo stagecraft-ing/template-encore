@@ -54,7 +54,9 @@ authenticated endpoints across the application, including the BFF proxy
   `export const gateway = new Gateway({ authHandler: auth })`. An expired
   access token surfaces a typed `TOKEN_EXPIRED` detail so the SPA can trigger
   the silent refresh flow.
-- **`types.ts`** — `SSOProfile`, `UserRecord`, `RefreshTokenRecord`.
+- **`types.ts`** — `AuthData`, `SSOProfile`, `UserRecord`, `MeResponse` (the
+  stored refresh-token row is `StoredRefreshToken`, defined in
+  `refresh-token-model.ts`).
 - **`service.ts`** — shared helpers: login finalisation, cookie issuance, JWT
   pair minting, auth-event audit.
 - **`user-model.ts`**, **`refresh-token-model.ts`** — tagged-template DB access
@@ -77,8 +79,8 @@ authenticated endpoints across the application, including the BFF proxy
 | `GET /api/v1/auth/drivers` | typed | list of configured drivers |
 | `GET /api/v1/auth/status` | raw | auth status (no 401) |
 | `GET /api/v1/auth/login` | raw | default-driver redirect |
-| `GET /api/v1/auth/{mock,rauthy}/login` | raw | per-driver SSO entry point |
-| `GET /api/v1/auth/{mock,rauthy}/callback` | raw | per-driver SSO callback (CSRF-exempt) |
+| `GET /api/v1/auth/{mock,rauthy}/login` | raw | per-driver SSO entry point; consumes the auth rate bucket inline |
+| `GET /api/v1/auth/rauthy/callback` | raw | OIDC code-exchange callback (CSRF-exempt); the mock driver logs in inline at `/mock/login` and has no callback |
 
 ### 3.3 Invariant enforcement
 
@@ -91,8 +93,9 @@ This service enforces the following invariants from spec `002-security-data-inva
 - **INV-4 (CSRF double-submit)** — `csrfMiddleware` on the service; callbacks
   and `/auth/refresh` in the exempt set.
 - **INV-5 (security headers)** — `securityHeaders` middleware mounted.
-- **INV-6 (rate limiting)** — `apiRateLimit` on the service; inline auth rate
-  bucket on login/callback.
+- **INV-6 (rate limiting)** — `apiRateLimit` middleware on the service; the
+  tighter auth bucket consumed inline (`withinAuthRateLimit`) on the login and
+  rauthy-callback endpoints.
 - **INV-7 (RS256 JWT + refresh rotation)** — `auth/refresh.ts` rotates (new pair,
   revoke presented token); `auth/handler.ts` verifies access tokens.
 - **INV-8 (audit trail)** — login, logout, and refresh MUST write best-effort
@@ -119,8 +122,10 @@ and MUST be revocable server-side; only the SHA-256 hash of a refresh token is
 stored (spec `002` INV-7).
 
 **FR-005**: The service MUST mount `securityHeaders`, `csrfMiddleware`, and
-`apiRateLimit`; SSO callbacks and `/auth/refresh` MUST be CSRF-exempt;
-login/callback MUST additionally consume the tighter auth rate bucket.
+`apiRateLimit`; SSO callbacks and `/auth/refresh` MUST be CSRF-exempt; the login
+and callback endpoints (`/mock/login`, `/rauthy/login`, `/rauthy/callback`) MUST
+additionally consume the tighter auth rate bucket inline (`withinAuthRateLimit`,
+spec `002` INV-6).
 
 **FR-006**: Multi-role MUST be preserved end-to-end (spec `002` INV-1): IdP
 claims to `user_account.user_roles TEXT[]` to JWT `roles` to
@@ -131,7 +136,7 @@ audit record (spec `002` INV-8).
 
 ### 3.5 Key entities
 
-- **AuthData** — `{ userID, email, name, roles }`, the per-request identity
+- **AuthData** — `{ userID, email, name, roles, ssoProvider }`, the per-request identity
   surfaced by the handler to every `auth: true` endpoint.
 - **SSOProfile** — the normalized profile a driver returns before it is
   resolved to a `user_account` row.
@@ -143,11 +148,13 @@ audit record (spec `002` INV-8).
 `getAuthData()`, and the `health` service unaffected.
 
 **AC-2**: `cd apps/api && npm test` passes; unit tests cover `requireRole`
-any-of semantics, CSRF token validation, and refresh rotation logic.
+any-of semantics and CSRF token validation. Refresh-token rotation against the
+database is covered by `auth/refresh.itest.ts`, run via
+`npm run test:integration` (`encore test`).
 
-**AC-3**: All three driver login+callback flows are exercised in integration or
-test mode; `GET /api/v1/auth/drivers` returns only the drivers whose config
-keys are present.
+**AC-3**: Both drivers' login flows and the rauthy OIDC callback are exercised in
+integration or test mode (the mock driver logs in inline and has no callback);
+`GET /api/v1/auth/drivers` returns only the drivers whose config keys are present.
 
 **AC-4**: `npx spec-spine compile` produces no new diagnostics; `npx spec-spine
 index check` exits 0; `npx spec-spine couple --base origin/main` is clean for

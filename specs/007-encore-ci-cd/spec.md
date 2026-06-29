@@ -94,6 +94,8 @@ The workflow contains three jobs:
 - `npm ci` in `apps/api` (standalone, not a workspace member)
 - `encore check` (parse + topology + type-check + boot + schema application against an
   ephemeral Postgres)
+- `npm run test:integration` (`encore test`): the `*.itest.ts` suites (refresh-token
+  rotation against the database, the BFF proxy handler) against the ephemeral Postgres
 
 **`client-staleness`**
 - Put the CLI on `$GITHUB_PATH`
@@ -161,8 +163,8 @@ Encore CI failure blocks merge and a skip (non-app PR) reads as success.
 
 **AC-1.** `encore-ci.yml` passes on a PR touching the app surface: the `web`
 job type-checks both SPAs and builds `apps/api/web/build`; the `api` job runs
-`encore check` cleanly; the `client-staleness` job produces a normalized diff
-of zero lines.
+`encore check` and the `encore test` integration suites cleanly; the
+`client-staleness` job produces a normalized diff of zero lines.
 
 **AC-2.** `npx spec-spine lint --fail-on-warn` passes over `.github/workflows/encore-ci.yml`
 (SHA-pin check via spec 011 gate in the supply-chain workflow).

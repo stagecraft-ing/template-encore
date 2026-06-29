@@ -13,7 +13,7 @@ export async function upsertUserFromProfile(profile: SSOProfile): Promise<UserRe
     VALUES
       (${profile.email}, ${profile.name}, ${profile.roles}, ${profile.ssoProvider},
        ${profile.ssoProviderId}, ${attributes}::jsonb, now())
-    ON CONFLICT (email) DO UPDATE SET
+    ON CONFLICT (lower(email)) DO UPDATE SET
       name            = EXCLUDED.name,
       user_roles      = EXCLUDED.user_roles,
       sso_provider    = EXCLUDED.sso_provider,

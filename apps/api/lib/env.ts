@@ -35,7 +35,6 @@ export const env = {
   authDriver: strOr("AUTH_DRIVER", "mock") as AuthDriver,
   frontendUrl: strOr("FRONTEND_URL", "http://localhost:5173"),
   logPii: bool("LOG_PII", false),
-  redisUrl: str("REDIS_URL"),
 
   // rauthy (OIDC) non-secret config; the issuer is discovered from RAUTHY_ISSUER
   // (.well-known/openid-configuration). The client secret is in lib/secrets.ts.

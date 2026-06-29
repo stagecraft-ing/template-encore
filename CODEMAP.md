@@ -71,7 +71,7 @@ All code added to this app **must** use these technologies. Do not introduce alt
 | **Backend** | **Encore.ts** | Typed `api()` / `api.raw()` endpoints; services discovered from `encore.service.ts`; `authHandler` + `Gateway`; service `middlewares`. Replaces Express 5. |
 | **Auth** | **Stateless RS256 JWT** | Access (15 min) + DB-backed refresh (7 day, rotation/revocation) in httpOnly cookies; CSRF double-submit. Multi-driver SSO (mock/rauthy). **Not** `express-session`. |
 | **Validation** | Zod (SPA/packages); Encore request types (API) | No Joi, Yup, or class-validator. |
-| **Persistence** | **Postgres via Encore `SQLDatabase("app")`** | `user_account`, `refresh_token`, `audit_log`. Tagged-template (auto-parameterized) queries only. Redis is optional, for rate-limit backing only (`REDIS_URL`). |
+| **Persistence** | **Postgres via Encore `SQLDatabase("app")`** | `user_account`, `refresh_token`, `audit_log`, `rate_limit_counter`. Tagged-template (auto-parameterized) queries only. No Redis: rate-limit counters live in an UNLOGGED table in the same database. |
 | **Build** | Vite (frontend); `encore build docker` (backend) | Backend image: `Dockerfile.base` + `encore build docker --base`. Monorepo with npm workspaces (api excluded). |
 | **Testing** | Vitest (unit), Playwright (E2E) | `encore check` validates the backend graph/topology/types. |
 | **Linting** | ESLint 9 + Prettier | Flat config format. |
@@ -306,8 +306,8 @@ Query contract (INV-2): tagged templates only: db.query`... WHERE id = ${id}`: n
 Standalone migration runner for self-host: apps/api/scripts/migrate.mjs.
 ```
 
-Redis is **not** a session store here (sessions are stateless JWT). `REDIS_URL`, when set, only swaps the
-in-memory rate-limit backend (`lib/rate-limit.ts`, INV-6) for a Redis-backed one.
+There is no Redis in this stack: sessions are stateless JWT, and rate limiting (`lib/rate-limit.ts`, INV-6) is
+backed by a Postgres UNLOGGED counter table (`db/migrations/5_rate_limit.up.sql`) in the same `SQLDatabase("app")`.
 
 ---
 
@@ -396,7 +396,7 @@ if (hasRole('admin')) { /* show admin UI */ }
 1. **Standalone Encore backend**: one Encore app at `apps/api`, excluded from npm workspaces, self-contained (no `@template/*` imports). Services discovered from `encore.service.ts`.
 2. **Multi-driver auth**: `mock`/`rauthy` coexist; `AUTH_DRIVER` sets the default. Uniform discovery/login surface.
 3. **Stateless JWT, not sessions**: RS256 access + DB-backed refresh rotation in httpOnly cookies (INV-3/INV-7). No `express-session`.
-4. **Postgres via `SQLDatabase`**: `user_account` / `refresh_token` / `audit_log`. Parameterized (tagged-template) queries only (INV-2). Redis is rate-limit-only.
+4. **Postgres via `SQLDatabase`**: `user_account` / `refresh_token` / `audit_log` / `rate_limit_counter`. Parameterized (tagged-template) queries only (INV-2). No Redis: rate limiting uses a Postgres UNLOGGED counter (INV-6).
 5. **BFF pattern**: `gateway` proxies `/api/v1/data/*` to the private backend with S2S OAuth tokens, traversal sanitisation, 5xx masking, timeout to 504, audit (INV-10).
 6. **PII never logged**: `lib/logger.ts` redacts (CC-006); `LOG_PII=false` in production or the app fails fast.
 7. **PrimeVue UI**: all SPA UI uses PrimeVue components (Aura theme preset, registered in `main.ts`).

@@ -6,6 +6,7 @@ import { api } from "encore.dev/api";
 import { env } from "../lib/env";
 import { finalizeLogin, frontendUrl } from "./service";
 import { clientIp, redirect, requestUrl, userAgent } from "./http";
+import { withinAuthRateLimit } from "../lib/rate-limit";
 import type { SSOProfile } from "./types";
 
 export function isMockEnabled(): boolean {
@@ -45,6 +46,12 @@ export const mockLogin = api.raw(
     if (!isMockEnabled()) {
       res.statusCode = 404;
       res.end();
+      return;
+    }
+    if (!(await withinAuthRateLimit(clientIp(req)))) {
+      res.statusCode = 429;
+      res.setHeader("Retry-After", "60");
+      res.end("rate limit exceeded");
       return;
     }
     const raw = requestUrl(req).searchParams.get("user");

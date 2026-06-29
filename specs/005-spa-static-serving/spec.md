@@ -93,16 +93,22 @@ real build exists.
 
 ### FR-004 — dual-app layout wiring
 
-In the internal variant of the dual-app layout:
+The template ships the **public variant** active: `apps/web` is the SPA wired to
+`apps/api/web/build` (FR-003), and `apps/web-internal` is present as source but is
+not wired to the served build. This satisfies the public variant, which requires
+no additional configuration.
+
+Switching the served SPA to the **internal variant** is the documented
+alternative, and when you do so:
 
 - `apps/web-internal/vite.config.ts` MUST set `build.outDir` to
   `../api/web/build` (with `emptyOutDir: true`), mirroring `apps/web`.
-- The internal app's `build:apps` script MUST target `apps/web-internal`
-  so the staff bundle is the one that lands in `apps/api/web/build`; no
-  double-build or order dependency with `apps/web` arises.
+- the active build script MUST build only the served SPA into
+  `apps/api/web/build`, so no double-build or `emptyOutDir` collision between the
+  two SPAs can arise.
 
-The public variant requires no additional configuration — the base wiring
-already serves `apps/web`.
+Only one SPA is served per Encore app, so exactly one variant's wiring is active
+at a time.
 
 ### FR-005 — development workflow
 

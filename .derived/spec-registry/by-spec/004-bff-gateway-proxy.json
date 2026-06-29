@@ -46,6 +46,6 @@
     "summary": "The gateway service: an api.raw catch-all at /api/v1/data/* proxying to the private backend with an S2S OAuth client-credentials token cache, path-traversal sanitisation, 5xx masking, upstream timeout mapped to 504, and per-access audit (INV-10).\n",
     "title": "BFF gateway proxy: api.raw /api/v1/data/* to the private backend"
   },
-  "shardHash": "6efaad70327fd08d0672355a7431fb0e3f8486b4ac21ad1d3b1450cbfa21116d",
+  "shardHash": "d052dd4982ed0ddc542cffc711d1a757ab51297805372f24dc9e7bb5f0f8e849",
   "specVersion": "1.1.0"
 }

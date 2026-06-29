@@ -68,6 +68,10 @@ jobs:
         run: npm ci
       - name: encore check (parse, topology, type-check, boot, migrate)
         run: /home/runner/.encore/bin/encore check
+      - name: Put Encore CLI on PATH
+        run: echo "/home/runner/.encore/bin" >> "$GITHUB_PATH"
+      - name: Integration tests (encore test against ephemeral Postgres)
+        run: npm run test:integration
 
   client-staleness:
     name: Typed client up-to-date

@@ -4,6 +4,9 @@
  * Credentials are read from the Authorization: Bearer header first, then the
  * httpOnly access_token cookie (the SPA's primary path). An expired access token
  * surfaces a typed TOKEN_EXPIRED detail so the client can trigger silent refresh.
+ *
+ * CC-006: all logging here routes through lib/logger.ts (PII redaction); never
+ * log raw tokens, cookies, or claims from this handler.
  */
 import { APIError, Gateway, type Cookie, type Header } from "encore.dev/api";
 import { authHandler } from "encore.dev/auth";

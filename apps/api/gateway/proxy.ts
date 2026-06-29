@@ -6,6 +6,9 @@
  *
  * All five handlers run behind the Gateway authHandler (auth:true), so an
  * unauthenticated caller is rejected with 401 before the body runs (FR-001).
+ *
+ * CC-006: logging and audit here route through lib/logger.ts and lib/audit.ts
+ * (PII redaction); never log raw upstream bodies, tokens, or headers.
  */
 import { api } from "encore.dev/api";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -15,6 +18,7 @@ import { writeAudit } from "../lib/audit";
 import { logSecurityEvent } from "../lib/logger";
 import { getAccessToken, isGatewayConfigured } from "./token-cache";
 import { sanitizePath } from "./path";
+import { isServerError, isTimeoutError, stripErrorStack } from "./masking";
 
 const PREFIX = "/api/v1/data";
 
@@ -37,7 +41,7 @@ async function readBody(req: IncomingMessage): Promise<Buffer> {
   return Buffer.concat(chunks);
 }
 
-async function handleProxy(req: IncomingMessage, res: ServerResponse): Promise<void> {
+export async function handleProxy(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (!isGatewayConfigured()) {
     writeError(res, 503, "unavailable", "gateway is not configured");
     return;
@@ -94,7 +98,7 @@ async function handleProxy(req: IncomingMessage, res: ServerResponse): Promise<v
     });
 
     // INV-10: upstream 5xx never leaks; collapse to a generic 502.
-    if (upstream.status >= 500) {
+    if (isServerError(upstream.status)) {
       writeError(res, 502, "bad_gateway", "upstream service error");
       return;
     }
@@ -107,8 +111,7 @@ async function handleProxy(req: IncomingMessage, res: ServerResponse): Promise<v
     // Strip any stack trace from a 4xx JSON error body before forwarding.
     if (upstream.status >= 400 && respContentType?.includes("application/json")) {
       try {
-        const parsed = JSON.parse(text) as { error?: { stack?: unknown } };
-        if (parsed?.error && typeof parsed.error === "object") delete parsed.error.stack;
+        const parsed = stripErrorStack(JSON.parse(text));
         res.end(JSON.stringify(parsed));
         return;
       } catch {
@@ -117,7 +120,7 @@ async function handleProxy(req: IncomingMessage, res: ServerResponse): Promise<v
     }
     res.end(text);
   } catch (err) {
-    if (err instanceof Error && err.name === "AbortError") {
+    if (isTimeoutError(err)) {
       writeError(res, 504, "deadline_exceeded", "upstream request timed out");
       return;
     }

@@ -1,20 +1,10 @@
-# [template-encore](https://stagecraft-ing.github.io/template-encore) [![CI](https://github.com/stagecraft-ing/template-encore/actions/workflows/ci.yml/badge.svg)](https://github.com/stagecraft-ing/template-encore/actions/workflows/ci.yml)
+# [template-encore](https://stagecraft-ing.github.io/template-encore) [![CI](https://github.com/stagecraft-ing/template-encore/actions/workflows/ci.yml/badge.svg)](https://github.com/stagecraft-ing/template-encore/actions/workflows/ci.yml) [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/) [![Vue 3](https://img.shields.io/badge/Vue-3.5-green)](https://vuejs.org/) [![Encore.ts](https://img.shields.io/badge/Encore.ts-1.57-purple)](https://encore.dev/) [![Node 24](https://img.shields.io/badge/Node-24.x-green)](https://nodejs.org/) [![PrimeVue](https://img.shields.io/badge/PrimeVue-4-blue)](https://primevue.org/)
 ![acme-vue-encore reference application](.github/img/template-github-banner.jpg)
-
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
-[![Vue 3](https://img.shields.io/badge/Vue-3.5-green)](https://vuejs.org/)
-[![Encore.ts](https://img.shields.io/badge/Encore.ts-1.57-purple)](https://encore.dev/)
-[![Node 24](https://img.shields.io/badge/Node-24.x-green)](https://nodejs.org/)
-[![PrimeVue](https://img.shields.io/badge/PrimeVue-4-blue)](https://primevue.org/)
 
 Runnable reference application: a public-facing SPA and a staff-facing SPA, both backed by a single
 **Encore.ts** service cluster. The backend provides a BFF API gateway, stateless RS256 JWT auth, and
 Postgres persistence. Both Vue 3 frontends are built on PrimeVue with pluggable authentication
 (rauthy OIDC or Mock). TypeScript throughout.
-
-> **Backend = Encore.ts.** The original Express 5 BFF was retired in the Encore migration (specs 001–006).
-> See [`CODEMAP.md`](CODEMAP.md) for the architectural blueprint and `specs/001-encore-app-architecture` /
-> `specs/002-security-data-invariants` for the authoritative backend specs.
 
 ## Prerequisites
 

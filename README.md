@@ -1,4 +1,4 @@
-# [acme-vue-encore](https://stagecraft-ing.github.io/template-encore) [![CI](https://github.com/stagecraft-ing/template-encore/actions/workflows/ci.yml/badge.svg)](https://github.com/stagecraft-ing/template-encore/actions/workflows/ci.yml)
+# [template-encore](https://stagecraft-ing.github.io/template-encore) [![CI](https://github.com/stagecraft-ing/template-encore/actions/workflows/ci.yml/badge.svg)](https://github.com/stagecraft-ing/template-encore/actions/workflows/ci.yml)
 ![acme-vue-encore reference application](.github/img/template-github-banner.jpg)
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)

@@ -54,6 +54,6 @@
     "summary": "The root CI orchestrator: ci.yml computes change routes with inline git diff (no third-party filter action), always runs the constitutional gates (the spec-spine governance workflow and supply-chain), dispatches routed gates (Encore CI, AI review), and aggregates everything behind the terminal ci-gate job that branch protection requires. Dependabot covers npm and github-actions ecosystems; CODEOWNERS and the PR template route review.\n",
     "title": "Repo CI orchestrator: ci.yml routing, dependabot, CODEOWNERS, PR template"
   },
-  "shardHash": "af26620bc47731b27b6e5145d8b43720a0a98e2847dc8d71b06e01ac04ec30a7",
+  "shardHash": "9d4c9c93d29ac3f1091a8b9d172373f1572843676b049d19280158815897f5b2",
   "specVersion": "1.1.0"
 }

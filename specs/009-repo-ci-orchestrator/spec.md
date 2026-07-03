@@ -100,6 +100,15 @@ so routing is inline:
 - On `pull_request`: `git diff --name-only ${{ github.event.pull_request.base.sha }} HEAD`
 - On `merge_group` and `workflow_dispatch`: every route defaults to
   `true` (no PR base to diff; run the full suite)
+- On `push`: `git diff` against `${{ github.event.before }}`. When there
+  is no usable base (first push to a ref, where `before` is the zero SHA,
+  or a parentless initial commit), the base is resolved with
+  `git rev-parse --verify --quiet HEAD~1` and falls back to the empty-tree
+  object so every path registers as changed and all routes compute. Plain
+  `git rev-parse HEAD~1` must not be used here: on a parentless commit it
+  echoes the literal `HEAD~1` to stdout, producing a two-line base that
+  breaks the subsequent `git diff` (the born-with produced app's very first
+  commit is exactly this case).
 
 Route outputs today:
 
@@ -115,7 +124,13 @@ Future routes are added by their owning spec via `co_authority` on
 Two governance workflows MUST run on every PR regardless of route:
 
 - **spec-spine** (`spec-spine.yml`, owned by spec 000): compile,
-  lint --fail-on-warn, index check, couple --base origin/main
+  lint --fail-on-warn, index check, couple --base origin/main. Dispatched
+  with `secrets: inherit` so that in a born-with produced app the reusable
+  workflow's terminal `tenant-emit build-certificate` step (spec 220
+  FR-002) can read the `OAP_SIGNING_KEY` secret (spec 220 FR-003) and sign
+  with the operator key. A reusable workflow receives no caller secrets
+  without `inherit`; inherited secrets are simply empty on fork PRs, which
+  preserves the emit step's documented graceful skip.
 - **supply-chain** (`ci-supply-chain.yml`, owned by spec 010): npm
   audit + workflow-pins
 

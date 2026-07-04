@@ -171,7 +171,9 @@ npm run format      # prettier --write
 npm run format:check
 ```
 
-Husky runs lint/format on commit (`npm run prepare` installs the hooks).
+An opt-in pre-commit hook (`.githooks/pre-commit`) guards the codebase index and
+workflow SHA-pins. Enable it in your clone with `git config core.hooksPath .githooks`
+(disable with `git config --unset core.hooksPath`).
 
 ## Type Checking
 

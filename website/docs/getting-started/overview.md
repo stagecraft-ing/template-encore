@@ -22,6 +22,6 @@ The backend decomposes into six logical services (`lib`, `db`, `health`, `auth`,
 
 `acme-vue-encore` sits in the broader Open Agentic Platform (OAP) / Stagecraft ecosystem as the lean reference app.
 
-The code-generating "generator" was deliberately stripped out into the sibling repository `factory-encore` (commit `b37d3d7`). The repository also vends `tenant-tail` (0.1.0) run-side provenance and certificate verifiers tied to OAP specs 209 and 219. The Express 5 backend it originally began with was fully retired during the Encore migration (specs 001 through 006).
+The code-generating "generator" was deliberately stripped out into the sibling repository `factory-encore` (commit `b37d3d7`). The repository also vends `tenant-tail` run-side provenance and certificate verifiers tied to OAP specs 209 and 219 (the pinned version lives in the root `package.json`). The Express 5 backend it originally began with was fully retired during the Encore migration (specs 001 through 006).
 
 > **Note**: The GitHub repository is named `template-encore`, but the project's own identity throughout the codebase is **`acme-vue-encore`**. The npm workspace scope is `@template/*` (e.g., `@template/web`, `@template/api`, `@template/shared`), which is unrelated to any "template" verb.

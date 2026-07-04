@@ -39,8 +39,7 @@
     "docker:build": "npm run build && npm run build:api",
     "docker:logs": "docker compose logs -f",
     "clean": "node -e \"const fs=require('fs');const path=require('path');const rm=p=>{try{fs.rmSync(p,{recursive:true,force:true})}catch{}};rm('node_modules');['apps','packages'].forEach(dir=>fs.readdirSync(dir).forEach(d=>{const base=path.join(dir,d);rm(path.join(base,'node_modules'));rm(path.join(base,'dist'));rm(path.join(base,'tsconfig.tsbuildinfo'))}));\"",
-    "clean:build": "node -e \"const fs=require('fs');const path=require('path');['apps','packages'].forEach(dir=>fs.readdirSync(dir).forEach(d=>{const base=path.join(dir,d);try{fs.rmSync(path.join(base,'dist'),{recursive:true,force:true});fs.rmSync(path.join(base,'tsconfig.tsbuildinfo'),{force:true})}catch{}}));\"",
-    "prepare": "husky install || true"
+    "clean:build": "node -e \"const fs=require('fs');const path=require('path');['apps','packages'].forEach(dir=>fs.readdirSync(dir).forEach(d=>{const base=path.join(dir,d);try{fs.rmSync(path.join(base,'dist'),{recursive:true,force:true});fs.rmSync(path.join(base,'tsconfig.tsbuildinfo'),{force:true})}catch{}}));\""
   },
   "dependencies": {
     "concurrently": "^10.0.3",
@@ -61,12 +60,11 @@
     "eslint-plugin-vue": "^10.9.2",
     "globals": "^17.7.0",
     "happy-dom": "^20.10.6",
-    "husky": "^9.1.7",
     "jsonc-parser": "^3.3.1",
     "prettier": "^3.9.1",
-    "spec-spine": "0.8.0",
+    "spec-spine": "0.10.0",
     "tenant-emit": "0.2.0",
-    "tenant-tail": "0.2.0",
+    "tenant-tail": "0.3.0",
     "typescript-eslint": "^8.62.0",
     "vitest": "^4.0.18",
     "vue-eslint-parser": "^10.3.0"

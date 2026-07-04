@@ -66,9 +66,6 @@ temp/
 # TypeScript
 *.tsbuildinfo
 
-# Husky
-.husky/_
-
 # Cache directories
 .cache/
 .vite/

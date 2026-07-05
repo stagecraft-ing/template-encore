@@ -46,6 +46,10 @@
       {
         "kind": "file",
         "path": "CLAUDE.md"
+      },
+      {
+        "kind": "file",
+        "path": "requirements/business-requirements-document.md"
       }
     ],
     "extraFrontmatter": {
@@ -87,6 +91,6 @@
       "refusal-rule"
     ]
   },
-  "shardHash": "75cee739654f7b0e4db97415850a3c59b7f350b37731a1af322ddc86046a4f66",
+  "shardHash": "f82479252db2302d1fd14f4dc446231a549842130958b2ba1f3bce33e82821bd",
   "specVersion": "1.1.0"
 }

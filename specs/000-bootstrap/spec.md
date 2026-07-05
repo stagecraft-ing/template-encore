@@ -53,6 +53,7 @@ establishes:
   - "Makefile"
   - "AGENTS.md"
   - "CLAUDE.md"
+  - "requirements/business-requirements-document.md"
 ---
 
 # 000 — Bootstrap: the spec-spine governance contract
@@ -84,6 +85,7 @@ views of that binding.
 | `Makefile` | Thin wrappers over the CLI verbs (the gates' local entry points) |
 | `AGENTS.md` | The cross-agent session-init protocol (governed reads at session start) |
 | `CLAUDE.md` | Project instructions binding agents to this contract |
+| `requirements/business-requirements-document.md` | The born-with BRD placeholder: gives the produced-app `verify-provenance` gate a document to audit so a fresh scaffold is born green (OAP spec 209 / tenant-tail spec 219) |
 
 ## 3. Behavior
 
@@ -153,6 +155,13 @@ views of that binding.
     `verify-certificate`), each gated on `.kernel-version` with a visible
     notice when N/A. This activates the seeded enforcement OAP spec 209
     governs; the verifiers are the vended `tenant-tail` npm pin (spec 219).
+  - **Born-with BRD**: the template ships a claimless
+    `requirements/business-requirements-document.md` placeholder so the
+    produced-app `verify-provenance --fail-on-rejected` gate finds a BRD to
+    audit and passes (zero authored claims means zero rejected). Without it a
+    freshly scaffolded app is born red on a missing BRD. App authors replace
+    the placeholder with real requirements; each `### KIND-NNN` heading then
+    becomes a claim the gate re-checks against the extraction corpus.
 
 ### 3.6 Governed reads
 

@@ -38,6 +38,10 @@
         "source": "spec-edge"
       },
       {
+        "path": "requirements/business-requirements-document.md",
+        "source": "spec-edge"
+      },
+      {
         "path": "spec-spine.toml",
         "source": "spec-edge"
       },
@@ -154,6 +158,19 @@
       {
         "locations": [
           {
+            "file": "requirements/business-requirements-document.md"
+          }
+        ],
+        "ownership": true,
+        "sourceField": "establishes",
+        "unit": {
+          "kind": "file",
+          "path": "requirements/business-requirements-document.md"
+        }
+      },
+      {
+        "locations": [
+          {
             "file": "spec-spine.toml"
           }
         ],
@@ -182,5 +199,5 @@
     "specStatus": "approved"
   },
   "schemaVersion": "1.1.0",
-  "shardHash": "fb7da39372646257d1c1a91c0fb17161cb085bda17ce5b46ec74ca8a59cf7045"
+  "shardHash": "2e7a3b0e8757cc94115aba7217c0ff8f3778c01a0995025fa436699b735f00ac"
 }

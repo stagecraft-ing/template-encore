@@ -17,6 +17,15 @@ nul
 # Build outputs
 dist/
 build/
+# ...but keep the committed SPA-mount placeholder apps/api/web/build/index.html.
+# The `build/` rule above prunes that whole directory on a produced app's fresh
+# `git init && git add`, and git cannot re-include a file whose parent dir is
+# pruned, so apps/api/.gitignore's `!/web/build/index.html` negation is powerless
+# there. Encore's api.static (apps/api/web/static.ts, dir: ./build) then fails
+# `encore check` with "unable to read static assets directory". Un-prune just that
+# directory so apps/api/.gitignore's file-level rules apply (ignore build/*, keep
+# index.html); real SPA output stays ignored.
+!apps/api/web/build/
 *.tsbuildinfo
 *.map
 *.js.map

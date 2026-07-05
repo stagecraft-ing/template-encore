@@ -87,9 +87,21 @@ directly into the `web` service's `build/` directory. `encore.app`'s
 the Docker image during `encore build docker`.
 
 Only the committed placeholder `apps/api/web/build/index.html` is tracked
-in git (`apps/api/.gitignore` excludes the real build output — hashed
+in git (`apps/api/.gitignore` excludes the real build output: hashed
 assets, `assets/` subtree). This lets the app boot in development before a
 real build exists.
+
+The repository-root `.gitignore` excludes build outputs everywhere
+(`build/`), so it MUST also carry an explicit `!apps/api/web/build/`
+negation that un-prunes that one directory. Git cannot re-include a file
+whose parent directory is pruned, so without the root negation
+`apps/api/.gitignore`'s `!/web/build/index.html` is powerless on a produced
+app's fresh `git init && git add` (a born-with scaffold): the placeholder is
+dropped from commit #1 and the produced app's `encore check` fails with
+"unable to read static assets directory". The template repository itself is
+unaffected (the placeholder is already tracked there, so a fresh add never
+re-evaluates it); the root negation is what carries the placeholder into a
+born-with produced app.
 
 ### FR-004 — dual-app layout wiring
 

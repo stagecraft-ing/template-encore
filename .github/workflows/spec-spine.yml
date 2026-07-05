@@ -143,7 +143,16 @@ jobs:
           mkdir -p .factory
           # Reproducible CycloneDX BOM derived purely from the committed lockfile
           # (spec 203 AC-4: same lockfile + pinned tool => byte-identical BOM).
+          # --ignore-npm-errors: the app's package.json `overrides` force some
+          # transitive deps (e.g. glob, editorconfig) outside a dependent's
+          # declared range, so cyclonedx-npm's internal `npm ls` exits
+          # ELSPROBLEMS under node-24 and aborts. The BOM is derived from the
+          # lockfile (--package-lock-only), so the tree range-validity warnings
+          # change neither its content nor its reproducibility; both this
+          # invocation and the parity re-check below carry the flag so their
+          # output hashes still compare like-for-like.
           npx --no-install @cyclonedx/cyclonedx-npm \
+            --ignore-npm-errors \
             --output-format JSON --output-reproducible --package-lock-only \
             --output-file .factory/sbom.cdx.json
           # Dependency audit (spec 203 FR-002). `npm audit` exits non-zero when
@@ -166,7 +175,10 @@ jobs:
           # lockfile + pinned @cyclonedx/cyclonedx-npm (constitution Principle IV,
           # spec 203 AC-4). Point 3 (attributable failure): the diagnostic names
           # which artifact drifted.
+          # --ignore-npm-errors mirrors the generation step above so the
+          # regenerated BOM is byte-identical (same lockfile, same flags).
           npx --no-install @cyclonedx/cyclonedx-npm \
+            --ignore-npm-errors \
             --output-format JSON --output-reproducible --package-lock-only \
             --output-file /tmp/sbom.recheck.json
           a="$(sha256sum .factory/sbom.cdx.json | cut -d' ' -f1)"

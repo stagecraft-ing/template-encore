@@ -49,7 +49,9 @@ jobs:
           fi
   build:
     needs: preflight
-    if: needs.preflight.outputs.enabled == 'true'
+    # Require preflight to have succeeded: a custom job-level `if` overrides the
+    # implicit success() needs-guard, so check preflight's result explicitly.
+    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.enabled == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -68,8 +70,10 @@ jobs:
         with:
           path: website/build
   deploy:
-    needs: [preflight, build]
-    if: needs.preflight.outputs.enabled == 'true'
+    # No custom `if`: the default success() guard runs deploy only when build
+    # succeeded. When build is skipped (Pages disabled) or fails, deploy is
+    # skipped too, so a failed build never publishes.
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages

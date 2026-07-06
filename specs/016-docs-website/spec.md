@@ -101,16 +101,16 @@ source set to **GitHub Actions** (Settings → Pages). Enabling Pages is a
 repo-admin action outside any workflow file, consistent with the
 branch-protection and merge-queue carve-outs in specs 009 and 012.
 
-Inertness is realised by a `preflight` job that queries the Pages API
-(`GET /repos/{owner}/{repo}/pages`) with the workflow's `github.token`. Only a
-genuine **404** (Pages not configured) reports `enabled=false` and skips the
-`build` and `deploy` jobs through a job-level `if`, so the run concludes
-successfully instead of failing at `configure-pages`. Any other outcome
-(network error, 5xx, rate limit, auth failure) fails the preflight loudly
-rather than masquerading as "Pages off" and silently swallowing a publish.
-This keeps a freshly produced repo green on its first push; once an admin
-enables Pages the next qualifying run builds and publishes. The workflow never
-enables Pages itself: enablement stays a repo-admin action (see §5).
+Inertness is realised by a `preflight` job that reads the Pages API
+(`GET /repos/{owner}/{repo}/pages`) with the workflow's `github.token` and
+branches on the HTTP status: **200** reports `enabled=true`; **404** (Pages not
+configured) reports `enabled=false` and skips the `build` and `deploy` jobs
+through a job-level `if`, so the run concludes successfully instead of failing
+at `configure-pages`; any other status, or a transport failure, fails the
+preflight loudly rather than masquerading as "Pages off" and silently swallowing
+a publish. This keeps a freshly produced repo green on its first push; once an
+admin enables Pages the next qualifying run builds and publishes. The workflow
+never enables Pages itself: enablement stays a repo-admin action (see §5).
 
 ## 4. Acceptance criteria
 

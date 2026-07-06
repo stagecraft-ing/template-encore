@@ -1,0 +1,8 @@
+/target
+/target-linux
+/node_modules
+*.tgz
+Cargo.lock
+*.node
+index.js
+index.d.ts

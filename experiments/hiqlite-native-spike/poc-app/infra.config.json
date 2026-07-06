@@ -1,0 +1,10 @@
+{
+  "$schema": "https://encore.dev/schemas/infra.schema.json",
+  "metadata": {
+    "app_id": "hiqlite-poc-app",
+    "env_name": "spike",
+    "env_type": "production",
+    "cloud": "local",
+    "base_url": "http://localhost:4000"
+  }
+}

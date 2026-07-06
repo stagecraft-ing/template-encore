@@ -152,9 +152,13 @@ views of that binding.
     always-on via the orchestrator (spec 009). For a produced app it then
     runs the tenant-tail run-side verifiers (the born-with toolchain pin
     check, `verify-provenance --fail-on-rejected`, and
-    `verify-certificate`), each gated on `.kernel-version` with a visible
-    notice when N/A. This activates the seeded enforcement OAP spec 209
-    governs; the verifiers are the vended `tenant-tail` npm pin (spec 219).
+    `verify-certificate --allow-unsealed`), each gated on `.kernel-version`
+    with a visible notice when N/A. This activates the seeded enforcement OAP
+    spec 209 governs; the verifiers are the vended `tenant-tail` npm pin
+    (spec 219). `--allow-unsealed` accepts the tenant certificate, which is
+    unsealed by design (no platform countersign, OAP spec 220 FR-004);
+    tenant-tail 0.3.0 rejects an unsealed certificate by default. Drop the flag
+    when the tenant-to-OAP countersign uplink (OAP spec 168) lands.
   - **Born-with BRD**: the template ships a claimless
     `requirements/business-requirements-document.md` placeholder so the
     produced-app `verify-provenance --fail-on-rejected` gate finds a BRD to

@@ -8,10 +8,14 @@ description: >
 inputs:
   version:
     description: >
-      Encore CLI version pin. Default is "latest". Pin to a specific version
-      for reproducible builds.
+      Encore CLI version pin. Defaults to the encore.dev runtime version this
+      template pins (apps/api package.json). Keeping the CLI in lockstep with the
+      runtime is what makes the typed client the scaffold generates byte-for-byte
+      structurally identical to the one this CI regenerates and checks (the
+      `Typed client up-to-date` gate / OAP spec 220 AC-2). Bump this in lockstep
+      when bumping encore.dev.
     required: false
-    default: latest
+    default: "1.57.9"
 
 outputs:
   cli-path:

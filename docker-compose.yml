@@ -1,4 +1,4 @@
-# Encore self-host compose: runs the pre-built Encore image + Postgres + optional Redis.
+# Encore self-host compose: runs the pre-built Encore image + Postgres.
 # The API image is built separately via `npm run build:api` (encore build docker).
 # Primary local development uses `npm run dev` (encore run + Vite; auto-provisions Postgres).
 # Use this file for local containerised self-host or staging validation of the built image.
@@ -27,20 +27,6 @@ services:
     networks:
       - app-network
 
-  redis:
-    image: redis:7-alpine
-    profiles:
-      - cache
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app-network
-
   # Image built by `npm run build:api` (encore build docker --base apps/api/Dockerfile.base).
   # The single image serves both the Encore API (port 4000) and the built SPA (web service / api.static).
   api:
@@ -58,8 +44,6 @@ services:
       GATEWAY_OAUTH_CLIENT_ID: ${GATEWAY_OAUTH_CLIENT_ID:-}
       GATEWAY_OAUTH_CLIENT_SECRET: ${GATEWAY_OAUTH_CLIENT_SECRET:-}
       PRIVATE_API_BASE_URL: ${PRIVATE_API_BASE_URL:-}
-      # Optional: Redis-backed rate limiting (REDIS_URL is NOT a session store)
-      REDIS_URL: ${REDIS_URL:-}
     ports:
       - "4000:4000"
     depends_on:

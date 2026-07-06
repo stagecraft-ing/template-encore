@@ -21,6 +21,11 @@ jobs:
   # off". Enabling Pages stays a repo-admin action (FR-04, out of scope).
   preflight:
     runs-on: ubuntu-latest
+    # Least privilege: preflight only reads the Pages API. This job-level block
+    # narrows the inherited workflow permissions (which grant pages: write +
+    # id-token: write for the build/deploy jobs) down to a single read scope.
+    permissions:
+      pages: read
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:

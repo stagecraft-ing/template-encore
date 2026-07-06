@@ -41,6 +41,6 @@
     "summary": "The standalone Docusaurus v3 documentation site under `website/` and the `deploy-docs.yml` workflow that builds it and publishes to GitHub Pages. The site is a shipped deliverable (authored docs about the architecture, security model, governance, and developer workflow), not part of the runnable app or the npm workspace. The publish workflow runs on pushes to `main` that touch the site, is inert until a repo admin enables Pages, and satisfies the SHA-pin (spec 011) and allow-listed-publisher (spec 012) constraints like every other workflow.\n",
     "title": "Documentation website: the Docusaurus docs site and its GitHub Pages publish workflow"
   },
-  "shardHash": "e316f8516b437c321e09779e09c561c5bdafb313591100faa86be22f9d551029",
+  "shardHash": "6eaf32ef8c6d582649bb2e7ab8651cc47b43e75327ae6b37bb070269bf96e226",
   "specVersion": "1.1.0"
 }

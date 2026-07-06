@@ -13,7 +13,6 @@ These are typically set in `apps/api/.env` for local development or injected by 
 | `LOG_PII` | Whether to log PII. Must be `false` in production. | `false` |
 | `PRIVATE_API_BASE_URL` | Upstream URL for the BFF gateway proxy. | - |
 | `GATEWAY_OAUTH_TOKEN_URL` | Token endpoint for the S2S gateway token. | - |
-| `REDIS_URL` | Redis connection string for rate limiting. | - |
 | `RAUTHY_ISSUER` | OIDC Issuer URL (if `AUTH_DRIVER=rauthy`). | - |
 | `RAUTHY_REDIRECT_URI` | OIDC Callback URL. | - |
 | `RAUTHY_SCOPES` | OIDC scopes to request. | `openid profile email groups` |

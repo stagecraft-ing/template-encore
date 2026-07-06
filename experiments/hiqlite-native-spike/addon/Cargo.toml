@@ -1,0 +1,25 @@
+[package]
+name = "hiqlite-native"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "Feasibility spike: napi-rs addon linking hiqlite (single-node cache). Throwaway."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = { version = "3", default-features = false, features = ["napi8", "tokio_rt"] }
+napi-derive = "3"
+# Pinned to the last PUBLISHED hiqlite (the 0.14 line is unreleased; see the report).
+# cache-only: no `sqlite` feature, so no bundled rusqlite/SQLite-C -> far more portable.
+hiqlite = { version = "=0.13.2", default-features = false, features = ["cache", "macros"] }
+tokio = { version = "1", features = ["sync"] }
+serde = { version = "1", features = ["derive"] }
+
+[build-dependencies]
+napi-build = "2"
+
+[profile.release]
+lto = true
+strip = true

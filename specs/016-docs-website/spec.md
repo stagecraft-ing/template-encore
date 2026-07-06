@@ -128,3 +128,12 @@ exits 0 and lists both established paths.
   not `docs/`.
 - **Adding publishers to the org allow-list**: governed by spec 012's
   out-of-scope note; the org controls the allow-list.
+
+## Amendments
+
+> **Amended (2026-07-05), self: Redis reference excise.** Removed the
+> stale `REDIS_URL` row from `website/docs/reference/configuration.md`:
+> Redis is not part of this stack, rate limiting is Postgres-native
+> (INV-6, spec 002-security-data-invariants). Content correction only;
+> no change to the site's territory, the publish workflow, or any
+> acceptance criterion.

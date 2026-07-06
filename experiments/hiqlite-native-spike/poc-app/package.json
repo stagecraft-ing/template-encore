@@ -1,0 +1,10 @@
+{
+  "name": "hiqlite-poc-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "encore.dev": "^1.57.9",
+    "hiqlite-native": "file:../addon"
+  }
+}

@@ -143,7 +143,6 @@ RATE_LIMIT_API_MAX=100
 RATE_LIMIT_API_WINDOW_MS=900000
 RATE_LIMIT_AUTH_MAX=20
 RATE_LIMIT_AUTH_WINDOW_MS=900000
-# REDIS_URL=redis://localhost:6379            # optional: Redis-backed rate limits (NOT sessions)
 ```
 
 ---

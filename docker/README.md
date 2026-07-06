@@ -35,7 +35,6 @@ Services and profiles:
 | Service | Profile | Purpose |
 |---------|---------|---------|
 | `postgres` | (default) | SQLDatabase backing (Encore-managed migrations); required by `api`, so always started |
-| `redis` | `cache` | Optional Redis-backed rate limiting (`REDIS_URL`); not a session store |
 | `api` | (default) | The Encore-built image; `depends_on` postgres |
 
 Bring up the full stack:
@@ -44,10 +43,7 @@ Bring up the full stack:
 # Build the image first (SPA into apps/api/web/build, then the Encore image)
 npm run docker:build
 
-# Start Postgres + api + Redis
-docker compose --profile cache up -d
-
-# Or just Postgres + api (Redis is optional)
+# Start Postgres + api
 docker compose up -d
 ```
 

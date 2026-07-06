@@ -49,7 +49,6 @@ RAUTHY_ISSUER=https://rauthy.example.com
 | Placeholder | Description | How to Generate |
 |-------------|-------------|-----------------|
 | `{{GENERATE_WITH_OPENSSL_RAND_BASE64_32}}` | Session secret (32+ characters) | `openssl rand -base64 32` |
-| `{{REDIS_CONNECTION_STRING}}` | Redis connection URL | `redis://hostname:6379` |
 
 ## Files Using Placeholders
 
@@ -74,7 +73,6 @@ Look for values wrapped in `{{...}}`:
 # apps/api/.env.example
 RAUTHY_ISSUER={{YOUR_OIDC_ISSUER_URL}}
 RAUTHY_CLIENT_SECRET={{YOUR_OIDC_CLIENT_SECRET}}
-REDIS_URL={{REDIS_CONNECTION_STRING}}
 ```
 
 ### 2. Replace with Actual Values
@@ -85,7 +83,6 @@ Remove the `{{` and `}}` brackets and insert your real values:
 # apps/api/.env (your actual config)
 RAUTHY_ISSUER=https://rauthy.example.com
 RAUTHY_CLIENT_SECRET=s3cr3t-from-rauthy
-REDIS_URL=redis://my-redis:6379
 ```
 
 ### 3. Verify No Placeholders Remain

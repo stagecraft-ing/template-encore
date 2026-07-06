@@ -267,7 +267,14 @@ jobs:
           fi
           for cert in "${certs[@]}"; do
             echo "verifying ${cert}"
-            verify_args=( "${cert}" --artifact-dir "$(dirname "${cert}")" )
+            # A born-with app is a tenant run: its certificate is unsealed by
+            # design (no platform countersign -- OAP spec 220 FR-004, spec 198
+            # FR-014). tenant-tail 0.3.0 rejects an unsealed certificate by
+            # default (seal required), so pass --allow-unsealed here to accept
+            # the offline-verifiable-but-unsealed posture. Drop this flag once
+            # the deferred tenant-to-OAP countersign uplink (spec 168) lands and
+            # a real platform seal is available to adjudicate.
+            verify_args=( "${cert}" --artifact-dir "$(dirname "${cert}")" --allow-unsealed )
             # Spec 203 FR-003: re-hash the produced app's BOM + audit against the
             # certificate's SBOM binding. Spec 220 FR-007: re-derive the corpus
             # binding link. Both artifacts were produced above in the same run.

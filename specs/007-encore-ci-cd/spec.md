@@ -58,6 +58,11 @@ SHA-pinning every `uses:` (spec 011).
 - Download and install the Encore CLI.
 - Disable telemetry.
 - Verify the installed version.
+- Default the version pin to the template's `encore.dev` runtime version
+  (currently `1.57.9`), not `latest`, so the typed client the scaffold generates
+  is structurally identical to the one this CI regenerates and checks (the
+  FR-005 typed-client staleness gate / OAP spec 220 AC-2). Keep the pin in
+  lockstep when bumping `encore.dev`.
 - Expose the CLI's absolute path (`/home/runner/.encore/bin/encore`) via a
   `cli-path` output. A composite action cannot mutate the calling job's `$PATH`,
   so the absolute path is the documented contract.

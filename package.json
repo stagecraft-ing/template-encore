@@ -63,8 +63,8 @@
     "jsonc-parser": "^3.3.1",
     "prettier": "^3.9.4",
     "spec-spine": "0.10.0",
-    "tenant-emit": "0.2.1",
-    "tenant-tail": "0.3.0",
+    "tenant-emit": "0.3.0",
+    "tenant-tail": "0.4.0",
     "typescript-eslint": "^8.63.0",
     "vitest": "^4.0.18",
     "vue-eslint-parser": "^10.3.0"

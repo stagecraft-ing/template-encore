@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "acme-vue-encore: a runnable Vue 3 (PrimeVue) SPA + Encore.ts backend reference app with rauthy OIDC authentication, TypeScript, and Docker",
   "private": true,
-  "author": "Stagecraft",
+  "author": "Statecrafting",
   "license": "Apache-2.0",
   "workspaces": [
     "apps/web",

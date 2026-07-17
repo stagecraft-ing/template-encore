@@ -10,7 +10,7 @@ You should perform a global find-and-replace for the following strings:
 
 - **`acme-vue-encore`**: Replace with your project's internal identifier (e.g., `my-company-app`).
 - **`@template`**: The npm workspace scope. Replace with your organization's scope (e.g., `@myorg`).
-- **`stagecraft-ing`**: The GitHub organization name.
+- **`statecrafting`**: The GitHub organization name.
 - **`template-encore`**: The GitHub repository name.
 
 ## Configuration Updates

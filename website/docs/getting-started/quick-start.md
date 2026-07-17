@@ -7,7 +7,7 @@ Follow these steps to get **acme-vue-encore** running locally on your machine.
 Clone the repository and navigate into the project directory:
 
 ```bash
-git clone https://github.com/stagecraft-ing/template-encore.git
+git clone https://github.com/statecrafting/template-encore.git
 cd template-encore
 ```
 

@@ -7,10 +7,10 @@ const config: Config = {
   tagline: 'Spec-governed Vue 3 and Encore.ts reference app with built-in auth.',
   favicon: 'img/favicon.ico',
 
-  url: 'https://stagecraft-ing.github.io',
+  url: 'https://statecrafting.github.io',
   baseUrl: '/template-encore/',
 
-  organizationName: 'stagecraft-ing',
+  organizationName: 'statecrafting',
   projectName: 'template-encore',
 
   onBrokenLinks: 'throw',
@@ -34,7 +34,7 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           editUrl:
-            'https://github.com/stagecraft-ing/template-encore/tree/main/website/',
+            'https://github.com/statecrafting/template-encore/tree/main/website/',
         },
         blog: false,
         theme: {
@@ -55,7 +55,7 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          href: 'https://github.com/stagecraft-ing/template-encore',
+          href: 'https://github.com/statecrafting/template-encore',
           label: 'GitHub',
           position: 'right',
         },
@@ -86,15 +86,15 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/stagecraft-ing/template-encore',
+              href: 'https://github.com/statecrafting/template-encore',
             },
             {
               label: 'Open Agentic Platform',
-              href: 'https://github.com/stagecraft-ing/open-agentic-platform',
+              href: 'https://github.com/statecrafting/open-agentic-platform',
             },
             {
               label: 'factory-encore (the generator)',
-              href: 'https://github.com/stagecraft-ing/factory-encore',
+              href: 'https://github.com/statecrafting/factory-encore',
             },
           ],
         },
